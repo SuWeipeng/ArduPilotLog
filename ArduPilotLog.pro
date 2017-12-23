@@ -43,12 +43,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     APLLoggingCategory.cpp \
-    APLDockWidget.cpp
+    APLDockWidget.cpp \
+    src/Dialog.cpp
 
 HEADERS += \
         mainwindow.h \
     APLLoggingCategory.h \
-    APLDockWidget.h
+    APLDockWidget.h \
+    src/Dialog.h
 
 FORMS += \
         mainwindow.ui

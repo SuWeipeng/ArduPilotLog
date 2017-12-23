@@ -6,6 +6,7 @@
 
 #include "APLLoggingCategory.h"
 #include "APLDockWidget.h"
+#include "src/Dialog.h"
 
 Q_DECLARE_LOGGING_CATEGORY(MAIN_WINDOW_LOG)
 
@@ -17,17 +18,12 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-protected slots:
-    /**
-     * @brief Enable/Disable Status Bar
-     */
-    void OpenArduPilotLog();
-
 private slots:
     void _showDockWidgetAction(bool show);
 
 private:
     Ui::MainWindow _ui;
+    Dialog*        _dialog;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;
     QMap<QString, QAction*>         _mapName2Action;

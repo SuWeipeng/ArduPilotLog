@@ -14,17 +14,19 @@ enum DockWidgetTypes {
     PID_ANALYZE
 };
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , _dialog(new Dialog)
 {
     _ui.setupUi(this);
     _buildCommonWidgets();
 
-    connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::OpenArduPilotLog);
+    connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
 }
 
 MainWindow::~MainWindow()
 {
+    delete _dialog;
 }
 
 void MainWindow::_buildCommonWidgets(void)
@@ -85,9 +87,4 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
         }
     }
     return widget != NULL;
-}
-
-void MainWindow::OpenArduPilotLog()
-{
-    qCDebug(MAIN_WINDOW_LOG) << "(Action) Open ArduPilot Binary Log ...";
 }
