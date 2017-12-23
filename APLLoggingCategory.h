@@ -4,8 +4,6 @@
 #include <QLoggingCategory>
 #include <QStringList>
 
-Q_DECLARE_LOGGING_CATEGORY(MainWindow)
-
 /// @def APL_LOGGING_CATEGORY
 /// This is a APL specific replacement for Q_LOGGING_CATEGORY. It will register the category name into a
 /// global list. It's usage is the same as Q_LOGGING_CATEOGRY.
@@ -48,7 +46,7 @@ private:
 class APLLoggingCategory
 {
 public:
-    APLLoggingCategory(const char* category) { QGCLoggingCategoryRegister::instance()->registerCategory(category); }
+    APLLoggingCategory(const char* category) { APLLoggingCategoryRegister::instance()->registerCategory(category); }
 };
 
 #endif // APLLOGGINGCATEGORY_H

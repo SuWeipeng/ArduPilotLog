@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=ArduPilotLog
+GenericName=ArduPilot Log
+Comment=Read ArduPilot binary log
+Icon=ardupilotlog
+Exec=ardupilotlog-start.sh
+Terminal=false
+Categories=Utility;

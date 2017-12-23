@@ -2,9 +2,6 @@
 
 #include <QSettings>
 
-// Add Global logging categories (not class specific) here using APL_LOGGING_CATEGORY
-APL_LOGGING_CATEGORY(FirmwareUpgradeLog,        "FirmwareUpgradeLog")
-
 APLLoggingCategoryRegister* _instance = NULL;
 const char* APLLoggingCategoryRegister::_filterRulesSettingsGroup = "LoggingFilters";
 

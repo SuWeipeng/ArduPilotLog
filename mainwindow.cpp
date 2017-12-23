@@ -2,6 +2,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+APL_LOGGING_CATEGORY(MAIN_WINDOW_LOG,        "MainWindowLog")
+
 #define ARRAY_SIZE(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
 
 static const char *rgDockWidgetNames[] = {
@@ -17,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     _ui.setupUi(this);
     _buildCommonWidgets();
+
+    connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::OpenArduPilotLog);
 }
 
 MainWindow::~MainWindow()
@@ -81,4 +85,9 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
         }
     }
     return widget != NULL;
+}
+
+void MainWindow::OpenArduPilotLog()
+{
+    qCDebug(MAIN_WINDOW_LOG) << "(Action) Open ArduPilot Binary Log ...";
 }

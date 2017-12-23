@@ -8,8 +8,24 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+include(APLCommon.pri)
+
 TARGET = ArduPilotLog
 TEMPLATE = app
+
+DebugBuild {
+    DESTDIR  = $${OUT_PWD}/debug
+} else {
+    DESTDIR  = $${OUT_PWD}/release
+}
+
+LinuxBuild {
+    CONFIG  += qesp_linux_udev
+}
+
+WindowsBuild {
+    RC_ICONS = resources/icons/ardupilotlog.ico
+}
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -36,3 +52,11 @@ HEADERS += \
 
 FORMS += \
         mainwindow.ui
+
+include(APLSetup.pri)
+
+DISTFILES += \
+    APLCommon.pri
+
+RESOURCES += \
+    $$PWD/aplresources.qrc

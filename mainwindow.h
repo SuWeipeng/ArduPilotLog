@@ -4,7 +4,10 @@
 #include <QMainWindow>
 #include "ui_MainWindow.h"
 
+#include "APLLoggingCategory.h"
 #include "APLDockWidget.h"
+
+Q_DECLARE_LOGGING_CATEGORY(MAIN_WINDOW_LOG)
 
 class MainWindow : public QMainWindow
 {
@@ -13,6 +16,12 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+protected slots:
+    /**
+     * @brief Enable/Disable Status Bar
+     */
+    void OpenArduPilotLog();
 
 private slots:
     void _showDockWidgetAction(bool show);
