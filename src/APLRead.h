@@ -18,8 +18,10 @@ public:
         return _instance;
     }
 
+    void getDatastream(const QString &file_dir);
+
 public slots:
-    void getFileDir(const QString &file);
+    void getFileDir(const QString &file_dir);
 
 private:
     static APLRead *_instance;
