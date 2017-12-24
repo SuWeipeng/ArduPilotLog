@@ -2,6 +2,7 @@
 #define APLDB_H
 
 #include <QObject>
+#include <QSqlDatabase>
 #include "APLLoggingCategory.h"
 
 Q_DECLARE_LOGGING_CATEGORY(APLDB_LOG)
@@ -16,6 +17,9 @@ public:
     void createAPLDB();
     bool checkMainTable(quint8 id);
     void addToMainTable();
+
+private:
+    QSqlDatabase _apldb;
 };
 
 #endif // APLDB_H
