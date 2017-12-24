@@ -45,7 +45,8 @@ SOURCES += \
     APLLoggingCategory.cpp \
     APLDockWidget.cpp \
     src/Dialog.cpp \
-    src/APLRead.cpp
+    src/APLRead.cpp \
+    src/APLDB.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -53,7 +54,8 @@ HEADERS += \
     APLDockWidget.h \
     src/Dialog.h \
     src/APLRead.h \
-    src/LogStructure.h
+    src/LogStructure.h \
+    src/APLDB.h
 
 FORMS += \
         mainwindow.ui
