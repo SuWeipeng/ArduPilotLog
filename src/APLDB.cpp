@@ -10,7 +10,7 @@ APLDB::APLDB()
 
 void APLDB::createAPLDB()
 {
-    _apldb.addDatabase("QSQLITE");
+    _apldb = QSqlDatabase::addDatabase("QSQLITE");
     _apldb.setDatabaseName("APLDB.db");
     if(!_apldb.open()){
         qCDebug(APLDB_LOG) << _apldb.lastError();
