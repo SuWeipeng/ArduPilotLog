@@ -3,6 +3,12 @@
 
 #include <QDialog>
 #include <QLineEdit>
+#include "APLLoggingCategory.h"
+
+Q_DECLARE_LOGGING_CATEGORY(DIALOG_LOG)
+
+class APLRead;
+class QFileDialog;
 
 class Dialog : public QDialog
 {
@@ -16,7 +22,8 @@ public slots:
     void showFile();
 
 private:
-    QLineEdit *fileLineEdit;
+    APLRead *_aplRead;
+    QFileDialog *_qfiledialog;
 };
 
 #endif // DIALOG_H

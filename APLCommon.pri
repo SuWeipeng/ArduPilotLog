@@ -3,6 +3,7 @@ linux {
         message("Linux build")
         CONFIG += LinuxBuild
         DEFINES += __STDC_LIMIT_MACROS
+        DEFINES += PACKED=__attribute__((__packed__))
         linux-clang {
             message("Linux clang")
             QMAKE_CXXFLAGS += -Qunused-arguments -fcolor-diagnostics
@@ -32,6 +33,7 @@ linux {
         message("Windows build")
         CONFIG += WindowsBuild
         DEFINES += __STDC_LIMIT_MACROS
+        DEFINES += PACKED=/**/
     } else {
         error("Unsupported Windows toolchain, only Visual Studio 2010, 2012, and 2013 are supported")
     }
