@@ -23,9 +23,11 @@ public slots:
 
 private:
     APLDB *_apldb;
-    bool  _checkName(QString &name);
-    bool  _checkFormat(QString &format);
-    bool  _checkLabels(QString &labels);
+    bool  _checkMessage(QString &name, QString &format, QString &labels) const;
+    bool  _checkName(QString &name) const;
+    bool  _checkFormat(QString &format) const;
+    bool  _checkLabels(QString &labels) const;
+    void  _decode(QDataStream &in) const;
 };
 
 #endif // APLREAD_H

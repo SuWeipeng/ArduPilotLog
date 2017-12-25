@@ -30,9 +30,6 @@ void APLRead::getFileDir(const QString &file_dir)
 void APLRead::getDatastream(const QString &file_dir)
 {
     QFile  file;
-    quint8 head_check[3];
-    quint8 currentByte;
-    quint8 ptr_pos = 0;
 
     file.setFileName(file_dir);
     if(!file.open(QIODevice::ReadOnly))
@@ -41,7 +38,18 @@ void APLRead::getDatastream(const QString &file_dir)
          return;
     }
 
-    QDataStream in(&file);
+    _decode(QDataStream(&file));
+
+    qCDebug(APLREAD_LOG) << "All data have been read";
+
+    file.close();
+}
+
+void APLRead::_decode(QDataStream &in) const
+{
+    quint8 head_check[3];
+    quint8 currentByte;
+    quint8 ptr_pos = 0;
 
     while(!in.atEnd())
     {
@@ -92,9 +100,7 @@ void APLRead::getDatastream(const QString &file_dir)
                 log_format = QString(format);
                 log_labels = QString(labels);
 
-                if( _checkName(log_name)
-                 && _checkFormat(log_format)
-                 && _checkLabels(log_labels)){
+                if( _checkMessage(log_name,log_format,log_labels)){
                     _apldb->addToMainTable(type,
                                            len,
                                            log_name,
@@ -107,13 +113,14 @@ void APLRead::getDatastream(const QString &file_dir)
             }
         }
     }
-
-    qCDebug(APLREAD_LOG) << "All data have been read";
-
-    file.close();
 }
 
-bool APLRead::_checkName(QString &name)
+bool APLRead::_checkMessage(QString &name, QString &format, QString &labels) const
+{
+    return _checkName(name) && _checkFormat(format) && _checkLabels(labels);
+}
+
+bool APLRead::_checkName(QString &name) const
 {
     QRegExp reg("^[A-Z0-9]{1,4}$");
     QRegExpValidator validator(reg,0);
@@ -126,7 +133,7 @@ bool APLRead::_checkName(QString &name)
     return true;
 }
 
-bool APLRead::_checkFormat(QString &format)
+bool APLRead::_checkFormat(QString &format) const
 {
     QRegExp reg("^[A-Za-z]{1,16}$");
     QRegExpValidator validator(reg,0);
@@ -139,7 +146,7 @@ bool APLRead::_checkFormat(QString &format)
     return true;
 }
 
-bool APLRead::_checkLabels(QString &labels)
+bool APLRead::_checkLabels(QString &labels) const
 {
     QRegExp reg("^[A-Za-z0-9,]{1,64}$");
     QRegExpValidator validator(reg,0);
