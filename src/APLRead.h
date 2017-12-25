@@ -23,6 +23,9 @@ public slots:
 
 private:
     APLDB *_apldb;
+    bool  _checkName(QString &name);
+    bool  _checkFormat(QString &format);
+    bool  _checkLabels(QString &labels);
 };
 
 #endif // APLREAD_H
