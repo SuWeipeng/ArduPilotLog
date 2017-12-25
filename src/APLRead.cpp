@@ -10,11 +10,12 @@ APL_LOGGING_CATEGORY(APLREAD_LOG,        "APLReadLog")
 #define FORMAT_LEN 16
 #define LABELS_LEN 64
 
+static LFMT FMT[256]; // 256 at least
+
 APLRead::APLRead()
     : _apldb(new APLDB)
 {
-    QFile::remove(DB_FILE);
-    _apldb->createAPLDB();
+    _resetDataBase();
 }
 
 APLRead::~APLRead()
@@ -22,8 +23,18 @@ APLRead::~APLRead()
     delete _apldb;
 }
 
+void APLRead::_resetDataBase()
+{
+    if(_apldb->isOpen()){
+        _apldb->close();
+    }
+    QFile::remove(DB_FILE);
+    _apldb->createAPLDB();
+}
+
 void APLRead::getFileDir(const QString &file_dir)
 {
+    _resetDataBase();
     getDatastream(file_dir);
 }
 
@@ -117,14 +128,20 @@ void APLRead::_decode(QDataStream &in) const
 void APLRead::_decodeData(QDataStream &in, quint8 *head_check) const
 {
     QString value_str  = "";
-    QString format_str = "";
     quint8  id = head_check[2];
 
     // 下面这个if很影响速度
-    if(_apldb->checkMainTable(id))
-    {
-        format_str = _apldb->getFormat(id);
-        _getValues(format_str, in, value_str);
+    if(FMT[id].format.isEmpty() && FMT[id].valid){
+        if(_apldb->checkMainTable(id))
+        {
+            FMT[id].format = _apldb->getFormat(id);
+        }else{
+            FMT[id].valid = false;
+        }
+    }
+
+    if(FMT[id].valid){
+        _getValues(FMT[id].format, in, value_str);
     }
 }
 

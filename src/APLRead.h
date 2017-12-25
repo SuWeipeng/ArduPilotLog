@@ -6,6 +6,18 @@
 
 Q_DECLARE_LOGGING_CATEGORY(APLREAD_LOG)
 
+typedef struct LogFormat
+{
+    LogFormat(){
+        id = 0;
+        format = "";
+        valid = true;
+    }
+    quint8 id;
+    QString format;
+    bool valid;
+}LFMT;
+
 class APLDB;
 
 class APLRead : public QObject
@@ -30,6 +42,7 @@ private:
     void  _decode(QDataStream &in) const;
     void  _decodeData(QDataStream &in, quint8 *head_check) const;
     void  _getValues(QString &format, QDataStream &in, QString &value) const;
+    void  _resetDataBase();
 };
 
 #endif // APLREAD_H

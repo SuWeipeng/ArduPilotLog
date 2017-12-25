@@ -31,6 +31,10 @@ public:
 
     QString getFormat(quint8 &id);
 
+    bool isOpen() const { return _apldb.isOpen(); }
+
+    void close()  { _apldb.close(); }
+
 private:
     QSqlDatabase _apldb;
 
