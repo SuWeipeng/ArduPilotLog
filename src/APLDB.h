@@ -29,6 +29,11 @@ public:
 
 private:
     QSqlDatabase _apldb;
+
+    //true: create sub-table success
+    bool _createSubTable(QString &name, QString &format, QString &field) const;
+
+    void _createTableField(QString &format, QString &field, QString &table_field) const;
 };
 
 #endif // APLDB_H
