@@ -27,6 +27,10 @@ public:
                         QString format,
                         QString labels);
 
+    void addToSubTable(QString values);
+
+    QString getFormat(quint8 &id);
+
 private:
     QSqlDatabase _apldb;
 

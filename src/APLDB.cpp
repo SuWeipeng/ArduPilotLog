@@ -39,7 +39,7 @@ bool APLDB::checkMainTable(quint8 id)
 
     query.exec(QString("SELECT id FROM maintable WHERE id LIKE %1").arg(id));
     if(!query.next()){
-        qCDebug(APLDB_LOG) << QString("type: %1 don't exist").arg(id);
+        //qCDebug(APLDB_LOG) << QString("type: %1 don't exist").arg(id);
         return false;
     }
 
@@ -58,7 +58,6 @@ void APLDB::addToMainTable(quint8 type,
     query_insert.exec(QString("INSERT INTO maintable VALUES(%1,%2,\"%3\",\"%4\",\"%5\")")
                       .arg(type).arg(len).arg(name,format,labels));
 
-
     query_check.exec(QString("SELECT COUNT(*) FROM SQLITE_MASTER WHERE TYPE='table' AND name='%1'").arg(name));
 
     query_check.next();
@@ -71,6 +70,13 @@ void APLDB::addToMainTable(quint8 type,
 
 }
 
+void APLDB::addToSubTable(QString values)
+{
+    QSqlQuery query_insert;
+
+    query_insert.exec(QString("INSERT INTO maintable VALUES(%1)").arg(values));
+}
+
 bool APLDB::_createSubTable(QString &name, QString &format, QString &field) const
 {
     QSqlQuery query_create;
@@ -79,11 +85,6 @@ bool APLDB::_createSubTable(QString &name, QString &format, QString &field) cons
 
     _createTableField(format, field, table_field);
     success = query_create.exec(QString("CREATE TABLE %1(%2)").arg(name).arg(table_field));
-    if(success){
-      qCDebug(APLDB_LOG) << "create subtable success";
-    }else{
-      qCDebug(APLDB_LOG) << "create subtable failed";
-    }
 
     return success;
 }
@@ -162,4 +163,14 @@ void APLDB::_createTableField(QString &format, QString &field, QString &table_fi
         }
     }
     table_field.chop(1);
+}
+
+QString APLDB::getFormat(quint8 &id)
+{
+    QSqlQuery query;
+
+    query.exec(QString("SELECT id,format FROM maintable WHERE id = %1").arg(id));
+    query.next();
+
+    return query.value(1).toString();
 }

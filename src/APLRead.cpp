@@ -106,15 +106,97 @@ void APLRead::_decode(QDataStream &in) const
                                            log_name,
                                            log_format,
                                            log_labels);
-                    qCDebug(APLREAD_LOG)<< log_name << log_format << log_labels;
                 }
             }else{
-
+                _decodeData(in, head_check);
             }
         }
     }
 }
 
+void APLRead::_decodeData(QDataStream &in, quint8 *head_check) const
+{
+    QString value_str  = "";
+    QString format_str = "";
+    quint8  id = head_check[2];
+
+    // 下面这个if很影响速度
+    if(_apldb->checkMainTable(id))
+    {
+        format_str = _apldb->getFormat(id);
+        _getValues(format_str, in, value_str);
+    }
+}
+
+void APLRead::_getValues(QString &format, QDataStream &in, QString &value) const
+{
+    QByteArray formatArray = format.toLatin1();
+
+    for(qint8 i = 0; i< formatArray.count(); i++){
+        switch(formatArray[i]){
+        case 'a': //int16_t[32]
+
+            break;
+        case 'b': //int8_t
+
+            break;
+        case 'B': //uint8_t
+
+            break;
+        case 'h': //int16_t
+
+            break;
+        case 'H': //uint16_t
+
+            break;
+        case 'i': //int32_t
+
+            break;
+        case 'I': //uint32_t
+
+            break;
+        case 'f': //float
+
+            break;
+        case 'd': //double
+
+            break;
+        case 'n': //char[4]
+
+            break;
+        case 'N': //char[16]
+
+            break;
+        case 'Z': //char[64]
+
+            break;
+        case 'c': //int16_t * 100
+
+            break;
+        case 'C': //uint16_t * 100
+
+            break;
+        case 'e': //int32_t * 100
+
+            break;
+        case 'E': //uint32_t * 100
+
+            break;
+        case 'L': //int32_t latitude/longitude
+
+            break;
+        case 'M': //uint8_t flight mode
+
+            break;
+        case 'q': //int64_t
+
+            break;
+        case 'Q': //uint64_t
+
+            break;
+        }
+    }
+}
 bool APLRead::_checkMessage(QString &name, QString &format, QString &labels) const
 {
     return _checkName(name) && _checkFormat(format) && _checkLabels(labels);
