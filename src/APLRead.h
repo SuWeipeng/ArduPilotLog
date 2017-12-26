@@ -8,14 +8,16 @@ Q_DECLARE_LOGGING_CATEGORY(APLREAD_LOG)
 
 typedef struct LogFormat
 {
-    LogFormat(){
-        id = 0;
-        format = "";
-        valid = true;
-    }
-    quint8 id;
+    quint8  id;
+    QString name;
     QString format;
-    bool valid;
+    bool    valid;
+    LogFormat(){
+        id     = 0;
+        name   = "";
+        format = "";
+        valid  = true;
+    }
 }LFMT;
 
 class APLDB;

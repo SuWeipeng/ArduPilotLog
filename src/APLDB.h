@@ -27,9 +27,9 @@ public:
                         QString format,
                         QString labels);
 
-    void addToSubTable(QString values);
+    void addToSubTable(QString name, QString values);
 
-    QString getFormat(quint8 &id);
+    void getFormat(quint8 &id, QString &name, QString &format);
 
     bool isOpen() const { return _apldb.isOpen(); }
 

@@ -130,11 +130,10 @@ void APLRead::_decodeData(QDataStream &in, quint8 *head_check) const
     QString value_str  = "";
     quint8  id = head_check[2];
 
-    // 下面这个if很影响速度
-    if(FMT[id].format.isEmpty() && FMT[id].valid){
+    if(FMT[id].name.isEmpty() && FMT[id].format.isEmpty() && FMT[id].valid){
         if(_apldb->checkMainTable(id))
         {
-            FMT[id].format = _apldb->getFormat(id);
+            _apldb->getFormat(id, FMT[id].name, FMT[id].format);
         }else{
             FMT[id].valid = false;
         }
@@ -142,6 +141,7 @@ void APLRead::_decodeData(QDataStream &in, quint8 *head_check) const
 
     if(FMT[id].valid){
         _getValues(FMT[id].format, in, value_str);
+        _apldb->addToSubTable(FMT[id].name, value_str);
     }
 }
 
@@ -152,67 +152,117 @@ void APLRead::_getValues(QString &format, QDataStream &in, QString &value) const
     for(qint8 i = 0; i< formatArray.count(); i++){
         switch(formatArray[i]){
         case 'a': //int16_t[32]
-
+            qint16 v16_32[32];
+            memset(v16_32, 0, sizeof(v16_32));
+            in.readRawData((char *)v16_32, sizeof(v16_32));
+            for(int i=0; i<32; i++)
+                if(i == 31)
+                    value = QString ("%1%2,").arg(value).arg(QString(v16_32[i]));
+                else
+                    value = QString ("%1%2 ").arg(value).arg(QString(v16_32[i]));
             break;
         case 'b': //int8_t
-
+            qint8 v8;
+            in >> v8;
+            value = QString ("%1%2,").arg(value).arg(v8);
             break;
         case 'B': //uint8_t
-
+            quint8 vu8;
+            in >> vu8;
+            value = QString ("%1%2,").arg(value).arg(vu8);
             break;
         case 'h': //int16_t
-
+            qint16 v16;
+            in >> v16;
+            value = QString ("%1%2,").arg(value).arg(v16);
             break;
         case 'H': //uint16_t
-
+            quint16 vu16;
+            in >> vu16;
+            value = QString ("%1%2,").arg(value).arg(vu16);
             break;
         case 'i': //int32_t
-
+            qint32 v32;
+            in >> v32;
+            value = QString ("%1%2,").arg(value).arg(v32);
             break;
         case 'I': //uint32_t
-
+            quint32 vu32;
+            in >> vu32;
+            value = QString ("%1%2,").arg(value).arg(v32);
             break;
         case 'f': //float
-
+            float vf;
+            in >> vf;
+            value = QString ("%1%2,").arg(value).arg(vf);
             break;
         case 'd': //double
-
+            double vd;
+            in >> vd;
+            value = QString ("%1%2,").arg(value).arg(vf);
             break;
         case 'n': //char[4]
-
+            char vc_4[4+1];
+            memset(vc_4, 0, sizeof(vc_4));
+            in.readRawData(vc_4, sizeof(char)*4);
+            value = QString ("%1%2,").arg(value).arg(QString(QByteArray(vc_4)));
             break;
         case 'N': //char[16]
-
+            char vc_16[16+1];
+            memset(vc_16, 0, sizeof(vc_16));
+            in.readRawData(vc_16, sizeof(char)*16);
+            value = QString ("%1%2,").arg(value).arg(QString(QByteArray(vc_16)));
             break;
         case 'Z': //char[64]
-
+            char vc_64[64+1];
+            memset(vc_64, 0, sizeof(vc_64));
+            in.readRawData(vc_64, sizeof(char)*64);
+            value = QString ("%1%2,").arg(value).arg(QString(QByteArray(vc_64)));
             break;
         case 'c': //int16_t * 100
-
+            qint16 v16x100;
+            in >> v16x100;
+            value = QString ("%1%2,").arg(value).arg(v16x100);
             break;
         case 'C': //uint16_t * 100
-
+            quint16 vu16x100;
+            in >> vu16x100;
+            value = QString ("%1%2,").arg(value).arg(vu16x100);
             break;
         case 'e': //int32_t * 100
-
+            qint32 v32x100;
+            in >> v32x100;
+            value = QString ("%1%2,").arg(value).arg(v32x100);
             break;
         case 'E': //uint32_t * 100
-
+            quint32 vu32x100;
+            in >> vu32x100;
+            value = QString ("%1%2,").arg(value).arg(vu32x100);
             break;
         case 'L': //int32_t latitude/longitude
-
+            qint32 v32l;
+            in >> v32l;
+            value = QString ("%1%2,").arg(value).arg(v32l);
             break;
         case 'M': //uint8_t flight mode
-
+            quint8 vu8m;
+            in >> vu8m;
+            value = QString ("%1%2,").arg(value).arg(vu8m);
             break;
         case 'q': //int64_t
-
+            qint64 v64;
+            in >> v64;
+            value = QString ("%1%2,").arg(value).arg(v64);
             break;
         case 'Q': //uint64_t
-
+            quint64 vu64;
+            in >> vu64;
+            value = QString ("%1%2,").arg(value).arg(vu64);
             break;
         }
     }
+    value.chop(1);
+
 }
 bool APLRead::_checkMessage(QString &name, QString &format, QString &labels) const
 {

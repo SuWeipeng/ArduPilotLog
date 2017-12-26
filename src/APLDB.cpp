@@ -70,11 +70,11 @@ void APLDB::addToMainTable(quint8 type,
 
 }
 
-void APLDB::addToSubTable(QString values)
+void APLDB::addToSubTable(QString name, QString values)
 {
     QSqlQuery query_insert;
 
-    query_insert.exec(QString("INSERT INTO maintable VALUES(%1)").arg(values));
+    query_insert.exec(QString("INSERT INTO %1 VALUES(%2)").arg(name).arg(values));
 }
 
 bool APLDB::_createSubTable(QString &name, QString &format, QString &field) const
@@ -165,12 +165,12 @@ void APLDB::_createTableField(QString &format, QString &field, QString &table_fi
     table_field.chop(1);
 }
 
-QString APLDB::getFormat(quint8 &id)
+void APLDB::getFormat(quint8 &id, QString &name, QString &format)
 {
     QSqlQuery query;
 
-    query.exec(QString("SELECT id,format FROM maintable WHERE id = %1").arg(id));
+    query.exec(QString("SELECT id,name,format FROM maintable WHERE id = %1").arg(id));
     query.next();
-
-    return query.value(1).toString();
+    name   = query.value(1).toString();
+    format = query.value(2).toString();
 }
