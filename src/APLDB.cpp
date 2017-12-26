@@ -5,6 +5,7 @@
 APL_LOGGING_CATEGORY(APLDB_LOG,        "APLDBLog")
 
 APLDB::APLDB()
+    : _Number(0)
 {
 
 }
@@ -13,11 +14,13 @@ void APLDB::createAPLDB()
 {
     _apldb = QSqlDatabase::addDatabase("QSQLITE");
     _apldb.setDatabaseName(DB_FILE);
+
     if(!_apldb.open()){
         qCDebug(APLDB_LOG) << _apldb.lastError();
         qCDebug(APLDB_LOG) << _apldb.drivers();
     }else{
         QSqlQuery query;
+        _apldb.transaction();
         bool success = query.exec("CREATE TABLE maintable(id INT8 PRIMARY KEY, len INT8, name VARCHAR, format VARCHAR, labels VARCHAR)");
         if(success){
           qCDebug(APLDB_LOG) << "create maintable success";
@@ -74,6 +77,7 @@ void APLDB::addToSubTable(QString name, QString values)
 {
     QSqlQuery query_insert;
 
+    values = QString("%1,%2").arg(++_Number).arg(values);
     query_insert.exec(QString("INSERT INTO %1 VALUES(%2)").arg(name).arg(values));
 }
 
@@ -84,6 +88,7 @@ bool APLDB::_createSubTable(QString &name, QString &format, QString &field) cons
     bool      success     = false;
 
     _createTableField(format, field, table_field);
+    table_field = QString("%1,%2").arg("n INTEGER PRIMARY KEY").arg(table_field);
     success = query_create.exec(QString("CREATE TABLE %1(%2)").arg(name).arg(table_field));
 
     return success;

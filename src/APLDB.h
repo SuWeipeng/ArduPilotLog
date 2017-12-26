@@ -35,13 +35,16 @@ public:
 
     void close()  { _apldb.close(); }
 
+    void commit() { _apldb.commit(); }
+
 private:
     QSqlDatabase _apldb;
+    quint32      _Number;
 
     //true: create sub-table success
     bool _createSubTable(QString &name, QString &format, QString &field) const;
 
-    void _createTableField(QString &format, QString &field, QString &table_field) const;
+    void _createTableField(QString &format, QString &field, QString &table_field) const; 
 };
 
 #endif // APLDB_H

@@ -50,7 +50,7 @@ void APLRead::getDatastream(const QString &file_dir)
     }
 
     _decode(QDataStream(&file));
-
+    _apldb->commit();
     qCDebug(APLREAD_LOG) << "All data have been read";
 
     file.close();
@@ -132,7 +132,6 @@ void APLRead::_decode(QDataStream &in) const
                 if(FMT[id].valid && !FMT[id].format.isEmpty()){
                     QString value_str  = "";
                     _decodeData(FMT[id].format, in, value_str);
-                    //下面写入数据库的操作会严重影响运行速度
                     _apldb->addToSubTable(FMT[id].name, value_str);
                 }
             }
