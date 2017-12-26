@@ -6,7 +6,7 @@
 
 QT       += core gui sql
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 include(APLCommon.pri)
 
@@ -46,7 +46,8 @@ SOURCES += \
     APLDockWidget.cpp \
     src/Dialog.cpp \
     src/APLRead.cpp \
-    src/APLDB.cpp
+    src/APLDB.cpp \
+    qcustomplot/qcustomplot.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -55,7 +56,8 @@ HEADERS += \
     src/Dialog.h \
     src/APLRead.h \
     src/LogStructure.h \
-    src/APLDB.h
+    src/APLDB.h \
+    qcustomplot/qcustomplot.h
 
 FORMS += \
         mainwindow.ui
