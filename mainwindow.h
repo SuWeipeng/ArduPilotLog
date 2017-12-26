@@ -7,6 +7,7 @@
 #include "APLLoggingCategory.h"
 #include "APLDockWidget.h"
 #include "src/Dialog.h"
+#include "qcustomplot.h"
 
 Q_DECLARE_LOGGING_CATEGORY(MAIN_WINDOW_LOG)
 
@@ -31,6 +32,14 @@ private:
     void _buildCommonWidgets(void);
     void _showDockWidget(const QString &name, bool show);
     bool _createInnerDockWidget(const QString& widgetName);
+
+public:
+    double num[10];
+    int n;
+    void Graph_Show(QCustomPlot *customPlot);
+
+public slots:
+    void Graph_Show();
 };
 
 #endif // MAINWINDOW_H

@@ -1,4 +1,7 @@
 #include <QDebug>
+#include <QVector>
+#include <QTime>
+#include <QTimer>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -22,6 +25,15 @@ MainWindow::MainWindow(QWidget *parent)
     _buildCommonWidgets();
 
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
+
+    for(int i=0;i<10;i++)
+    {
+        num[i] = 0;
+    }
+    n=0;
+    QTimer *timer = new QTimer(this);
+    timer->start(500);
+    connect(timer,SIGNAL(timeout()),this,SLOT(Graph_Show()));
 }
 
 MainWindow::~MainWindow()
@@ -87,4 +99,42 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
         }
     }
     return widget != NULL;
+}
+
+void MainWindow::Graph_Show()
+{
+
+    QTime t;
+    t=QTime::currentTime();
+    qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
+    n=qrand()%50;
+    Graph_Show(_ui.widget);
+}
+
+void MainWindow::Graph_Show(QCustomPlot *CustomPlot)
+{
+    QVector<double> temp(10);
+    QVector<double> temp1(10);
+
+
+    for(int i=0; i<9; i++)
+    {
+        num[i]=num[i+1];
+    }
+    num[9]=n;
+    for(int i=0;i<10;i++)
+    {
+        temp[i] = i;
+        temp1[i] =num[i];
+    }
+    CustomPlot->addGraph();
+    CustomPlot->graph(0)->setPen(QPen(Qt::red));
+    CustomPlot->graph(0)->setData(temp,temp1);
+
+    CustomPlot->xAxis->setLabel("t");
+    CustomPlot->yAxis->setLabel("mV");
+
+    CustomPlot->xAxis->setRange(0,10);
+    CustomPlot->yAxis->setRange(-50,50);
+    CustomPlot->replot();
 }

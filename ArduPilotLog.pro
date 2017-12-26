@@ -47,7 +47,7 @@ SOURCES += \
     src/Dialog.cpp \
     src/APLRead.cpp \
     src/APLDB.cpp \
-    qcustomplot/qcustomplot.cpp
+    qcustomplot.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -57,7 +57,7 @@ HEADERS += \
     src/APLRead.h \
     src/LogStructure.h \
     src/APLDB.h \
-    qcustomplot/qcustomplot.h
+    qcustomplot.h
 
 FORMS += \
         mainwindow.ui
