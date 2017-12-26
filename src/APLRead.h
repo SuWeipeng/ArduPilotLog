@@ -42,8 +42,7 @@ private:
     bool  _checkFormat(QString &format) const;
     bool  _checkLabels(QString &labels) const;
     void  _decode(QDataStream &in) const;
-    void  _decodeData(QDataStream &in, quint8 *head_check) const;
-    void  _getValues(QString &format, QDataStream &in, QString &value) const;
+    void  _decodeData(QString &format, QDataStream &in, QString &value) const;
     void  _resetDataBase();
 };
 
