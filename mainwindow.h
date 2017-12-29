@@ -19,6 +19,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+public slots:
+    void resizeEvent(QResizeEvent* event);
+
 private slots:
     void _showDockWidgetAction(bool show);
 
