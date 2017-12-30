@@ -51,6 +51,7 @@ void APLRead::getDatastream(const QString &file_dir)
 
     _decode(QDataStream(&file));
     _apldb->commit();
+    emit fileOpened();
     qCDebug(APLREAD_LOG) << "All data have been read";
 
     file.close();

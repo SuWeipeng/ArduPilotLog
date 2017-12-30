@@ -37,9 +37,20 @@ public:
 
     void commit() { _apldb.commit(); }
 
+    QString getGroupName(int i);
+
+    QString getItemName(QString table, int i);
+
+    int getGroupCount();
+
+    int getItemCount(QString table);
+
+    static APLDB* getAPLDB() { return _instance; }
+
 private:
-    QSqlDatabase _apldb;
-    quint32      _Number;
+    static APLDB* _instance;
+    QSqlDatabase  _apldb;
+    quint32       _Number;
 
     //true: create sub-table success
     bool _createSubTable(QString &name, QString &format, QString &field) const;

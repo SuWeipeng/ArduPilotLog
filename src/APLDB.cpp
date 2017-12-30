@@ -4,10 +4,12 @@
 
 APL_LOGGING_CATEGORY(APLDB_LOG,        "APLDBLog")
 
+APLDB *APLDB::_instance;
+
 APLDB::APLDB()
     : _Number(0)
 {
-
+    _instance = this;
 }
 
 void APLDB::createAPLDB()
@@ -178,4 +180,51 @@ void APLDB::getFormat(quint8 &id, QString &name, QString &format)
     query.next();
     name   = query.value(1).toString();
     format = query.value(2).toString();
+}
+
+QString APLDB::getGroupName(int i)
+{
+    QSqlQuery query;
+
+    query.exec(QString("SELECT name FROM maintable"));
+    for(int n = 0; n < i; n++)
+        query.next();
+
+    return  query.value(0).toString();
+}
+
+int APLDB::getGroupCount()
+{
+    QSqlQuery query;
+
+    query.exec(QString("SELECT COUNT(name) FROM maintable"));
+    query.next();
+
+    return  query.value(0).toInt();
+}
+
+int APLDB::getItemCount(QString table)
+{
+    QSqlQuery query;
+    query.prepare(QString(" PRAGMA table_info('%1')").arg(table));
+    if(query.exec()){
+        while(query.next()){}
+        query.last();
+        return query.value(0).toInt() + 1;
+    }
+
+    return 0;
+}
+
+QString APLDB::getItemName(QString table, int i)
+{
+    QSqlQuery query;
+    query.prepare(QString(" PRAGMA table_info('%1')").arg(table));
+    if(query.exec()){
+        for(int n = 0; n < i; n++)
+            query.next();
+        return query.value(1).toString();
+    }
+
+    return "";
 }

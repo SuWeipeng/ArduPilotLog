@@ -1,6 +1,9 @@
 #include <QDebug>
+#include <QTreeWidgetItem>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "src/APLRead.h"
+#include "src/APLDB.h"
 
 APL_LOGGING_CATEGORY(MAIN_WINDOW_LOG,        "MainWindowLog")
 
@@ -22,8 +25,11 @@ MainWindow::MainWindow(QWidget *parent)
     _buildCommonWidgets();
     _ui.splitter->setStretchFactor(0, 1);
     _ui.splitter->setStretchFactor(1, 9);
+    _ui.treeWidget->setColumnCount(1);
+    _ui.treeWidget->setHeaderLabel(tr("Log"));
 
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
+    connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
 }
 
 MainWindow::~MainWindow()
@@ -111,4 +117,22 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
    //set Geometry
    mainWidget->setGeometry(resizeRect);
+}
+
+void MainWindow::_fileOpenedTrigger()
+{
+    QTreeWidgetItem* groupItem;
+    int ItemCount = 0;
+
+    for(int i = 1; i <= APLDB::getAPLDB() -> getGroupCount(); i++){
+        groupItem = new QTreeWidgetItem(_ui.treeWidget,QStringList(QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i))));
+        ItemCount = APLDB::getAPLDB() -> getItemCount(APLDB::getAPLDB() -> getGroupName(i));
+        for (int j = 1; j <= ItemCount; j++)
+        {
+            QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDB::getAPLDB() -> getItemName(QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i)), j)));
+            groupItem->addChild(item);
+        }
+    }
+
+//    _ui.treeWidget->sortItems(0, Qt::AscendingOrder);
 }

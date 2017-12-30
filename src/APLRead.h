@@ -32,6 +32,9 @@ public:
 
     void getDatastream(const QString &file_dir);
 
+signals:
+    void fileOpened();
+
 public slots:
     void getFileDir(const QString &file_dir);
 

@@ -35,6 +35,7 @@ private:
     void _buildCommonWidgets(void);
     void _showDockWidget(const QString &name, bool show);
     bool _createInnerDockWidget(const QString& widgetName);
+    void _fileOpenedTrigger();
 };
 
 #endif // MAINWINDOW_H

@@ -18,6 +18,8 @@ public:
     Dialog(QWidget *parent = 0);
     ~Dialog();
 
+    APLRead* getAPLRead() const { return _aplRead; }
+
 public slots:
     void showFile();
 
