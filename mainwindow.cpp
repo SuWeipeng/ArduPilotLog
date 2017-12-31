@@ -122,17 +122,25 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 void MainWindow::_fileOpenedTrigger()
 {
     QTreeWidgetItem* groupItem;
-    int ItemCount = 0;
+    QStringList      groupName;
+    int GroupCount = APLDB::getAPLDB() -> getGroupCount();
+    int ItemCount  = 0;
 
-    for(int i = 1; i <= APLDB::getAPLDB() -> getGroupCount(); i++){
-        groupItem = new QTreeWidgetItem(_ui.treeWidget,QStringList(QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i))));
-        ItemCount = APLDB::getAPLDB() -> getItemCount(APLDB::getAPLDB() -> getGroupName(i));
+    for(int i = 1; i <= GroupCount; i++){
+        groupName << QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i));
+    }
+
+    groupName.sort();
+
+    for(int i = 0; i < GroupCount; i++){
+
+        QString table_name = groupName.at(i);
+        groupItem = new QTreeWidgetItem(_ui.treeWidget,QStringList(table_name));
+        ItemCount = APLDB::getAPLDB() -> getItemCount(table_name);
         for (int j = 1; j <= ItemCount; j++)
         {
-            QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDB::getAPLDB() -> getItemName(QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i)), j)));
+            QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDB::getAPLDB() -> getItemName(table_name, j)));
             groupItem->addChild(item);
         }
     }
-
-//    _ui.treeWidget->sortItems(0, Qt::AscendingOrder);
 }

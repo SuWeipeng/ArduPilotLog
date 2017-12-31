@@ -68,7 +68,9 @@ void APLDB::addToMainTable(quint8 type,
     query_check.next();
 
     if(query_check.value(0).toInt()==0){
-        _createSubTable(name, format, labels);
+        if(!_createSubTable(name, format, labels)){
+            qCDebug(APLDB_LOG) << name << "Sub table create fail";
+        }
     }else{
         qCDebug(APLDB_LOG) << "Sub table already exist";
     }
@@ -90,8 +92,12 @@ bool APLDB::_createSubTable(QString &name, QString &format, QString &field) cons
     bool      success     = false;
 
     _createTableField(format, field, table_field);
-    table_field = QString("%1,%2").arg("n INTEGER PRIMARY KEY").arg(table_field);
+    table_field = QString("%1,%2").arg("LineNo INTEGER PRIMARY KEY").arg(table_field);
     success = query_create.exec(QString("CREATE TABLE %1(%2)").arg(name).arg(table_field));
+
+    if(!success){
+        qCDebug(APLDB_LOG) << QString("CREATE TABLE %1(%2)").arg(name).arg(table_field);
+    }
 
     return success;
 }
@@ -208,9 +214,8 @@ int APLDB::getItemCount(QString table)
     QSqlQuery query;
     query.prepare(QString(" PRAGMA table_info('%1')").arg(table));
     if(query.exec()){
-        while(query.next()){}
         query.last();
-        return query.value(0).toInt() + 1;
+        return query.value(0).toInt();
     }
 
     return 0;
@@ -221,6 +226,7 @@ QString APLDB::getItemName(QString table, int i)
     QSqlQuery query;
     query.prepare(QString(" PRAGMA table_info('%1')").arg(table));
     if(query.exec()){
+        query.next();
         for(int n = 0; n < i; n++)
             query.next();
         return query.value(1).toString();
