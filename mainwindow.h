@@ -24,6 +24,7 @@ public slots:
 
 private slots:
     void _showDockWidgetAction(bool show);
+    void _itemClicked(QTreeWidgetItem *item, int column);
 
 private:
     Ui::MainWindow _ui;

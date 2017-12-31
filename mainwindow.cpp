@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
+    connect(_ui.treeWidget, &QTreeWidget::itemClicked, this,&MainWindow::_itemClicked);
 }
 
 MainWindow::~MainWindow()
@@ -133,7 +134,6 @@ void MainWindow::_fileOpenedTrigger()
     groupName.sort();
 
     for(int i = 0; i < GroupCount; i++){
-
         QString table_name = groupName.at(i);
         groupItem = new QTreeWidgetItem(_ui.treeWidget,QStringList(table_name));
         ItemCount = APLDB::getAPLDB() -> getItemCount(table_name);
@@ -143,4 +143,22 @@ void MainWindow::_fileOpenedTrigger()
             groupItem->addChild(item);
         }
     }
+}
+
+void MainWindow::_itemClicked(QTreeWidgetItem *item, int column)
+{
+    QTreeWidgetItem *parent = item->parent();
+    int index;
+    QString table;
+    QString field;
+
+    if(NULL==parent)
+        return;
+
+    index = parent->indexOfChild(item); //item在父项中的节点行号(从0开始)
+    table = parent->text(column);
+    field = parent->child(index)->text(column);
+//    APLDB::getAPLDB() -> getData(table, field);
+
+    qCDebug(MAIN_WINDOW_LOG)<<table<<field;
 }

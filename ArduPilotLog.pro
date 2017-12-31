@@ -47,7 +47,8 @@ SOURCES += \
     src/Dialog.cpp \
     src/APLRead.cpp \
     src/APLDB.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    Plot2D.cpp
 
 HEADERS += \
         mainwindow.h \
