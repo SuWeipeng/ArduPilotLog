@@ -25,10 +25,14 @@ public slots:
 private slots:
     void _showDockWidgetAction(bool show);
     void _itemClicked(QTreeWidgetItem *item, int column);
+    void _reverseHoldOn();
+
+    void on_customPlot_customContextMenuRequested();
 
 private:
     Ui::MainWindow _ui;
     Dialog*        _dialog;
+    bool           _customPlot_hold_on;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;
     QMap<QString, QAction*>         _mapName2Action;
@@ -37,7 +41,7 @@ private:
     void _showDockWidget(const QString &name, bool show);
     bool _createInnerDockWidget(const QString& widgetName);
     void _fileOpenedTrigger();
-    void _addNewData(QCustomPlot *customPlot, QString& table, QString& field);
+    void _plot2d(QCustomPlot *customPlot, QString& table, QString& field);
 };
 
 #endif // MAINWINDOW_H

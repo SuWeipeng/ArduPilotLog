@@ -1,4 +1,4 @@
-#include <QDebug>
+﻿#include <QDebug>
 #include <QTreeWidgetItem>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -20,6 +20,7 @@ enum DockWidgetTypes {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , _dialog(new Dialog)
+    , _customPlot_hold_on(false)
 {
     _ui.setupUi(this);
     _buildCommonWidgets();
@@ -158,5 +159,21 @@ void MainWindow::_itemClicked(QTreeWidgetItem *item, int column)
     table = parent->text(column);
     field = parent->child(index)->text(column);
 
-    _addNewData(_ui.customPlot, table, field);
+    _plot2d(_ui.customPlot, table, field);
+}
+
+void MainWindow::_reverseHoldOn()
+{
+    _customPlot_hold_on = !_customPlot_hold_on;
+}
+
+void MainWindow::on_customPlot_customContextMenuRequested()
+{
+    QMenu *menu=new QMenu(_ui.customPlot);
+
+    // Hold on
+    QAction* pHoldOn = new QAction(tr("Hold On"), this);
+    connect(pHoldOn, &QAction::triggered, this, &MainWindow::_reverseHoldOn);
+    menu->addAction(pHoldOn);
+    menu->exec(QCursor::pos());
 }

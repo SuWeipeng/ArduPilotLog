@@ -267,3 +267,24 @@ void APLDB::getData(QString table, QString field, int len, QVector<double>& data
         data[i] = query.value(0).toDouble();
     }
 }
+
+void APLDB::getData(QString table, QString field, int index, double& data)
+{
+    QSqlQuery query;
+
+    query.prepare(QString("SELECT %1 FROM %2").arg(field).arg(table));
+
+    if(!query.exec()){
+        QSqlError queryErr = query.lastError();
+        qCDebug(APLDB_LOG)<<queryErr.text();
+    }
+
+//    query.next();
+
+//    for(int i=0; i<index; i++){
+//        query.next();
+//    }
+    query.seek(index);
+
+    data = query.value(0).toDouble();
+}

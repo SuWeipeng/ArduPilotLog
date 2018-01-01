@@ -49,6 +49,8 @@ public:
 
     void getData(QString table, QString field, int len, QVector<double>& data);
 
+    void getData(QString table, QString field, int index, double& data);
+
     static APLDB* getAPLDB() { return _instance; }
 
 private:
