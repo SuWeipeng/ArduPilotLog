@@ -19,6 +19,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    static bool get_customPlot_hold_on() { return _customPlot_hold_on; }
+
 public slots:
     void resizeEvent(QResizeEvent* event);
 
@@ -32,7 +34,7 @@ private slots:
 private:
     Ui::MainWindow _ui;
     Dialog*        _dialog;
-    bool           _customPlot_hold_on;
+    static bool    _customPlot_hold_on;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;
     QMap<QString, QAction*>         _mapName2Action;

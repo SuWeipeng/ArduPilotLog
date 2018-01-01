@@ -9,6 +9,8 @@ APL_LOGGING_CATEGORY(MAIN_WINDOW_LOG,        "MainWindowLog")
 
 #define ARRAY_SIZE(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
 
+bool MainWindow::_customPlot_hold_on;
+
 static const char *rgDockWidgetNames[] = {
     "PID Analyze"
 };
@@ -20,7 +22,6 @@ enum DockWidgetTypes {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , _dialog(new Dialog)
-    , _customPlot_hold_on(false)
 {
     _ui.setupUi(this);
     _buildCommonWidgets();
@@ -155,7 +156,7 @@ void MainWindow::_itemClicked(QTreeWidgetItem *item, int column)
 
     if(NULL==parent) return;
 
-    index = parent->indexOfChild(item); //item在父项中的节点行号(从0开始)
+    index = parent->indexOfChild(item);
     table = parent->text(column);
     field = parent->child(index)->text(column);
 
