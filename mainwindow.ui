@@ -100,7 +100,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="9">
              <item>
-              <widget class="QCustomPlot" name="widget" native="true"/>
+              <widget class="QCustomPlot" name="customPlot" native="true"/>
              </item>
             </layout>
            </item>

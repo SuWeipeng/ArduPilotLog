@@ -147,18 +147,16 @@ void MainWindow::_fileOpenedTrigger()
 
 void MainWindow::_itemClicked(QTreeWidgetItem *item, int column)
 {
-    QTreeWidgetItem *parent = item->parent();
-    int index;
-    QString table;
-    QString field;
+    QTreeWidgetItem* parent = item->parent();
+    int              index;
+    QString          table;
+    QString          field;
 
-    if(NULL==parent)
-        return;
+    if(NULL==parent) return;
 
     index = parent->indexOfChild(item); //item在父项中的节点行号(从0开始)
     table = parent->text(column);
     field = parent->child(index)->text(column);
-//    APLDB::getAPLDB() -> getData(table, field);
 
-    qCDebug(MAIN_WINDOW_LOG)<<table<<field;
+    _addNewData(_ui.customPlot, table, field);
 }

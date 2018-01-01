@@ -37,6 +37,7 @@ private:
     void _showDockWidget(const QString &name, bool show);
     bool _createInnerDockWidget(const QString& widgetName);
     void _fileOpenedTrigger();
+    void _addNewData(QCustomPlot *customPlot, QString& table, QString& field);
 };
 
 #endif // MAINWINDOW_H

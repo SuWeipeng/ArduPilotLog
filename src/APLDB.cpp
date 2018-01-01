@@ -234,3 +234,36 @@ QString APLDB::getItemName(QString table, int i)
 
     return "";
 }
+
+int APLDB::getLen(QString table, QString field)
+{
+    QSqlQuery query;
+    query.prepare(QString("SELECT COUNT(%1) FROM %2").arg(field).arg(table));
+
+    if(!query.exec()){
+        QSqlError queryErr = query.lastError();
+        qCDebug(APLDB_LOG)<<queryErr.text();
+        return 0;
+    }
+
+    query.next();
+
+    return query.value(0).toInt();
+}
+
+void APLDB::getData(QString table, QString field, int len, QVector<double>& data)
+{
+    QSqlQuery query;
+
+    query.prepare(QString("SELECT %1 FROM %2").arg(field).arg(table));
+
+    if(!query.exec()){
+        QSqlError queryErr = query.lastError();
+        qCDebug(APLDB_LOG)<<queryErr.text();
+    }
+
+    for(int i=0; i<len; i++){
+        query.next();
+        data[i] = query.value(0).toDouble();
+    }
+}

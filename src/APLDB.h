@@ -45,6 +45,10 @@ public:
 
     int getItemCount(QString table);
 
+    int getLen(QString table, QString field);
+
+    void getData(QString table, QString field, int len, QVector<double>& data);
+
     static APLDB* getAPLDB() { return _instance; }
 
 private:
