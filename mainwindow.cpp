@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     _ui.setupUi(this);
     _buildCommonWidgets();
     _ui.splitter->setStretchFactor(0, 1);
-    _ui.splitter->setStretchFactor(1, 9);
+    _ui.splitter->setStretchFactor(1, 8);
     _ui.treeWidget->setColumnCount(1);
     _ui.treeWidget->setHeaderLabel(tr("Log"));
 
