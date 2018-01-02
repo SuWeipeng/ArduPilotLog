@@ -73,12 +73,16 @@
            <item>
             <widget class="QLabel" name="label">
              <property name="text">
-              <string>X Label</string>
+              <string>X Axis</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox"/>
+            <widget class="QComboBox" name="comboBox">
+             <property name="contextMenuPolicy">
+              <enum>Qt::ActionsContextMenu</enum>
+             </property>
+            </widget>
            </item>
            <item>
             <spacer name="horizontalSpacer">

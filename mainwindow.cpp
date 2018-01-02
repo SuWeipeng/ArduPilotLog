@@ -10,6 +10,8 @@ APL_LOGGING_CATEGORY(MAIN_WINDOW_LOG,        "MainWindowLog")
 #define ARRAY_SIZE(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
 
 bool MainWindow::_customPlot_hold_on;
+int  MainWindow::_comboBoxIndex;
+bool MainWindow::_X_axis_changed;
 
 static const char *rgDockWidgetNames[] = {
     "PID Analyze"
@@ -22,6 +24,8 @@ enum DockWidgetTypes {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , _dialog(new Dialog)
+    , _table("")
+    , _field("")
 {
     _ui.setupUi(this);
     _buildCommonWidgets();
@@ -149,18 +153,36 @@ void MainWindow::_fileOpenedTrigger()
 
 void MainWindow::_itemClicked(QTreeWidgetItem *item, int column)
 {
-    QTreeWidgetItem* parent = item->parent();
-    int              index;
-    QString          table;
-    QString          field;
+    QTreeWidgetItem*   parent = item->parent();
+    int                index;
+    static QStringList conboBoxList;
+    QString            Item0;
+    QString            Item1;
+    static bool        initialize = true;
 
     if(NULL==parent) return;
 
     index = parent->indexOfChild(item);
-    table = parent->text(column);
-    field = parent->child(index)->text(column);
+    _table = parent->text(column);
+    _field = parent->child(index)->text(column);
 
-    _plot2d(_ui.customPlot, table, field);
+    //comboBox
+    Item0 = APLDB::getAPLDB()->getItemName(_table, 0);
+    Item1 = APLDB::getAPLDB()->getItemName(_table, 1);
+    if(!conboBoxList.contains(Item0)){
+        conboBoxList<<Item0;
+        _ui.comboBox->addItem(Item0);
+    }
+    if(!conboBoxList.contains(Item1)){
+        conboBoxList<<Item1;
+        _ui.comboBox->addItem(Item1);
+    }
+    if(initialize){
+        initialize = false;
+        _ui.comboBox->setCurrentIndex(1);
+    }
+
+    _plot2d(_ui.customPlot, _table, _field);
 }
 
 void MainWindow::_reverseHoldOn()
@@ -177,4 +199,18 @@ void MainWindow::on_customPlot_customContextMenuRequested()
     connect(pHoldOn, &QAction::triggered, this, &MainWindow::_reverseHoldOn);
     menu->addAction(pHoldOn);
     menu->exec(QCursor::pos());
+}
+
+void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
+{
+    extern QStringList legends;
+
+    if(arg1.compare("") == 0) return;
+    _X_axis_changed = true;
+    _comboBoxIndex  = _ui.comboBox->currentIndex();
+    legends.clear();
+    _ui.customPlot->legend->setVisible(false);
+    _ui.customPlot->clearGraphs();
+    _ui.customPlot->xAxis->setLabel(APLDB::getAPLDB()->getItemName(_table, get_comboBoxIndex()));
+    _ui.customPlot->replot();
 }

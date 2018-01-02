@@ -17,8 +17,8 @@ enum PlotOrder{
 };
 
 static PlotOrder   order = ADD_GRAPH;
-static QStringList legends;
 static QString     legend;
+       QStringList legends;
 
 static void addGraph(QCustomPlot *customPlot, QString &table, QString &field){
     legend = QString("%1.%2").arg(table).arg(field);
@@ -26,7 +26,8 @@ static void addGraph(QCustomPlot *customPlot, QString &table, QString &field){
         customPlot->clearGraphs();
         legends.clear();
     }
-    if(!legends.contains(legend)){
+    if(!legends.contains(legend) || MainWindow::get_X_axis_changed()){
+        MainWindow::set_X_axis_changed(false);
         legends << legend;
         customPlot->addGraph();
         order = SET_DATA;
@@ -39,11 +40,7 @@ static void setData(QCustomPlot *customPlot, QString& table, QString& field){
     int length = APLDB::getAPLDB() -> getLen(table, field);
     QVector<double> x(length), y(length);
 
-    if(1){
-        APLDB::getAPLDB() -> getData(table, APLDB::getAPLDB()->getItemName(table, 0), length, x);
-    }else{
-        APLDB::getAPLDB() -> getData(table, APLDB::getAPLDB()->getItemName(table, 1), length, x);
-    }
+    APLDB::getAPLDB() -> getData(table, APLDB::getAPLDB()->getItemName(table, MainWindow::get_comboBoxIndex()), length, x);
     APLDB::getAPLDB() -> getData(table, field, length, y);
 
     customPlot->graph()->setData(x, y);
@@ -73,13 +70,8 @@ static void lineModification(QCustomPlot *customPlot){
 }
 
 static void axisModification(QCustomPlot *customPlot, QString &table){
-    if(1){
-        customPlot->xAxis->setLabel(APLDB::getAPLDB()->getItemName(table, 0));
-    }else{
-        customPlot->xAxis->setLabel(APLDB::getAPLDB()->getItemName(table, 1));
-    }
+    customPlot->xAxis->setLabel(APLDB::getAPLDB()->getItemName(table, MainWindow::get_comboBoxIndex()));
     customPlot->yAxis->setLabel("y");
-
     customPlot->rescaleAxes();
 
     order = ADD_GRAPH;
