@@ -6,6 +6,7 @@ static void setData(QCustomPlot *customPlot, QString &table, QString &field);
 static void setLegend(QCustomPlot *customPlot);
 static void lineModification(QCustomPlot *customPlot);
 static void axisModification(QCustomPlot *customPlot, QString &table);
+static void otherModification(QCustomPlot *customPlot);
 
 enum PlotOrder{
     ADD_GRAPH,
@@ -13,6 +14,7 @@ enum PlotOrder{
     SET_LEGEND,
     LINE_MODIFICATION,
     AXIS_MODIFICATION,
+    OTHER_MODIFICATION,
     PLOT_NUM
 };
 
@@ -74,9 +76,14 @@ static void axisModification(QCustomPlot *customPlot, QString &table){
     customPlot->yAxis->setLabel("y");
     customPlot->rescaleAxes();
 
-    order = ADD_GRAPH;
+    order = OTHER_MODIFICATION;
 }
 
+static void otherModification(QCustomPlot *customPlot){
+    customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+
+    order = ADD_GRAPH;
+}
 void MainWindow::_plot2d(QCustomPlot *customPlot, QString& table, QString& field)
 {
     for(int i=0; i<PLOT_NUM; i++){
@@ -95,6 +102,9 @@ void MainWindow::_plot2d(QCustomPlot *customPlot, QString& table, QString& field
             break;
         case AXIS_MODIFICATION:
             axisModification(customPlot, table);
+            break;
+        case OTHER_MODIFICATION:
+            otherModification(customPlot);
             break;
         default:
             break;
