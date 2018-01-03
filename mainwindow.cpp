@@ -190,6 +190,13 @@ void MainWindow::_reverseHoldOn()
     _customPlot_hold_on = !_customPlot_hold_on;
 }
 
+void MainWindow::_clearGraph()
+{
+    _ui.customPlot->legend->setVisible(false);
+    _ui.customPlot->clearGraphs();
+    _ui.customPlot->replot();
+}
+
 void MainWindow::on_customPlot_customContextMenuRequested()
 {
     QMenu *menu=new QMenu(_ui.customPlot);
@@ -198,6 +205,11 @@ void MainWindow::on_customPlot_customContextMenuRequested()
     QAction* pHoldOn = new QAction(tr("Hold On"), this);
     connect(pHoldOn, &QAction::triggered, this, &MainWindow::_reverseHoldOn);
     menu->addAction(pHoldOn);
+    // Clear graph
+    QAction* pClearGraph = new QAction(tr("Clear"), this);
+    connect(pClearGraph, &QAction::triggered, this, &MainWindow::_clearGraph);
+    menu->addAction(pClearGraph);
+
     menu->exec(QCursor::pos());
 }
 

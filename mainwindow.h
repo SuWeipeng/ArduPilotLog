@@ -31,6 +31,7 @@ private slots:
     void _showDockWidgetAction(bool show);
     void _itemClicked(QTreeWidgetItem *item, int column);
     void _reverseHoldOn();
+    void _clearGraph();
     void on_customPlot_customContextMenuRequested();
     void on_comboBox_currentIndexChanged(const QString &arg1);
 
