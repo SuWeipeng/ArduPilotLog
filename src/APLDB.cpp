@@ -1,5 +1,6 @@
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QFile>
 #include "APLDB.h"
 
 APL_LOGGING_CATEGORY(APLDB_LOG,        "APLDBLog")
@@ -287,4 +288,12 @@ void APLDB::getData(QString table, QString field, int index, double& data)
     query.seek(index);
 
     data = query.value(0).toDouble();
+}
+
+void APLDB::deleteDataBase()
+{
+    if(isOpen()){
+        close();
+    }
+    QFile::remove(DB_FILE);
 }

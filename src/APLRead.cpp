@@ -25,11 +25,18 @@ APLRead::~APLRead()
 
 void APLRead::_resetDataBase()
 {
-    if(_apldb->isOpen()){
-        _apldb->close();
-    }
-    QFile::remove(DB_FILE);
+    for(int i=0; i<256; i++)
+        _resetFMT(i);
+    _apldb->deleteDataBase();
     _apldb->createAPLDB();
+}
+
+void  APLRead::_resetFMT(int i)
+{
+    FMT[i].id     = 0;
+    FMT[i].name   = "";
+    FMT[i].format = "";
+    FMT[i].valid  = true;
 }
 
 void APLRead::getFileDir(const QString &file_dir)

@@ -51,6 +51,8 @@ public:
 
     void getData(QString table, QString field, int index, double& data);
 
+    void deleteDataBase();
+
     static APLDB* getAPLDB() { return _instance; }
 
 private:

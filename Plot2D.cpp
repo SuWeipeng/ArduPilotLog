@@ -80,7 +80,7 @@ static void axisModification(QCustomPlot *customPlot, QString &table){
 }
 
 static void otherModification(QCustomPlot *customPlot){
-    customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+    customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
     order = ADD_GRAPH;
 }

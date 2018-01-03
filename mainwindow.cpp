@@ -133,6 +133,8 @@ void MainWindow::_fileOpenedTrigger()
     int GroupCount = APLDB::getAPLDB() -> getGroupCount();
     int ItemCount  = 0;
 
+    _ui.treeWidget->clear();
+
     for(int i = 1; i <= GroupCount; i++){
         groupName << QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i));
     }
@@ -197,6 +199,23 @@ void MainWindow::_clearGraph()
     _ui.customPlot->replot();
 }
 
+void MainWindow::_resetGraph()
+{
+    _ui.customPlot->axisRect()->setRangeZoomAxes(_ui.customPlot->xAxis, _ui.customPlot->yAxis);
+    _ui.customPlot->rescaleAxes();
+    _ui.customPlot->replot();
+}
+
+void MainWindow::_zoomX()
+{
+    _ui.customPlot->axisRect()->setRangeZoomAxes(_ui.customPlot->xAxis, NULL);
+}
+
+void MainWindow::_zoomY()
+{
+    _ui.customPlot->axisRect()->setRangeZoomAxes(NULL, _ui.customPlot->yAxis);
+}
+
 void MainWindow::on_customPlot_customContextMenuRequested()
 {
     QMenu *menu=new QMenu(_ui.customPlot);
@@ -209,6 +228,18 @@ void MainWindow::on_customPlot_customContextMenuRequested()
     QAction* pClearGraph = new QAction(tr("Clear"), this);
     connect(pClearGraph, &QAction::triggered, this, &MainWindow::_clearGraph);
     menu->addAction(pClearGraph);
+    // Reset graph
+    QAction* pResetGraph = new QAction(tr("Set to default"), this);
+    connect(pResetGraph, &QAction::triggered, this, &MainWindow::_resetGraph);
+    menu->addAction(pResetGraph);
+    // Zoom X
+    QAction* pZoomX = new QAction(tr("zoom X"), this);
+    connect(pZoomX, &QAction::triggered, this, &MainWindow::_zoomX);
+    menu->addAction(pZoomX);
+    // Zoom Y
+    QAction* pZoomY = new QAction(tr("zoom Y"), this);
+    connect(pZoomY, &QAction::triggered, this, &MainWindow::_zoomY);
+    menu->addAction(pZoomY);
 
     menu->exec(QCursor::pos());
 }

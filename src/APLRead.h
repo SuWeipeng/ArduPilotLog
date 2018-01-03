@@ -47,6 +47,7 @@ private:
     void  _decode(QDataStream &in) const;
     void  _decodeData(QString &format, QDataStream &in, QString &value) const;
     void  _resetDataBase();
+    void  _resetFMT(int i);
 };
 
 #endif // APLREAD_H
