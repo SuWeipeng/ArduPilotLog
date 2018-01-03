@@ -21,6 +21,8 @@ enum DockWidgetTypes {
     PID_ANALYZE
 };
 
+extern QStringList legends;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , _dialog(new Dialog)
@@ -34,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent)
     _ui.treeWidget->setColumnCount(1);
     _ui.treeWidget->setHeaderLabel(tr("Log"));
 
+    connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _ui.treeWidget, &QTreeWidget::clear);
+    connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::_clearGraph);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
     connect(_ui.treeWidget, &QTreeWidget::itemClicked, this,&MainWindow::_itemClicked);
@@ -133,8 +137,6 @@ void MainWindow::_fileOpenedTrigger()
     int GroupCount = APLDB::getAPLDB() -> getGroupCount();
     int ItemCount  = 0;
 
-    _ui.treeWidget->clear();
-
     for(int i = 1; i <= GroupCount; i++){
         groupName << QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i));
     }
@@ -194,6 +196,7 @@ void MainWindow::_reverseHoldOn()
 
 void MainWindow::_clearGraph()
 {
+    legends.clear();
     _ui.customPlot->legend->setVisible(false);
     _ui.customPlot->clearGraphs();
     _ui.customPlot->replot();
@@ -246,8 +249,6 @@ void MainWindow::on_customPlot_customContextMenuRequested()
 
 void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
 {
-    extern QStringList legends;
-
     if(arg1.compare("") == 0) return;
     _X_axis_changed = true;
     _comboBoxIndex  = _ui.comboBox->currentIndex();
