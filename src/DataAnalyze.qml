@@ -1,28 +1,43 @@
 import QtQuick                  2.5
-import QtQuick.Controls         1.2
+import QtQuick.Controls         2.2
 import QtQuick.Controls.Styles  1.2
 import QtQuick.Dialogs          1.2
 import QtQuick.Window           2.2
 
 import ArduPilotLog.Controllers   1.0
 
-GroupBox {
-    anchors.margins: 50
+Rectangle {
+    property real _margins: 10
+    property real _Width  : 30
+    property real _Height : 30
 
-    id: _groupbox
-    title: qsTr("Hello")
+    property bool button1_state: false
 
-    Label{
-        anchors.top       : _groupbox.top
-        anchors.left      : _groupbox.right
-        anchors.leftMargin: 50
+    id: dataAnalyze
+    width: 400
+    height: 300
 
-        id    : _label
-        width : 10
-        height: 10
-        text  : "world"
+    AutoResize{
+       id:globalResize
+    }
+
+    Button{
+        anchors.top       : parent.top
+        anchors.topMargin : _margins
+        anchors.left      : parent.left
+        anchors.leftMargin: _margins
+
+        id: _button1
+        width : _Width
+        height: _Height
+        text:{
+            if(!button1_state)
+                qsTr("1")
+            else
+                qsTr("hide")
+        }
+        onClicked: {
+            button1_state = !button1_state
+        }
     }
 }
-
-
-

@@ -1,9 +1,14 @@
+#include <QDesktopWidget>
 #include "APLQmlWidgetHolder.h"
 
 APLQmlWidgetHolder::APLQmlWidgetHolder(const QString& title, QAction* action, QWidget *parent) :
     APLDockWidget(title, action, parent)
 {
     _ui.setupUi(this);
+
+    int screenWidth=QApplication::desktop()->width();
+    int screenHeight=QApplication::desktop()->height();
+    this->resize(screenWidth/2, screenHeight/2);
 
     layout()->setContentsMargins(0,0,0,0);
 
