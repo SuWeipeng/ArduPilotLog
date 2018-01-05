@@ -1,9 +1,12 @@
 ﻿#include <QDebug>
+#include <QtQml>
 #include <QTreeWidgetItem>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "src/APLRead.h"
 #include "src/APLDB.h"
+#include "src/DataAnalyze.h"
+#include "src/DataAnalyzeController.h"
 
 APL_LOGGING_CATEGORY(MAIN_WINDOW_LOG,        "MainWindowLog")
 
@@ -14,11 +17,11 @@ int  MainWindow::_comboBoxIndex;
 bool MainWindow::_X_axis_changed;
 
 static const char *rgDockWidgetNames[] = {
-    "PID Analyze"
+    "DATA Analyze"
 };
 
 enum DockWidgetTypes {
-    PID_ANALYZE
+    DATA_ANALYZE
 };
 
 extern QStringList legends;
@@ -29,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent)
     , _table("")
     , _field("")
 {
+    qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
+
     _ui.setupUi(this);
     _buildCommonWidgets();
     _ui.splitter->setStretchFactor(0, 1);
@@ -97,8 +102,8 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
     QAction *action = _mapName2Action[widgetName];
     if(action) {
         switch(action->data().toInt()) {
-            case PID_ANALYZE:
-                widget = (APLDockWidget*)0x01;
+            case DATA_ANALYZE:
+                widget = new DataAnalyze(widgetName, action, this);
                 break;
         }
         if(widget) {

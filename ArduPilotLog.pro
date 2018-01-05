@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
+QT       += core gui sql qml quick quickwidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
@@ -48,7 +48,9 @@ SOURCES += \
     src/APLRead.cpp \
     src/APLDB.cpp \
     qcustomplot.cpp \
-    Plot2D.cpp
+    Plot2D.cpp \
+    src/DataAnalyzeController.cpp \
+    src/APLQmlWidgetHolder.cpp \
 
 HEADERS += \
         mainwindow.h \
@@ -58,10 +60,14 @@ HEADERS += \
     src/APLRead.h \
     src/LogStructure.h \
     src/APLDB.h \
-    qcustomplot.h
+    qcustomplot.h \
+    src/DataAnalyzeController.h \
+    src/DataAnalyze.h \
+    src/APLQmlWidgetHolder.h \
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    src/APLQmlWidgetHolder.ui
 
 include(APLSetup.pri)
 
@@ -69,4 +75,5 @@ DISTFILES += \
     APLCommon.pri
 
 RESOURCES += \
-    $$PWD/aplresources.qrc
+    $$PWD/aplresources.qrc \
+    $$PWD/ardupilotlog.qrc
