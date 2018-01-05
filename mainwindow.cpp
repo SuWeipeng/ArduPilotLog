@@ -34,7 +34,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
+    int screenWidth=QApplication::desktop()->width();
+    int screenHeight=QApplication::desktop()->height();
     _ui.setupUi(this);
+    this->resize(screenWidth/2, screenHeight/2);
     _buildCommonWidgets();
     _ui.splitter->setStretchFactor(0, 1);
     _ui.splitter->setStretchFactor(1, 8);

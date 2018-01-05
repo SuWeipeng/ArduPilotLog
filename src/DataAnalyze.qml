@@ -8,7 +8,7 @@ import ArduPilotLog.Controllers   1.0
 
 Rectangle {
     property real _margins: 10
-    property real _Width  : 30
+    property real _Width  : 50
     property real _Height : 30
 
     property bool button1_state: false
