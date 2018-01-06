@@ -83,7 +83,11 @@ void APLDB::addToSubTable(QString name, QString values)
     QSqlQuery query_insert;
 
     values = QString("%1,%2").arg(++_Number).arg(values);
-    query_insert.exec(QString("INSERT INTO %1 VALUES(%2)").arg(name).arg(values));
+    query_insert.prepare(QString("INSERT INTO %1 VALUES(%2)").arg(name).arg(values));
+    if(!query_insert.exec()){
+        QSqlError queryErr = query_insert.lastError();
+        qCDebug(APLDB_LOG)<<"addToSubTable"<<queryErr.text();
+    }
 }
 
 bool APLDB::_createSubTable(QString &name, QString &format, QString &field) const
@@ -296,4 +300,9 @@ void APLDB::deleteDataBase()
         close();
     }
     QFile::remove(DB_FILE);
+}
+
+void APLDB::reset()
+{
+    _Number = 0;
 }

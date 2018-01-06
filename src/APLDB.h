@@ -53,6 +53,8 @@ public:
 
     void deleteDataBase();
 
+    void reset();
+
     static APLDB* getAPLDB() { return _instance; }
 
 private:

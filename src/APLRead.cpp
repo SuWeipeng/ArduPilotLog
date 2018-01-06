@@ -29,6 +29,7 @@ void APLRead::_resetDataBase()
         _resetFMT(i);
     _apldb->deleteDataBase();
     _apldb->createAPLDB();
+    _apldb->reset();
 }
 
 void  APLRead::_resetFMT(int i)
@@ -207,19 +208,19 @@ void APLRead::_decodeData(QString &format, QDataStream &in, QString &value) cons
             char vc_4[4+1];
             memset(vc_4, 0, sizeof(vc_4));
             in.readRawData(vc_4, sizeof(char)*4);
-            value = QString ("%1%2,").arg(value).arg(QString(QByteArray(vc_4)));
+            value = QString ("%1\"%2\",").arg(value).arg(QString(QByteArray(vc_4)));
             break;
         case 'N': //char[16]
             char vc_16[16+1];
             memset(vc_16, 0, sizeof(vc_16));
             in.readRawData(vc_16, sizeof(char)*16);
-            value = QString ("%1%2,").arg(value).arg(QString(QByteArray(vc_16)));
+            value = QString ("%1\"%2\",").arg(value).arg(QString(QByteArray(vc_16)));
             break;
         case 'Z': //char[64]
             char vc_64[64+1];
             memset(vc_64, 0, sizeof(vc_64));
             in.readRawData(vc_64, sizeof(char)*64);
-            value = QString ("%1%2,").arg(value).arg(QString(QByteArray(vc_64)));
+            value = QString ("%1\"%2\",").arg(value).arg(QString(QByteArray(vc_64)));
             break;
         case 'c': //int16_t * 100
             qint16 v16x100;
