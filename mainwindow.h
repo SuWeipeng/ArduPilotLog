@@ -11,8 +11,6 @@
 
 Q_DECLARE_LOGGING_CATEGORY(MAIN_WINDOW_LOG)
 
-class APLQmlWidgetHolder;
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -28,7 +26,7 @@ public:
     static MainWindow* getMainWindow()            { return _instance; }
     Ui::MainWindow&    ui()                       { return _ui; }
            void        requestTableList();
-
+           void        closeEvent(QCloseEvent * event);
 
 public slots:
     void resizeEvent(QResizeEvent* event);
@@ -56,7 +54,6 @@ private:
     static MainWindow*  _instance;
     QString             _table;
     QString             _field;
-    APLQmlWidgetHolder* _mainQmlWidgetHolder;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;
     QMap<QString, QAction*>         _mapName2Action;

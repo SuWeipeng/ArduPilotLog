@@ -51,30 +51,6 @@ void DataAnalyzeController::_setTableList(QString table)
     }
 }
 
-void
-DataAnalyzeController::setFieldList1(QString table)
-{
-    tables[0] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[0].clear();
-        for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[0].contains(table)){
-                _fieldList[0]<<item->child(j)->text(0);
-            }
-        }
-        emit fieldList1Changed();
-    }
-}
-
-void
-DataAnalyzeController::setField1(QString field){
-    fields[0] = field;
-    _plot();
-}
-
 bool
 DataAnalyzeController::_isNumber(QString n)
 {
@@ -160,36 +136,54 @@ DataAnalyzeController::_plot(){
     for(int i=0; i<MAX_LINE_NUM; i++){
         if(_visible[i]){
             customPlot->addGraph();
-            switch (i) {
-            case 0:{
-                int length = APLDB::getAPLDB() -> getLen(tables[i], fields[i]);
-                QVector<double> x(length), y(length);
+            int length = APLDB::getAPLDB() -> getLen(tables[i], fields[i]);
+            QVector<double> x(length), y(length);
 
-                APLDB::getAPLDB() -> getData(tables[i], APLDB::getAPLDB()->getItemName(tables[i], MainWindow::get_comboBoxIndex()), length, x, _offsetX[i]);
-                APLDB::getAPLDB() -> getData(tables[i], fields[i], length, y, _offsetY[i], _scale[i]);
-                customPlot->graph()->setData(x, y);
+            APLDB::getAPLDB() -> getData(tables[i], APLDB::getAPLDB()->getItemName(tables[i], MainWindow::get_comboBoxIndex()), length, x, _offsetX[i]);
+            APLDB::getAPLDB() -> getData(tables[i], fields[i], length, y, _offsetY[i], _scale[i]);
+            customPlot->graph()->setData(x, y);
 
-                customPlot->legend->setVisible(true);
-                customPlot->legend->setFont(QFont("Helvetica", 9));
-                customPlot->legend->setRowSpacing(-3);
-                customPlot->graph()->setName(QString("%1.%2").arg(tables[i]).arg(fields[i]));
+            customPlot->legend->setVisible(true);
+            customPlot->legend->setFont(QFont("Helvetica", 9));
+            customPlot->legend->setRowSpacing(-3);
+            customPlot->graph()->setName(QString("%1.%2").arg(tables[i]).arg(fields[i]));
+            qCDebug(DATA_ANALYZE_LOG())<<QString("%1.%2").arg(tables[i]).arg(fields[i])<<i;
 
-                _lineStyle(_style[i], i);
+            _lineStyle(_style[i], i);
 
-                customPlot->xAxis->setLabel(APLDB::getAPLDB()->getItemName(tables[i], MainWindow::get_comboBoxIndex()));
-                customPlot->yAxis->setLabel("y");
-                customPlot->rescaleAxes();
+            customPlot->xAxis->setLabel(APLDB::getAPLDB()->getItemName(tables[i], MainWindow::get_comboBoxIndex()));
+            customPlot->yAxis->setLabel("y");
+            customPlot->rescaleAxes();
 
-                customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-                break;
-            }
-            default:
-                break;
-            }
-
+            customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
         }
     }
     customPlot->replot();
+}
+
+// Row 1
+void
+DataAnalyzeController::setFieldList1(QString table)
+{
+    tables[0] = table;
+
+    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
+    for(int i=0; i<itemList.length(); i++){
+        QTreeWidgetItem* item = itemList.at(i);
+        _fieldList[0].clear();
+        for(int j=0; j<item->childCount(); j++){
+            if (!_fieldList[0].contains(table)){
+                _fieldList[0]<<item->child(j)->text(0);
+            }
+        }
+        emit fieldList1Changed();
+    }
+}
+
+void
+DataAnalyzeController::setField1(QString field){
+    fields[0] = field;
+    _plot();
 }
 
 void
@@ -242,6 +236,85 @@ DataAnalyzeController::setLineStyle1(int style){
 void
 DataAnalyzeController::setLineColor1(int color){
     _color[0] = color;
+
+    _plot();
+}
+
+// Row 2
+void
+DataAnalyzeController::setFieldList2(QString table)
+{
+    tables[1] = table;
+
+    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
+    for(int i=0; i<itemList.length(); i++){
+        QTreeWidgetItem* item = itemList.at(i);
+        _fieldList[1].clear();
+        for(int j=0; j<item->childCount(); j++){
+            if (!_fieldList[1].contains(table)){
+                _fieldList[1]<<item->child(j)->text(0);
+            }
+        }
+        emit fieldList2Changed();
+    }
+}
+
+void
+DataAnalyzeController::setField2(QString field){
+    fields[1] = field;
+    _plot();
+}
+
+void
+DataAnalyzeController::setScale2(QString scale){
+    if(!_isNumber(scale)) return;
+
+    _scale[1] = scale.left(scale.length()).toFloat();
+    _scale[1] = QString::number(_scale[1], 'f', 3).toFloat();
+    emit scale2Changed();
+
+    _plot();
+}
+
+void
+DataAnalyzeController::setOffsetX2(QString offset){
+    if(!_isNumber(offset)) return;
+
+    _offsetX[1] = (int)offset.left(offset.length()).toFloat();
+    emit offsetX2Changed();
+
+    _plot();
+}
+
+void
+DataAnalyzeController::setOffsetY2(QString offset){
+    if(!_isNumber(offset)) return;
+
+    _offsetY[1] = offset.left(offset.length()).toFloat();
+    _offsetY[1] = QString::number(_offsetY[1], 'f', 2).toFloat();
+    emit offsetY2Changed();
+
+    _plot();
+}
+
+void
+DataAnalyzeController::setVisible2(bool visible){
+    _visible[1] = visible;
+    emit visible2Changed();
+
+    _plot();
+}
+
+void
+DataAnalyzeController::setLineStyle2(int style){
+    _style[1] = style;
+
+    _plot();
+}
+
+void
+DataAnalyzeController::setLineColor2(int color){
+    _color[1] = color;
 
     _plot();
 }

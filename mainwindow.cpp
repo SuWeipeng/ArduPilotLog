@@ -7,7 +7,6 @@
 #include "src/APLDB.h"
 #include "src/DataAnalyze.h"
 #include "src/DataAnalyzeController.h"
-#include "src/APLQmlWidgetHolder.h"
 
 APL_LOGGING_CATEGORY(MAIN_WINDOW_LOG,        "MainWindowLog")
 
@@ -47,9 +46,6 @@ MainWindow::MainWindow(QWidget *parent)
     _ui.treeWidget->setHeaderLabel(tr("Log"));
     _instance = this;
 
-    _mainQmlWidgetHolder = new APLQmlWidgetHolder(QString(), NULL, this);
-    _mainQmlWidgetHolder->setVisible(false);
-
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _ui.treeWidget, &QTreeWidget::clear);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::_clearGraph);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
@@ -60,7 +56,17 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete _dialog;
-    delete _mainQmlWidgetHolder;
+}
+
+void MainWindow::closeEvent(QCloseEvent * event)
+{
+    for (int i = 0, end = ARRAY_SIZE(rgDockWidgetNames); i < end; i++) {
+        const char* pDockWidgetName = rgDockWidgetNames[i];
+        if(_mapName2DockWidget[pDockWidgetName]){
+            _mapName2DockWidget[pDockWidgetName]->closeEvent(event);
+        }
+    }
+    QWidget::closeEvent(event);
 }
 
 void MainWindow::_buildCommonWidgets(void)
