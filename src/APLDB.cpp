@@ -270,7 +270,7 @@ bool APLDB::getData(QString table, QString field, int len, QVector<double>& data
 
     for(int i=0; i<len; i++){
         query.next();
-        data[i] = (query.value(0).toDouble() + offset) * scale;
+        data[i] = query.value(0).toDouble() * scale + offset;
     }
     return true;
 }

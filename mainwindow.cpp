@@ -64,7 +64,9 @@ void MainWindow::closeEvent(QCloseEvent * event)
     for (int i = 0, end = ARRAY_SIZE(rgDockWidgetNames); i < end; i++) {
         const char* pDockWidgetName = rgDockWidgetNames[i];
         if(_mapName2DockWidget[pDockWidgetName]){
-            _mapName2DockWidget[pDockWidgetName]->closeEvent(event);
+            if(_mapName2DockWidget[pDockWidgetName]->isVisible()){
+                _mapName2DockWidget[pDockWidgetName]->closeEvent(event);
+            }
         }
     }
     QWidget::closeEvent(event);
