@@ -232,6 +232,7 @@ Rectangle {
             controller.setLineColor1(parseInt(_comboboxColor1.currentIndex))
         }
     }
+
     // Row 2
     Button{
         anchors.top       : _buttonState1.bottom
@@ -243,7 +244,7 @@ Rectangle {
         height: _Height
         text  : {
             if(controller.visible2){
-                qsTr("1")
+                qsTr("2")
             }else{
                 qsTr("hide")
             }
@@ -347,6 +348,950 @@ Rectangle {
         model: controller.colorList
         onCurrentTextChanged: {
             controller.setLineColor2(parseInt(_comboboxColor2.currentIndex))
+        }
+    }
+
+    // Row 3
+    Button{
+        anchors.top       : _buttonState2.bottom
+        anchors.topMargin : _margins
+        anchors.left      : _buttonState2.left
+
+        id: _buttonState3
+        width : _Width
+        height: _Height
+        text  : {
+            if(controller.visible3){
+                qsTr("3")
+            }else{
+                qsTr("hide")
+            }
+        }
+        onClicked:{
+            controller.setVisible3(!controller.visible3)
+        }
+    }
+    ComboBox{
+        anchors.top       : _buttonState3.top
+        anchors.left      : _buttonState3.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxTable3
+        width : _Width
+        height: _Height
+        model : controller.tableList
+        onCurrentTextChanged: {
+            controller.setFieldList3(_comboboxTable3.currentText)
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxTable3.top
+        anchors.left      : _comboboxTable3.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxField3
+        width : _Width
+        height: _Height
+        model : controller.fieldList3
+        onCurrentTextChanged: {
+            controller.setField3(_comboboxField3.currentText)
+        }
+    }
+    TextField{
+        anchors.top       : _comboboxField3.top
+        anchors.left      : _comboboxField3.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldScale3
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.scale3
+        onAccepted: {
+            controller.setScale3(_textfieldScale3.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldScale3.top
+        anchors.left      : _textfieldScale3.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldX3
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetX3
+        onAccepted: {
+            controller.setOffsetX3(_textfieldX3.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldX3.top
+        anchors.left      : _textfieldX3.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldY3
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetY3
+        onAccepted: {
+            controller.setOffsetY3(_textfieldY3.text)
+        }
+    }
+    ComboBox{
+        anchors.top       : _textfieldY3.top
+        anchors.left      : _textfieldY3.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxLine3
+        width : _Width
+        height: _Height
+        model : controller.lineList
+        onCurrentTextChanged: {
+            controller.setLineStyle3(parseInt(_comboboxLine3.currentIndex))
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxLine3.top
+        anchors.left      : _comboboxLine3.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxColor3
+        width : _Width
+        height: _Height
+        model: controller.colorList
+        onCurrentTextChanged: {
+            controller.setLineColor3(parseInt(_comboboxColor3.currentIndex))
+        }
+    }
+
+    // Row 4
+    Button{
+        anchors.top       : _buttonState3.bottom
+        anchors.topMargin : _margins
+        anchors.left      : _buttonState3.left
+
+        id: _buttonState4
+        width : _Width
+        height: _Height
+        text  : {
+            if(controller.visible4){
+                qsTr("4")
+            }else{
+                qsTr("hide")
+            }
+        }
+        onClicked:{
+            controller.setVisible4(!controller.visible4)
+        }
+    }
+    ComboBox{
+        anchors.top       : _buttonState4.top
+        anchors.left      : _buttonState4.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxTable4
+        width : _Width
+        height: _Height
+        model : controller.tableList
+        onCurrentTextChanged: {
+            controller.setFieldList4(_comboboxTable4.currentText)
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxTable4.top
+        anchors.left      : _comboboxTable4.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxField4
+        width : _Width
+        height: _Height
+        model : controller.fieldList4
+        onCurrentTextChanged: {
+            controller.setField4(_comboboxField4.currentText)
+        }
+    }
+    TextField{
+        anchors.top       : _comboboxField4.top
+        anchors.left      : _comboboxField4.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldScale4
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.scale4
+        onAccepted: {
+            controller.setScale4(_textfieldScale4.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldScale4.top
+        anchors.left      : _textfieldScale4.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldX4
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetX4
+        onAccepted: {
+            controller.setOffsetX4(_textfieldX4.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldX4.top
+        anchors.left      : _textfieldX4.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldY4
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetY4
+        onAccepted: {
+            controller.setOffsetY4(_textfieldY4.text)
+        }
+    }
+    ComboBox{
+        anchors.top       : _textfieldY4.top
+        anchors.left      : _textfieldY4.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxLine4
+        width : _Width
+        height: _Height
+        model : controller.lineList
+        onCurrentTextChanged: {
+            controller.setLineStyle4(parseInt(_comboboxLine4.currentIndex))
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxLine4.top
+        anchors.left      : _comboboxLine4.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxColor4
+        width : _Width
+        height: _Height
+        model: controller.colorList
+        onCurrentTextChanged: {
+            controller.setLineColor4(parseInt(_comboboxColor4.currentIndex))
+        }
+    }
+
+    // Row 5
+    Button{
+        anchors.top       : _buttonState4.bottom
+        anchors.topMargin : _margins
+        anchors.left      : _buttonState4.left
+
+        id: _buttonState5
+        width : _Width
+        height: _Height
+        text  : {
+            if(controller.visible5){
+                qsTr("5")
+            }else{
+                qsTr("hide")
+            }
+        }
+        onClicked:{
+            controller.setVisible5(!controller.visible5)
+        }
+    }
+    ComboBox{
+        anchors.top       : _buttonState5.top
+        anchors.left      : _buttonState5.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxTable5
+        width : _Width
+        height: _Height
+        model : controller.tableList
+        onCurrentTextChanged: {
+            controller.setFieldList5(_comboboxTable5.currentText)
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxTable5.top
+        anchors.left      : _comboboxTable5.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxField5
+        width : _Width
+        height: _Height
+        model : controller.fieldList5
+        onCurrentTextChanged: {
+            controller.setField5(_comboboxField5.currentText)
+        }
+    }
+    TextField{
+        anchors.top       : _comboboxField5.top
+        anchors.left      : _comboboxField5.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldScale5
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.scale5
+        onAccepted: {
+            controller.setScale5(_textfieldScale5.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldScale5.top
+        anchors.left      : _textfieldScale5.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldX5
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetX5
+        onAccepted: {
+            controller.setOffsetX5(_textfieldX5.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldX5.top
+        anchors.left      : _textfieldX5.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldY5
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetY5
+        onAccepted: {
+            controller.setOffsetY5(_textfieldY5.text)
+        }
+    }
+    ComboBox{
+        anchors.top       : _textfieldY5.top
+        anchors.left      : _textfieldY5.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxLine5
+        width : _Width
+        height: _Height
+        model : controller.lineList
+        onCurrentTextChanged: {
+            controller.setLineStyle5(parseInt(_comboboxLine5.currentIndex))
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxLine5.top
+        anchors.left      : _comboboxLine5.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxColor5
+        width : _Width
+        height: _Height
+        model: controller.colorList
+        onCurrentTextChanged: {
+            controller.setLineColor5(parseInt(_comboboxColor5.currentIndex))
+        }
+    }
+
+    // Row 6
+    Button{
+        anchors.top       : _buttonState5.bottom
+        anchors.topMargin : _margins
+        anchors.left      : _buttonState5.left
+
+        id: _buttonState6
+        width : _Width
+        height: _Height
+        text  : {
+            if(controller.visible6){
+                qsTr("6")
+            }else{
+                qsTr("hide")
+            }
+        }
+        onClicked:{
+            controller.setVisible6(!controller.visible6)
+        }
+    }
+    ComboBox{
+        anchors.top       : _buttonState6.top
+        anchors.left      : _buttonState6.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxTable6
+        width : _Width
+        height: _Height
+        model : controller.tableList
+        onCurrentTextChanged: {
+            controller.setFieldList6(_comboboxTable6.currentText)
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxTable6.top
+        anchors.left      : _comboboxTable6.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxField6
+        width : _Width
+        height: _Height
+        model : controller.fieldList6
+        onCurrentTextChanged: {
+            controller.setField6(_comboboxField6.currentText)
+        }
+    }
+    TextField{
+        anchors.top       : _comboboxField6.top
+        anchors.left      : _comboboxField6.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldScale6
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.scale6
+        onAccepted: {
+            controller.setScale6(_textfieldScale6.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldScale6.top
+        anchors.left      : _textfieldScale6.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldX6
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetX6
+        onAccepted: {
+            controller.setOffsetX6(_textfieldX6.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldX6.top
+        anchors.left      : _textfieldX6.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldY6
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetY6
+        onAccepted: {
+            controller.setOffsetY6(_textfieldY6.text)
+        }
+    }
+    ComboBox{
+        anchors.top       : _textfieldY6.top
+        anchors.left      : _textfieldY6.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxLine6
+        width : _Width
+        height: _Height
+        model : controller.lineList
+        onCurrentTextChanged: {
+            controller.setLineStyle6(parseInt(_comboboxLine6.currentIndex))
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxLine6.top
+        anchors.left      : _comboboxLine6.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxColor6
+        width : _Width
+        height: _Height
+        model: controller.colorList
+        onCurrentTextChanged: {
+            controller.setLineColor6(parseInt(_comboboxColor6.currentIndex))
+        }
+    }
+
+    // Row 7
+    Button{
+        anchors.top       : _buttonState6.bottom
+        anchors.topMargin : _margins
+        anchors.left      : _buttonState6.left
+
+        id: _buttonState7
+        width : _Width
+        height: _Height
+        text  : {
+            if(controller.visible7){
+                qsTr("7")
+            }else{
+                qsTr("hide")
+            }
+        }
+        onClicked:{
+            controller.setVisible7(!controller.visible7)
+        }
+    }
+    ComboBox{
+        anchors.top       : _buttonState7.top
+        anchors.left      : _buttonState7.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxTable7
+        width : _Width
+        height: _Height
+        model : controller.tableList
+        onCurrentTextChanged: {
+            controller.setFieldList7(_comboboxTable7.currentText)
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxTable7.top
+        anchors.left      : _comboboxTable7.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxField7
+        width : _Width
+        height: _Height
+        model : controller.fieldList7
+        onCurrentTextChanged: {
+            controller.setField7(_comboboxField7.currentText)
+        }
+    }
+    TextField{
+        anchors.top       : _comboboxField7.top
+        anchors.left      : _comboboxField7.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldScale7
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.scale7
+        onAccepted: {
+            controller.setScale7(_textfieldScale7.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldScale7.top
+        anchors.left      : _textfieldScale7.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldX7
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetX7
+        onAccepted: {
+            controller.setOffsetX7(_textfieldX7.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldX7.top
+        anchors.left      : _textfieldX7.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldY7
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetY7
+        onAccepted: {
+            controller.setOffsetY7(_textfieldY7.text)
+        }
+    }
+    ComboBox{
+        anchors.top       : _textfieldY7.top
+        anchors.left      : _textfieldY7.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxLine7
+        width : _Width
+        height: _Height
+        model : controller.lineList
+        onCurrentTextChanged: {
+            controller.setLineStyle7(parseInt(_comboboxLine7.currentIndex))
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxLine7.top
+        anchors.left      : _comboboxLine7.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxColor7
+        width : _Width
+        height: _Height
+        model: controller.colorList
+        onCurrentTextChanged: {
+            controller.setLineColor7(parseInt(_comboboxColor7.currentIndex))
+        }
+    }
+
+    // Row 8
+    Button{
+        anchors.top       : _buttonState7.bottom
+        anchors.topMargin : _margins
+        anchors.left      : _buttonState7.left
+
+        id: _buttonState8
+        width : _Width
+        height: _Height
+        text  : {
+            if(controller.visible8){
+                qsTr("8")
+            }else{
+                qsTr("hide")
+            }
+        }
+        onClicked:{
+            controller.setVisible8(!controller.visible8)
+        }
+    }
+    ComboBox{
+        anchors.top       : _buttonState8.top
+        anchors.left      : _buttonState8.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxTable8
+        width : _Width
+        height: _Height
+        model : controller.tableList
+        onCurrentTextChanged: {
+            controller.setFieldList8(_comboboxTable8.currentText)
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxTable8.top
+        anchors.left      : _comboboxTable8.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxField8
+        width : _Width
+        height: _Height
+        model : controller.fieldList8
+        onCurrentTextChanged: {
+            controller.setField8(_comboboxField8.currentText)
+        }
+    }
+    TextField{
+        anchors.top       : _comboboxField8.top
+        anchors.left      : _comboboxField8.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldScale8
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.scale8
+        onAccepted: {
+            controller.setScale8(_textfieldScale8.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldScale8.top
+        anchors.left      : _textfieldScale8.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldX8
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetX8
+        onAccepted: {
+            controller.setOffsetX8(_textfieldX8.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldX8.top
+        anchors.left      : _textfieldX8.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldY8
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetY8
+        onAccepted: {
+            controller.setOffsetY8(_textfieldY8.text)
+        }
+    }
+    ComboBox{
+        anchors.top       : _textfieldY8.top
+        anchors.left      : _textfieldY8.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxLine8
+        width : _Width
+        height: _Height
+        model : controller.lineList
+        onCurrentTextChanged: {
+            controller.setLineStyle8(parseInt(_comboboxLine8.currentIndex))
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxLine8.top
+        anchors.left      : _comboboxLine8.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxColor8
+        width : _Width
+        height: _Height
+        model: controller.colorList
+        onCurrentTextChanged: {
+            controller.setLineColor8(parseInt(_comboboxColor8.currentIndex))
+        }
+    }
+
+    // Row 9
+    Button{
+        anchors.top       : _buttonState8.bottom
+        anchors.topMargin : _margins
+        anchors.left      : _buttonState8.left
+
+        id: _buttonState9
+        width : _Width
+        height: _Height
+        text  : {
+            if(controller.visible9){
+                qsTr("9")
+            }else{
+                qsTr("hide")
+            }
+        }
+        onClicked:{
+            controller.setVisible9(!controller.visible9)
+        }
+    }
+    ComboBox{
+        anchors.top       : _buttonState9.top
+        anchors.left      : _buttonState9.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxTable9
+        width : _Width
+        height: _Height
+        model : controller.tableList
+        onCurrentTextChanged: {
+            controller.setFieldList9(_comboboxTable9.currentText)
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxTable9.top
+        anchors.left      : _comboboxTable9.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxField9
+        width : _Width
+        height: _Height
+        model : controller.fieldList9
+        onCurrentTextChanged: {
+            controller.setField9(_comboboxField9.currentText)
+        }
+    }
+    TextField{
+        anchors.top       : _comboboxField9.top
+        anchors.left      : _comboboxField9.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldScale9
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.scale9
+        onAccepted: {
+            controller.setScale9(_textfieldScale9.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldScale9.top
+        anchors.left      : _textfieldScale9.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldX9
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetX9
+        onAccepted: {
+            controller.setOffsetX9(_textfieldX9.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldX9.top
+        anchors.left      : _textfieldX9.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldY9
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetY9
+        onAccepted: {
+            controller.setOffsetY9(_textfieldY9.text)
+        }
+    }
+    ComboBox{
+        anchors.top       : _textfieldY9.top
+        anchors.left      : _textfieldY9.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxLine9
+        width : _Width
+        height: _Height
+        model : controller.lineList
+        onCurrentTextChanged: {
+            controller.setLineStyle9(parseInt(_comboboxLine9.currentIndex))
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxLine9.top
+        anchors.left      : _comboboxLine9.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxColor9
+        width : _Width
+        height: _Height
+        model: controller.colorList
+        onCurrentTextChanged: {
+            controller.setLineColor9(parseInt(_comboboxColor9.currentIndex))
+        }
+    }
+
+    // Row 10
+    Button{
+        anchors.top       : _buttonState9.bottom
+        anchors.topMargin : _margins
+        anchors.left      : _buttonState9.left
+
+        id: _buttonState10
+        width : _Width
+        height: _Height
+        text  : {
+            if(controller.visible10){
+                qsTr("10")
+            }else{
+                qsTr("hide")
+            }
+        }
+        onClicked:{
+            controller.setVisible10(!controller.visible10)
+        }
+    }
+    ComboBox{
+        anchors.top       : _buttonState10.top
+        anchors.left      : _buttonState10.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxTable10
+        width : _Width
+        height: _Height
+        model : controller.tableList
+        onCurrentTextChanged: {
+            controller.setFieldList10(_comboboxTable10.currentText)
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxTable10.top
+        anchors.left      : _comboboxTable10.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxField10
+        width : _Width
+        height: _Height
+        model : controller.fieldList10
+        onCurrentTextChanged: {
+            controller.setField10(_comboboxField10.currentText)
+        }
+    }
+    TextField{
+        anchors.top       : _comboboxField10.top
+        anchors.left      : _comboboxField10.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldScale10
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.scale10
+        onAccepted: {
+            controller.setScale10(_textfieldScale10.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldScale10.top
+        anchors.left      : _textfieldScale10.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldX10
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetX10
+        onAccepted: {
+            controller.setOffsetX10(_textfieldX10.text)
+        }
+    }
+    TextField{
+        anchors.top       : _textfieldX10.top
+        anchors.left      : _textfieldX10.right
+        anchors.leftMargin: _margins
+
+        id   : _textfieldY10
+        width: _Width
+        height: _Height
+
+        placeholderText: qsTr("")
+        text: controller.offsetY10
+        onAccepted: {
+            controller.setOffsetY10(_textfieldY10.text)
+        }
+    }
+    ComboBox{
+        anchors.top       : _textfieldY10.top
+        anchors.left      : _textfieldY10.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxLine10
+        width : _Width
+        height: _Height
+        model : controller.lineList
+        onCurrentTextChanged: {
+            controller.setLineStyle10(parseInt(_comboboxLine10.currentIndex))
+        }
+    }
+    ComboBox{
+        anchors.top       : _comboboxLine10.top
+        anchors.left      : _comboboxLine10.right
+        anchors.leftMargin: _margins
+
+        id    : _comboboxColor10
+        width : _Width
+        height: _Height
+        model: controller.colorList
+        onCurrentTextChanged: {
+            controller.setLineColor10(parseInt(_comboboxColor10.currentIndex))
         }
     }
 }
