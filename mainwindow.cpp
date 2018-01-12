@@ -7,14 +7,16 @@
 #include "src/APLDB.h"
 #include "src/DataAnalyze.h"
 #include "src/DataAnalyzeController.h"
+#include "src/APLQmlWidgetHolder.h"
 
 APL_LOGGING_CATEGORY(MAIN_WINDOW_LOG,        "MainWindowLog")
 
 #define ARRAY_SIZE(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
 
-bool MainWindow::_customPlot_hold_on;
-int  MainWindow::_comboBoxIndex;
-bool MainWindow::_X_axis_changed;
+bool        MainWindow::_customPlot_hold_on;
+int         MainWindow::_comboBoxIndex;
+bool        MainWindow::_X_axis_changed;
+MainWindow* MainWindow::_instance;
 
 static const char *rgDockWidgetNames[] = {
     "DATA Analyze"
@@ -43,6 +45,10 @@ MainWindow::MainWindow(QWidget *parent)
     _ui.splitter->setStretchFactor(1, 8);
     _ui.treeWidget->setColumnCount(1);
     _ui.treeWidget->setHeaderLabel(tr("Log"));
+    _instance = this;
+
+    _mainQmlWidgetHolder = new APLQmlWidgetHolder(QString(), NULL, this);
+    _mainQmlWidgetHolder->setVisible(false);
 
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _ui.treeWidget, &QTreeWidget::clear);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::_clearGraph);
@@ -54,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete _dialog;
+    delete _mainQmlWidgetHolder;
 }
 
 void MainWindow::_buildCommonWidgets(void)
@@ -88,6 +95,10 @@ void MainWindow::_showDockWidget(const QString& name, bool show)
         if(!_createInnerDockWidget(name)) {
             qWarning() << "Trying to load non existent widget:" << name;
             return;
+        }
+    }else{
+        if(name.compare(rgDockWidgetNames[0]) == 0){
+            requestTableList();
         }
     }
     Q_ASSERT(_mapName2DockWidget.contains(name));
@@ -160,6 +171,13 @@ void MainWindow::_fileOpenedTrigger()
             QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDB::getAPLDB() -> getItemName(table_name, j)));
             groupItem->addChild(item);
         }
+    }
+}
+
+void MainWindow::requestTableList()
+{
+    for(int i=0; i<_ui.treeWidget->topLevelItemCount(); i++){
+        emit treeWidgetAddItem(_ui.treeWidget->topLevelItem(i)->text(0));
     }
 }
 

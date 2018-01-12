@@ -8,7 +8,7 @@ APLQmlWidgetHolder::APLQmlWidgetHolder(const QString& title, QAction* action, QW
 
     int screenWidth=QApplication::desktop()->width();
     int screenHeight=QApplication::desktop()->height();
-    this->resize(screenWidth/4, screenHeight/4);
+    this->resize(screenWidth/2, screenHeight/3);
 
     layout()->setContentsMargins(0,0,0,0);
 

@@ -256,7 +256,7 @@ int APLDB::getLen(QString table, QString field)
     return query.value(0).toInt();
 }
 
-void APLDB::getData(QString table, QString field, int len, QVector<double>& data)
+void APLDB::getData(QString table, QString field, int len, QVector<double>& data, double offset, double scale)
 {
     QSqlQuery query;
 
@@ -269,7 +269,7 @@ void APLDB::getData(QString table, QString field, int len, QVector<double>& data
 
     for(int i=0; i<len; i++){
         query.next();
-        data[i] = query.value(0).toDouble();
+        data[i] = (query.value(0).toDouble() + offset) * scale;
     }
 }
 
@@ -284,11 +284,6 @@ void APLDB::getData(QString table, QString field, int index, double& data)
         qCDebug(APLDB_LOG)<<queryErr.text();
     }
 
-//    query.next();
-
-//    for(int i=0; i<index; i++){
-//        query.next();
-//    }
     query.seek(index);
 
     data = query.value(0).toDouble();

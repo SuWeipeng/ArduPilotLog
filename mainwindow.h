@@ -11,6 +11,8 @@
 
 Q_DECLARE_LOGGING_CATEGORY(MAIN_WINDOW_LOG)
 
+class APLQmlWidgetHolder;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -19,10 +21,14 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    static bool get_customPlot_hold_on()   { return _customPlot_hold_on; }
-    static int  get_comboBoxIndex()        { return _comboBoxIndex; }
-    static bool get_X_axis_changed()       { return _X_axis_changed; }
-    static void set_X_axis_changed(bool b) { _X_axis_changed = b; }
+    static bool        get_customPlot_hold_on()   { return _customPlot_hold_on; }
+    static int         get_comboBoxIndex()        { return _comboBoxIndex; }
+    static bool        get_X_axis_changed()       { return _X_axis_changed; }
+    static void        set_X_axis_changed(bool b) { _X_axis_changed = b; }
+    static MainWindow* getMainWindow()            { return _instance; }
+    Ui::MainWindow&    ui()                       { return _ui; }
+           void        requestTableList();
+
 
 public slots:
     void resizeEvent(QResizeEvent* event);
@@ -38,14 +44,19 @@ private slots:
     void on_customPlot_customContextMenuRequested();
     void on_comboBox_currentIndexChanged(const QString &arg1);
 
+signals:
+    void treeWidgetAddItem(QString name);
+
 private:
-    Ui::MainWindow _ui;
-    Dialog*        _dialog;
-    static bool    _customPlot_hold_on;
-    static int     _comboBoxIndex;
-    static bool    _X_axis_changed;
-    QString        _table;
-    QString        _field;
+    Ui::MainWindow      _ui;
+    Dialog*             _dialog;
+    static bool         _customPlot_hold_on;
+    static int          _comboBoxIndex;
+    static bool         _X_axis_changed;
+    static MainWindow*  _instance;
+    QString             _table;
+    QString             _field;
+    APLQmlWidgetHolder* _mainQmlWidgetHolder;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;
     QMap<QString, QAction*>         _mapName2Action;

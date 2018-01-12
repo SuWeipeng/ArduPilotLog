@@ -47,7 +47,7 @@ public:
 
     int getLen(QString table, QString field);
 
-    void getData(QString table, QString field, int len, QVector<double>& data);
+    void getData(QString table, QString field, int len, QVector<double>& data, double offset = 0, double scale = 1);
 
     void getData(QString table, QString field, int index, double& data);
 
