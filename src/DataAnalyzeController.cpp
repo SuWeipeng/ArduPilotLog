@@ -45,6 +45,7 @@ DataAnalyzeController::DataAnalyzeController()
 
 void DataAnalyzeController::_setTableList(QString table)
 {
+    MainWindow::getMainWindow()->setComboboxList(table);
     if (!_tableList.contains(table)){
         _tableList<<table;
         emit tableListChanged();
@@ -126,6 +127,9 @@ DataAnalyzeController::_lineStyle(int index, int i){
 
 void
 DataAnalyzeController::_plot(){
+    bool getXSuccess = false;
+    bool getYSuccess = false;
+
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
     customPlot->legend->clear();
@@ -139,9 +143,11 @@ DataAnalyzeController::_plot(){
             int length = APLDB::getAPLDB() -> getLen(tables[i], fields[i]);
             QVector<double> x(length), y(length);
 
-            APLDB::getAPLDB() -> getData(tables[i], APLDB::getAPLDB()->getItemName(tables[i], MainWindow::get_comboBoxIndex()), length, x, _offsetX[i]);
-            APLDB::getAPLDB() -> getData(tables[i], fields[i], length, y, _offsetY[i], _scale[i]);
-            customPlot->graph()->setData(x, y);
+            getXSuccess = APLDB::getAPLDB() -> getData(tables[i], MainWindow::getMainWindow()->ui().comboBox->currentText(), length, x, _offsetX[i]);
+            getYSuccess = APLDB::getAPLDB() -> getData(tables[i], fields[i], length, y, _offsetY[i], _scale[i]);
+            if(getXSuccess && getYSuccess){
+                customPlot->graph()->setData(x, y);
+            }
 
             customPlot->legend->setVisible(true);
             customPlot->legend->setFont(QFont("Helvetica", 9));
@@ -150,7 +156,7 @@ DataAnalyzeController::_plot(){
 
             _lineStyle(_style[i], i);
 
-            customPlot->xAxis->setLabel(APLDB::getAPLDB()->getItemName(tables[i], MainWindow::get_comboBoxIndex()));
+            customPlot->xAxis->setLabel(MainWindow::getMainWindow()->ui().comboBox->currentText());
             customPlot->yAxis->setLabel("y");
             customPlot->rescaleAxes();
 

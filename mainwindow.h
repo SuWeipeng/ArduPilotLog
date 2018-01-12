@@ -27,6 +27,7 @@ public:
     Ui::MainWindow&    ui()                       { return _ui; }
            void        requestTableList();
            void        closeEvent(QCloseEvent * event);
+           void        setComboboxList(QString table);
 
 public slots:
     void resizeEvent(QResizeEvent* event);
@@ -54,6 +55,8 @@ private:
     static MainWindow*  _instance;
     QString             _table;
     QString             _field;
+    QStringList         _comboBoxList;
+    bool                _comboBoxListINIT;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;
     QMap<QString, QAction*>         _mapName2Action;

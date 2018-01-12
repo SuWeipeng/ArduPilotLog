@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     , _dialog(new Dialog)
     , _table("")
     , _field("")
+    , _comboBoxListINIT(true)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
@@ -187,14 +188,31 @@ void MainWindow::requestTableList()
     }
 }
 
+void MainWindow::setComboboxList(QString table)
+{
+    QString            Item0;
+    QString            Item1;
+
+    Item0 = APLDB::getAPLDB()->getItemName(table, 0);
+    Item1 = APLDB::getAPLDB()->getItemName(table, 1);
+    if(!_comboBoxList.contains(Item0)){
+        _comboBoxList<<Item0;
+        _ui.comboBox->addItem(Item0);
+    }
+    if(!_comboBoxList.contains(Item1)){
+        _comboBoxList<<Item1;
+        _ui.comboBox->addItem(Item1);
+    }
+    if(_comboBoxListINIT){
+        _comboBoxListINIT = false;
+        _ui.comboBox->setCurrentIndex(1);
+    }
+}
+
 void MainWindow::_itemClicked(QTreeWidgetItem *item, int column)
 {
     QTreeWidgetItem*   parent = item->parent();
     int                index;
-    static QStringList conboBoxList;
-    QString            Item0;
-    QString            Item1;
-    static bool        initialize = true;
 
     if(NULL==parent) return;
 
@@ -202,21 +220,7 @@ void MainWindow::_itemClicked(QTreeWidgetItem *item, int column)
     _table = parent->text(column);
     _field = parent->child(index)->text(column);
 
-    //comboBox
-    Item0 = APLDB::getAPLDB()->getItemName(_table, 0);
-    Item1 = APLDB::getAPLDB()->getItemName(_table, 1);
-    if(!conboBoxList.contains(Item0)){
-        conboBoxList<<Item0;
-        _ui.comboBox->addItem(Item0);
-    }
-    if(!conboBoxList.contains(Item1)){
-        conboBoxList<<Item1;
-        _ui.comboBox->addItem(Item1);
-    }
-    if(initialize){
-        initialize = false;
-        _ui.comboBox->setCurrentIndex(1);
-    }
+    setComboboxList(_table);
 
     _plot2d(_ui.customPlot, _table, _field);
 }
@@ -287,6 +291,6 @@ void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
     legends.clear();
     _ui.customPlot->legend->setVisible(false);
     _ui.customPlot->clearGraphs();
-    _ui.customPlot->xAxis->setLabel(APLDB::getAPLDB()->getItemName(_table, get_comboBoxIndex()));
+    _ui.customPlot->xAxis->setLabel(MainWindow::getMainWindow()->ui().comboBox->currentText());
     _ui.customPlot->replot();
 }
