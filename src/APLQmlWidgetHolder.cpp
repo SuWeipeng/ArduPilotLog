@@ -6,10 +6,6 @@ APLQmlWidgetHolder::APLQmlWidgetHolder(const QString& title, QAction* action, QW
 {
     _ui.setupUi(this);
 
-    int screenWidth=QApplication::desktop()->width();
-    int screenHeight=QApplication::desktop()->height();
-    this->resize(screenWidth/2, screenHeight/3);
-
     layout()->setContentsMargins(0,0,0,0);
 
     if (action) {

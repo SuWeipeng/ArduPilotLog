@@ -192,7 +192,7 @@ void APLRead::_decodeData(QString &format, QDataStream &in, QString &value) cons
         case 'I': //uint32_t
             quint32 vu32;
             in.readRawData((char *)&vu32, 4);
-            value = QString ("%1%2,").arg(value).arg(v32);
+            value = QString ("%1%2,").arg(value).arg(vu32);
             break;
         case 'f': //float
             float vf;
@@ -202,7 +202,7 @@ void APLRead::_decodeData(QString &format, QDataStream &in, QString &value) cons
         case 'd': //double
             double vd;
             in.readRawData((char *)&vd, 8);
-            value = QString ("%1%2,").arg(value).arg(vf);
+            value = QString ("%1%2,").arg(value).arg(vd);
             break;
         case 'n': //char[4]
             char vc_4[4+1];

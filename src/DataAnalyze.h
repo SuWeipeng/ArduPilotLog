@@ -11,6 +11,9 @@ public:
     {
         Q_UNUSED(title);
         Q_UNUSED(action);
+        int screenWidth=QApplication::desktop()->width();
+        int screenHeight=QApplication::desktop()->height();
+        this->resize(screenWidth/2, screenHeight/3);
         setSource(QUrl::fromUserInput("qrc:/qml/DataAnalyze.qml"));
     }
 };
