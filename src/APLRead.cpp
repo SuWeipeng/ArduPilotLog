@@ -57,7 +57,9 @@ void APLRead::getDatastream(const QString &file_dir)
          return;
     }
 
-    _decode((QDataStream&)QDataStream(&file));
+    QDataStream in(&file);    // read the data serialized from the file
+    _decode(in);
+
     _apldb->commit();
     emit fileOpened();
     qCDebug(APLREAD_LOG) << "All data have been read";

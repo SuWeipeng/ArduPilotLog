@@ -3,7 +3,7 @@ linux {
         message("Linux build")
         CONFIG += LinuxBuild
         DEFINES += __STDC_LIMIT_MACROS
-        DEFINES += PACKED=__attribute__((__packed__))
+        DEFINES += PACKED=/**/
         linux-clang {
             message("Linux clang")
             QMAKE_CXXFLAGS += -Qunused-arguments -fcolor-diagnostics

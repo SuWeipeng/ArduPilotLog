@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "ui_MainWindow.h"
+#include "ui_mainwindow.h"
 
 #include "APLLoggingCategory.h"
 #include "APLDockWidget.h"
