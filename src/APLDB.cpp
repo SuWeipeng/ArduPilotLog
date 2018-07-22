@@ -303,3 +303,20 @@ void APLDB::reset()
 {
     _Number = 0;
 }
+
+bool APLDB::isEmpty(QString table)
+{
+    QSqlQuery query;
+
+    query.prepare(QString("SELECT COUNT(*) FROM %1").arg(table));
+
+    if(!query.exec()){
+        QSqlError queryErr = query.lastError();
+        qCDebug(APLDB_LOG)<<queryErr.text();
+    }
+    query.next();
+
+    if(query.value(0).toInt() == 0) return true;
+
+    return false;
+}

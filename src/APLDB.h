@@ -55,6 +55,8 @@ public:
 
     void reset();
 
+    bool isEmpty(QString table);
+
     static APLDB* getAPLDB() { return _instance; }
 
 private:

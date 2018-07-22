@@ -162,16 +162,20 @@ void MainWindow::_fileOpenedTrigger()
 {
     QTreeWidgetItem* groupItem;
     QStringList      groupName;
-    int GroupCount = APLDB::getAPLDB() -> getGroupCount();
-    int ItemCount  = 0;
+    int GroupCount     = APLDB::getAPLDB() -> getGroupCount();
+    int ItemCount      = 0;
+    int treeGroupCount = 0;
 
     for(int i = 1; i <= GroupCount; i++){
-        groupName << QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i));
+        if(APLDB::getAPLDB() -> isEmpty(APLDB::getAPLDB() -> getGroupName(i)) == false){
+            groupName << QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i));
+            treeGroupCount++;
+        }
     }
 
     groupName.sort();
 
-    for(int i = 0; i < GroupCount; i++){
+    for(int i = 0; i < treeGroupCount; i++){
         QString table_name = groupName.at(i);
         groupItem = new QTreeWidgetItem(_ui.treeWidget,QStringList(table_name));
         ItemCount = APLDB::getAPLDB() -> getItemCount(table_name);
