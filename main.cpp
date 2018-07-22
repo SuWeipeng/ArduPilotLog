@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 
-#define QCDEBUG_FILTER_RULES "MainWindowLog,APLDBLog,APLReadLog,DataAnalyzeLog"
+#define QCDEBUG_FILTER_RULES "MainWindowLog,APLDBLog,APLReadLog,DataAnalyzeLog,DialogLog"
 
 int main(int argc, char *argv[])
 {

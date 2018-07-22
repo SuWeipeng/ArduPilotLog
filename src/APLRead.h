@@ -30,7 +30,8 @@ public:
     APLRead();
     ~APLRead();
 
-    void getDatastream(const QString &file_dir);
+    void    getDatastream(const QString &file_dir);
+    QString getFileName(void) { return _file_name; }
 
 signals:
     void fileOpened();
@@ -40,14 +41,15 @@ public slots:
 
 private:
     APLDB *_apldb;
-    bool  _checkMessage(QString &name, QString &format, QString &labels) const;
-    bool  _checkName(QString &name) const;
-    bool  _checkFormat(QString &format) const;
-    bool  _checkLabels(QString &labels) const;
-    void  _decode(QDataStream &in) const;
-    void  _decodeData(QString &format, QDataStream &in, QString &value) const;
-    void  _resetDataBase();
-    void  _resetFMT(int i);
+    bool    _checkMessage(QString &name, QString &format, QString &labels) const;
+    bool    _checkName(QString &name) const;
+    bool    _checkFormat(QString &format) const;
+    bool    _checkLabels(QString &labels) const;
+    void    _decode(QDataStream &in) const;
+    void    _decodeData(QString &format, QDataStream &in, QString &value) const;
+    void    _resetDataBase();
+    void    _resetFMT(int i);
+    QString _file_name;
 };
 
 #endif // APLREAD_H

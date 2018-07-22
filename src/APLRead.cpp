@@ -1,6 +1,7 @@
 #include <QFile>
 #include <QDataStream>
 #include <QRegExpValidator>
+#include <QFileInfo>
 #include "APLRead.h"
 #include "APLDB.h"
 
@@ -42,6 +43,7 @@ void  APLRead::_resetFMT(int i)
 
 void APLRead::getFileDir(const QString &file_dir)
 {
+    _file_name = QFileInfo(file_dir).fileName();
     _resetDataBase();
     getDatastream(file_dir);
 }

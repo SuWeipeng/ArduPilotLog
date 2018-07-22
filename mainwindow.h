@@ -42,6 +42,7 @@ private slots:
     void _zoomY();
     void on_customPlot_customContextMenuRequested();
     void on_comboBox_currentIndexChanged(const QString &arg1);
+    void _saveSuccessMessage();
 
 signals:
     void treeWidgetAddItem(QString name);

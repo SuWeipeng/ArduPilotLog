@@ -22,6 +22,10 @@ public:
 
 public slots:
     void showFile();
+    void saveFile();
+
+signals:
+    void saveSuccess();
 
 private:
     APLRead *_aplRead;

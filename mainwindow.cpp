@@ -50,8 +50,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _ui.treeWidget, &QTreeWidget::clear);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::_clearGraph);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
+    connect(_ui.actionSaveDBFile,  &QAction::triggered, _dialog, &Dialog::saveFile);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
     connect(_ui.treeWidget, &QTreeWidget::itemClicked, this,&MainWindow::_itemClicked);
+    connect(_dialog,  &Dialog::saveSuccess, this, &MainWindow::_saveSuccessMessage);
 }
 
 MainWindow::~MainWindow()
@@ -299,4 +301,8 @@ void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
     _ui.customPlot->clearGraphs();
     _ui.customPlot->xAxis->setLabel(MainWindow::getMainWindow()->ui().comboBox->currentText());
     _ui.customPlot->replot();
+}
+
+void MainWindow::_saveSuccessMessage(){
+    QMessageBox::information(this,tr("Information"),tr("Save success"));
 }
