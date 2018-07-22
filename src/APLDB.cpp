@@ -155,16 +155,16 @@ void APLDB::_createTableField(QString &format, QString &field, QString &table_fi
             table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("VARCHAR");
             break;
         case 'c': //int16_t * 100
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("DOUBLE");
             break;
         case 'C': //uint16_t * 100
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("DOUBLE");
             break;
         case 'e': //int32_t * 100
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("DOUBLE");
             break;
         case 'E': //uint32_t * 100
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("DOUBLE");
             break;
         case 'L': //int32_t latitude/longitude
             table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");

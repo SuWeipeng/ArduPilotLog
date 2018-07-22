@@ -199,6 +199,7 @@ void APLRead::_decodeData(QString &format, QDataStream &in, QString &value) cons
         case 'f': //float
             float vf;
             in.readRawData((char *)&vf, 4);
+            if(qIsNaN(vf) || qIsInf(vf)) vf = 0.0f;
             value = QString ("%1%2,").arg(value).arg(vf);
             break;
         case 'd': //double
@@ -227,22 +228,22 @@ void APLRead::_decodeData(QString &format, QDataStream &in, QString &value) cons
         case 'c': //int16_t * 100
             qint16 v16x100;
             in.readRawData((char *)&v16x100, 2);
-            value = QString ("%1%2,").arg(value).arg(v16x100);
+            value = QString ("%1%2,").arg(value).arg((double)(v16x100/100.0f));
             break;
         case 'C': //uint16_t * 100
             quint16 vu16x100;
             in.readRawData((char *)&vu16x100, 2);
-            value = QString ("%1%2,").arg(value).arg(vu16x100);
+            value = QString ("%1%2,").arg(value).arg((double)(vu16x100/100.0f));
             break;
         case 'e': //int32_t * 100
             qint32 v32x100;
             in.readRawData((char *)&v32x100, 4);
-            value = QString ("%1%2,").arg(value).arg(v32x100);
+            value = QString ("%1%2,").arg(value).arg((double)(v32x100/100.0f));
             break;
         case 'E': //uint32_t * 100
             quint32 vu32x100;
             in.readRawData((char *)&vu32x100, 4);
-            value = QString ("%1%2,").arg(value).arg(vu32x100);
+            value = QString ("%1%2,").arg(value).arg((double)(vu32x100/100.0f));
             break;
         case 'L': //int32_t latitude/longitude
             qint32 v32l;
