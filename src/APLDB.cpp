@@ -39,7 +39,7 @@ bool APLDB::checkMainTable(quint8 id)
     QSqlQuery query;
 
     if(!_apldb.isOpen()){
-        qCDebug(APLDB_LOG) << "APLDB.db is closed";
+        qCDebug(APLDB_LOG) << QString(DB_FILE) << " is closed";
         return false;
     }
 
