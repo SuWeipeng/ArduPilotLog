@@ -378,6 +378,11 @@ void MainWindow::itemChangedSlot(QTreeWidgetItem *item, int column)
 
 void MainWindow::_clearTreeWidget(QTreeWidget *treeWidget)
 {
-    Q_UNUSED(treeWidget)
-    // TODO
+    for(int i=0; i<treeWidget->topLevelItemCount(); i++){
+        for (int j=0; j < treeWidget->topLevelItem(i)->childCount(); j++)
+        {
+            QTreeWidgetItem* child=treeWidget->topLevelItem(i)->child(j);
+            child->setCheckState(0, Qt::Unchecked);
+        }
+    }
 }
