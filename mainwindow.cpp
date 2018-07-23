@@ -43,8 +43,7 @@ MainWindow::MainWindow(QWidget *parent)
     _buildCommonWidgets();
     _ui.splitter->setStretchFactor(0, 1);
     _ui.splitter->setStretchFactor(1, 8);
-    _ui.treeWidget->setColumnCount(1);
-    _ui.treeWidget->setHeaderLabel(tr("Log"));
+    initTreeWidget();
     _instance = this;
 
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _ui.treeWidget, &QTreeWidget::clear);
@@ -184,6 +183,7 @@ void MainWindow::_fileOpenedTrigger()
         for (int j = 1; j <= ItemCount; j++)
         {
             QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDB::getAPLDB() -> getItemName(table_name, j)));
+            item->setCheckState(0, Qt::Unchecked);
             groupItem->addChild(item);
         }
     }
@@ -244,6 +244,7 @@ void MainWindow::_clearGraph()
     _ui.customPlot->legend->setVisible(false);
     _ui.customPlot->clearGraphs();
     _ui.customPlot->replot();
+    _clearTreeWidget(_ui.treeWidget);
 }
 
 void MainWindow::_resetGraph()
@@ -305,4 +306,77 @@ void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
 
 void MainWindow::_saveSuccessMessage(){
     QMessageBox::information(this,tr("Information"),tr("Save success"));
+}
+
+void MainWindow::initTreeWidget(){
+    _ui.treeWidget->setColumnCount(1);
+    _ui.treeWidget->setHeaderLabel(tr("ArduPilot Log"));
+    _ui.treeWidget->setHeaderHidden(true);
+
+    connect(_ui.treeWidget, &QTreeWidget::itemChanged, this, &MainWindow::itemChangedSlot);
+}
+
+bool MainWindow::isTopItem(QTreeWidgetItem *item)
+{
+    if(!item) return false;
+    if(!item->parent()) return true;
+    return false;
+}
+
+void MainWindow::setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs)
+{
+    if(!item) return;
+    for (int i=0;i<item->childCount();i++)
+    {
+        QTreeWidgetItem* child=item->child(i);
+        if(child->checkState(0)!=cs)
+        {
+            child->setCheckState(0, cs);
+        }
+    }
+    setParentCheckState(item->parent());
+}
+
+void MainWindow::setParentCheckState(QTreeWidgetItem *item)
+{
+    if(!item) return;
+    int selectedCount=0;
+    int childCount = item->childCount();
+    for (int i=0;i<childCount;i++)
+    {
+        QTreeWidgetItem* child= item->child(i);
+        if(child->checkState(0)==Qt::Checked)
+        {
+            selectedCount++;
+        }
+    }
+
+    if(selectedCount == 0) {
+        item->setCheckState(0,Qt::Unchecked);
+    } else if (selectedCount == childCount) {
+        item->setCheckState(0,Qt::Checked);
+    } else {
+        item->setCheckState(0,Qt::PartiallyChecked);
+    }
+}
+
+void MainWindow::itemChangedSlot(QTreeWidgetItem *item, int column)
+{
+    Q_UNUSED(column)
+    if(Qt::PartiallyChecked!=item->checkState(0)){
+        if(isTopItem(item) == false)
+            setChildCheckState(item,item->checkState(0));
+        else
+            setParentCheckState(item);
+    }
+
+    if(Qt::PartiallyChecked==item->checkState(0))
+        if(!isTopItem(item))
+            item->parent()->setCheckState(0,Qt::PartiallyChecked);
+}
+
+void MainWindow::_clearTreeWidget(QTreeWidget *treeWidget)
+{
+    Q_UNUSED(treeWidget)
+    // TODO
 }

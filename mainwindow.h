@@ -25,12 +25,18 @@ public:
     static void        set_X_axis_changed(bool b) { _X_axis_changed = b; }
     static MainWindow* getMainWindow()            { return _instance; }
     Ui::MainWindow&    ui()                       { return _ui; }
-           void        requestTableList();
-           void        closeEvent(QCloseEvent * event);
-           void        setComboboxList(QString table);
+    void        requestTableList();
+    void        closeEvent(QCloseEvent * event);
+    void        setComboboxList(QString table);
+
+    void initTreeWidget();
+    bool isTopItem(QTreeWidgetItem* item);
+    void setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs);
+    void setParentCheckState(QTreeWidgetItem *item);
 
 public slots:
     void resizeEvent(QResizeEvent* event);
+    void itemChangedSlot(QTreeWidgetItem* item, int column);
 
 private slots:
     void _showDockWidgetAction(bool show);
@@ -67,6 +73,7 @@ private:
     bool _createInnerDockWidget(const QString& widgetName);
     void _fileOpenedTrigger();
     void _plot2d(QCustomPlot *customPlot, QString& table, QString& field);
+    void _clearTreeWidget(QTreeWidget *treeWidget);
 };
 
 #endif // MAINWINDOW_H
