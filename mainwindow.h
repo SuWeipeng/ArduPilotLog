@@ -31,8 +31,8 @@ public:
 
     void initTreeWidget();
     bool isTopItem(QTreeWidgetItem* item);
-    void setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs);
-    void setParentCheckState(QTreeWidgetItem *item);
+    void setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs, int column);
+    void setParentCheckState(QTreeWidgetItem *item, int column);
 
 public slots:
     void resizeEvent(QResizeEvent* event);
@@ -40,7 +40,7 @@ public slots:
 
 private slots:
     void _showDockWidgetAction(bool show);
-    void _itemClicked(QTreeWidgetItem *item, int column);
+    void _plotGraph(QTreeWidgetItem *item, int column);
     void _reverseHoldOn();
     void _clearGraph();
     void _resetGraph();

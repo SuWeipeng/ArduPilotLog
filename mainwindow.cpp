@@ -51,7 +51,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
     connect(_ui.actionSaveDBFile,  &QAction::triggered, _dialog, &Dialog::saveFile);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
-    connect(_ui.treeWidget, &QTreeWidget::itemClicked, this,&MainWindow::_itemClicked);
     connect(_dialog,  &Dialog::saveSuccess, this, &MainWindow::_saveSuccessMessage);
 }
 
@@ -217,7 +216,7 @@ void MainWindow::setComboboxList(QString table)
     }
 }
 
-void MainWindow::_itemClicked(QTreeWidgetItem *item, int column)
+void MainWindow::_plotGraph(QTreeWidgetItem *item, int column)
 {
     QTreeWidgetItem*   parent = item->parent();
     int                index;
@@ -323,7 +322,7 @@ bool MainWindow::isTopItem(QTreeWidgetItem *item)
     return false;
 }
 
-void MainWindow::setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs)
+void MainWindow::setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs, int column)
 {
     if(!item) return;
     for (int i=0;i<item->childCount();i++)
@@ -334,10 +333,10 @@ void MainWindow::setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs)
             child->setCheckState(0, cs);
         }
     }
-    setParentCheckState(item->parent());
+    setParentCheckState(item->parent(), column);
 }
 
-void MainWindow::setParentCheckState(QTreeWidgetItem *item)
+void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
 {
     if(!item) return;
     int selectedCount=0;
@@ -345,34 +344,36 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item)
     for (int i=0;i<childCount;i++)
     {
         QTreeWidgetItem* child= item->child(i);
-        if(child->checkState(0)==Qt::Checked)
+        if(child->checkState(column)==Qt::Checked)
         {
             selectedCount++;
+            _plotGraph(item->child(i), column);
         }
     }
 
     if(selectedCount == 0) {
-        item->setCheckState(0,Qt::Unchecked);
+        item->setCheckState(column,Qt::Unchecked);
     } else if (selectedCount == childCount) {
-        item->setCheckState(0,Qt::Checked);
+        item->setCheckState(column,Qt::Checked);
     } else {
-        item->setCheckState(0,Qt::PartiallyChecked);
+        item->setCheckState(column,Qt::PartiallyChecked);
     }
 }
 
 void MainWindow::itemChangedSlot(QTreeWidgetItem *item, int column)
 {
-    Q_UNUSED(column)
-    if(Qt::PartiallyChecked!=item->checkState(0)){
+    if(Qt::PartiallyChecked!=item->checkState(column)){
         if(isTopItem(item) == false)
-            setChildCheckState(item,item->checkState(0));
+            setChildCheckState(item,item->checkState(column), column);
         else
-            setParentCheckState(item);
+            setParentCheckState(item, column);
     }
 
-    if(Qt::PartiallyChecked==item->checkState(0))
-        if(!isTopItem(item))
-            item->parent()->setCheckState(0,Qt::PartiallyChecked);
+    if(Qt::PartiallyChecked==item->checkState(column)){
+        if(!isTopItem(item)){
+            item->parent()->setCheckState(column,Qt::PartiallyChecked);
+        }
+    }
 }
 
 void MainWindow::_clearTreeWidget(QTreeWidget *treeWidget)
