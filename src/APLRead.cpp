@@ -314,7 +314,7 @@ bool APLRead::_checkLabels(QString &labels) const
     }
 
     int index_of_Primary = labels.indexOf("Primary", Qt::CaseInsensitive);
-    if( index_of_Primary != -1 ) labels.replace(index_of_Primary, 7, "Prim   ");
+    if( index_of_Primary != -1 ) labels.replace(index_of_Primary, 7, "Primari");
 
     return true;
 }
