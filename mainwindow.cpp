@@ -375,6 +375,26 @@ void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
     _ui.customPlot->clearGraphs();
     _ui.customPlot->xAxis->setLabel(MainWindow::getMainWindow()->ui().comboBox->currentText());
     _ui.customPlot->replot();
+
+    QStringList alreadyPloted = _alreadyPloted;
+    clear_alreadyPloted();
+
+    for(int i=0; i<alreadyPloted.length(); i++){
+        QStringList list = alreadyPloted.at(i).split(".");
+        _table = list[0];
+        _field = list[1];
+        plotGraph(_table,
+                  _field,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  true);
+    }
+
+    _ui.customPlot->replot();
 }
 
 void MainWindow::_saveSuccessMessage(){
