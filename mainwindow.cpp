@@ -244,12 +244,6 @@ void MainWindow::_plotGraph(QTreeWidgetItem *item, int column)
 
     if(NULL==parent) return;
 
-    customPlot->legend->clear();
-    customPlot->legend->setVisible(false);
-    customPlot->clearGraphs();
-    customPlot->replot();
-
-
     index = parent->indexOfChild(item);
     _table = parent->text(column);
     _field = parent->child(index)->text(column);
@@ -263,11 +257,8 @@ void MainWindow::_plotGraph(QTreeWidgetItem *item, int column)
               0,
               0,
               true);
+
     customPlot->replot();
-
-    //setComboboxList(_table);
-
-    //_plot2d(_ui.customPlot, _table, _field);
 }
 
 void MainWindow::_reverseHoldOn()
@@ -440,6 +431,13 @@ MainWindow::plotGraph(QString tables,
     bool getYSuccess = false;
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
+
+    QString plot_target = QString("%1.%2").arg(tables).arg(fields);
+    if(!_alreadyPloted.contains(plot_target))
+        _alreadyPloted << plot_target;
+    else
+        return;
+
     if(visible || from){
         customPlot->addGraph();
         int length = APLDB::getAPLDB() -> getLen(tables, fields);
@@ -459,7 +457,7 @@ MainWindow::plotGraph(QString tables,
         customPlot->legend->setVisible(true);
         customPlot->legend->setFont(QFont("Helvetica", 9));
         customPlot->legend->setRowSpacing(-3);
-        customPlot->graph()->setName(QString("%1.%2").arg(tables).arg(fields));
+        customPlot->graph()->setName(plot_target);
 
         _lineStyle(linestyle, color);
 

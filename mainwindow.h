@@ -75,6 +75,7 @@ private:
     QString             _table;
     QString             _field;
     QStringList         _comboBoxList;
+    QStringList         _alreadyPloted;
     bool                _comboBoxListINIT;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;
