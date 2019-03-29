@@ -143,7 +143,7 @@ Rectangle {
         id    : _comboboxTable1
         width : _Width
         height: _Height
-        model : controller.tableList
+        model : controller.tableList1
         onCurrentTextChanged: {
             controller.setFieldList1(_comboboxTable1.currentText)
         }
@@ -261,7 +261,7 @@ Rectangle {
         id    : _comboboxTable2
         width : _Width
         height: _Height
-        model : controller.tableList
+        model : controller.tableList2
         onCurrentTextChanged: {
             controller.setFieldList2(_comboboxTable2.currentText)
         }
@@ -379,7 +379,7 @@ Rectangle {
         id    : _comboboxTable3
         width : _Width
         height: _Height
-        model : controller.tableList
+        model : controller.tableList3
         onCurrentTextChanged: {
             controller.setFieldList3(_comboboxTable3.currentText)
         }
@@ -497,7 +497,7 @@ Rectangle {
         id    : _comboboxTable4
         width : _Width
         height: _Height
-        model : controller.tableList
+        model : controller.tableList4
         onCurrentTextChanged: {
             controller.setFieldList4(_comboboxTable4.currentText)
         }
@@ -615,7 +615,7 @@ Rectangle {
         id    : _comboboxTable5
         width : _Width
         height: _Height
-        model : controller.tableList
+        model : controller.tableList5
         onCurrentTextChanged: {
             controller.setFieldList5(_comboboxTable5.currentText)
         }
@@ -733,7 +733,7 @@ Rectangle {
         id    : _comboboxTable6
         width : _Width
         height: _Height
-        model : controller.tableList
+        model : controller.tableList6
         onCurrentTextChanged: {
             controller.setFieldList6(_comboboxTable6.currentText)
         }
@@ -851,7 +851,7 @@ Rectangle {
         id    : _comboboxTable7
         width : _Width
         height: _Height
-        model : controller.tableList
+        model : controller.tableList7
         onCurrentTextChanged: {
             controller.setFieldList7(_comboboxTable7.currentText)
         }
@@ -969,7 +969,7 @@ Rectangle {
         id    : _comboboxTable8
         width : _Width
         height: _Height
-        model : controller.tableList
+        model : controller.tableList8
         onCurrentTextChanged: {
             controller.setFieldList8(_comboboxTable8.currentText)
         }
@@ -1087,7 +1087,7 @@ Rectangle {
         id    : _comboboxTable9
         width : _Width
         height: _Height
-        model : controller.tableList
+        model : controller.tableList9
         onCurrentTextChanged: {
             controller.setFieldList9(_comboboxTable9.currentText)
         }
@@ -1205,7 +1205,7 @@ Rectangle {
         id    : _comboboxTable10
         width : _Width
         height: _Height
-        model : controller.tableList
+        model : controller.tableList10
         onCurrentTextChanged: {
             controller.setFieldList10(_comboboxTable10.currentText)
         }

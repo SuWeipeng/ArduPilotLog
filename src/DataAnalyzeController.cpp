@@ -34,8 +34,28 @@ void DataAnalyzeController::_setTableList(QString table)
     MainWindow::getMainWindow()->setComboboxList(table);
     if (!_tableList.contains(table)){
         _tableList<<table;
-        emit tableListChanged();
     }
+    _tableList1 = _tableList;
+    _tableList2 = _tableList;
+    _tableList3 = _tableList;
+    _tableList4 = _tableList;
+    _tableList5 = _tableList;
+    _tableList6 = _tableList;
+    _tableList7 = _tableList;
+    _tableList8 = _tableList;
+    _tableList9 = _tableList;
+    _tableList10= _tableList;
+
+    emit tableList1Changed();
+    emit tableList2Changed();
+    emit tableList3Changed();
+    emit tableList4Changed();
+    emit tableList5Changed();
+    emit tableList6Changed();
+    emit tableList7Changed();
+    emit tableList8Changed();
+    emit tableList9Changed();
+    emit tableList10Changed();
 }
 
 bool
@@ -96,6 +116,68 @@ DataAnalyzeController::_update_colorList(){
 }
 
 void
+DataAnalyzeController::_update_hide_tables(QString table)
+{
+    _tableList1 = _tableList;
+    _tableList2 = _tableList;
+    _tableList3 = _tableList;
+    _tableList4 = _tableList;
+    _tableList5 = _tableList;
+    _tableList6 = _tableList;
+    _tableList7 = _tableList;
+    _tableList8 = _tableList;
+    _tableList9 = _tableList;
+    _tableList10= _tableList;
+
+    for(int i=0; i<MAX_LINE_NUM; i++){
+        if(!_visible[i]){
+            switch(i){
+            case 0:
+                _tableList1.swap(0, _tableList1.indexOf(table));
+                emit tableList1Changed();
+                break;
+            case 1:
+                _tableList2.swap(0, _tableList2.indexOf(table));
+                emit tableList2Changed();
+                break;
+            case 2:
+                _tableList3.swap(0, _tableList3.indexOf(table));
+                emit tableList3Changed();
+                break;
+            case 3:
+                _tableList4.swap(0, _tableList4.indexOf(table));
+                emit tableList4Changed();
+                break;
+            case 4:
+                _tableList5.swap(0, _tableList5.indexOf(table));
+                emit tableList5Changed();
+                break;
+            case 5:
+                _tableList6.swap(0, _tableList6.indexOf(table));
+                emit tableList6Changed();
+                break;
+            case 6:
+                _tableList7.swap(0, _tableList7.indexOf(table));
+                emit tableList7Changed();
+                break;
+            case 7:
+                _tableList8.swap(0, _tableList8.indexOf(table));
+                emit tableList8Changed();
+                break;
+            case 8:
+                _tableList9.swap(0, _tableList9.indexOf(table));
+                emit tableList9Changed();
+                break;
+            case 9:
+                _tableList10.swap(0, _tableList10.indexOf(table));
+                emit tableList10Changed();
+                break;
+            }
+        }
+    }
+}
+
+void
 DataAnalyzeController::_plot(){
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
@@ -143,6 +225,7 @@ DataAnalyzeController::setFieldList1(QString table)
         }
         emit fieldList1Changed();
     }
+    _update_hide_tables(table);
 }
 
 void
@@ -223,6 +306,7 @@ DataAnalyzeController::setFieldList2(QString table)
         }
         emit fieldList2Changed();
     }
+    _update_hide_tables(table);
 }
 
 void
@@ -303,6 +387,7 @@ DataAnalyzeController::setFieldList3(QString table)
         }
         emit fieldList3Changed();
     }
+    _update_hide_tables(table);
 }
 
 void
@@ -383,6 +468,7 @@ DataAnalyzeController::setFieldList4(QString table)
         }
         emit fieldList4Changed();
     }
+    _update_hide_tables(table);
 }
 
 void
@@ -463,6 +549,7 @@ DataAnalyzeController::setFieldList5(QString table)
         }
         emit fieldList5Changed();
     }
+    _update_hide_tables(table);
 }
 
 void
@@ -543,6 +630,7 @@ DataAnalyzeController::setFieldList6(QString table)
         }
         emit fieldList6Changed();
     }
+    _update_hide_tables(table);
 }
 
 void
@@ -623,6 +711,7 @@ DataAnalyzeController::setFieldList7(QString table)
         }
         emit fieldList7Changed();
     }
+    _update_hide_tables(table);
 }
 
 void
@@ -703,6 +792,7 @@ DataAnalyzeController::setFieldList8(QString table)
         }
         emit fieldList8Changed();
     }
+    _update_hide_tables(table);
 }
 
 void
@@ -783,6 +873,7 @@ DataAnalyzeController::setFieldList9(QString table)
         }
         emit fieldList9Changed();
     }
+    _update_hide_tables(table);
 }
 
 void
@@ -863,6 +954,7 @@ DataAnalyzeController::setFieldList10(QString table)
         }
         emit fieldList10Changed();
     }
+    _update_hide_tables(table);
 }
 
 void

@@ -15,10 +15,10 @@ class DataAnalyzeController : public QObject
 public:
     DataAnalyzeController();
 
-    Q_PROPERTY(QStringList     tableList        READ tableList        NOTIFY tableListChanged)
     Q_PROPERTY(QStringList     lineList         READ lineList         NOTIFY lineListChanged)
     Q_PROPERTY(QStringList     colorList        READ colorList        NOTIFY colorListChanged)
     // Row 1
+    Q_PROPERTY(QStringList     tableList1       READ tableList1       NOTIFY tableList1Changed)
     Q_PROPERTY(bool            visible1         READ visible1         NOTIFY visible1Changed)
     Q_PROPERTY(QStringList     fieldList1       READ fieldList1       NOTIFY fieldList1Changed)
     Q_PROPERTY(QString         scale1           READ scale1           NOTIFY scale1Changed)
@@ -26,6 +26,7 @@ public:
     Q_PROPERTY(QString         offsetY1         READ offsetY1         NOTIFY offsetY1Changed)
     Q_PROPERTY(QStringList     colorList1       READ colorList1       NOTIFY colorList1Changed)
     // Row 2
+    Q_PROPERTY(QStringList     tableList2       READ tableList2       NOTIFY tableList2Changed)
     Q_PROPERTY(bool            visible2         READ visible2         NOTIFY visible2Changed)
     Q_PROPERTY(QStringList     fieldList2       READ fieldList2       NOTIFY fieldList2Changed)
     Q_PROPERTY(QString         scale2           READ scale2           NOTIFY scale2Changed)
@@ -33,6 +34,7 @@ public:
     Q_PROPERTY(QString         offsetY2         READ offsetY2         NOTIFY offsetY2Changed)
     Q_PROPERTY(QStringList     colorList2       READ colorList2       NOTIFY colorList2Changed)
     // Row 3
+    Q_PROPERTY(QStringList     tableList3       READ tableList3       NOTIFY tableList3Changed)
     Q_PROPERTY(bool            visible3         READ visible3         NOTIFY visible3Changed)
     Q_PROPERTY(QStringList     fieldList3       READ fieldList3       NOTIFY fieldList3Changed)
     Q_PROPERTY(QString         scale3           READ scale3           NOTIFY scale3Changed)
@@ -40,6 +42,7 @@ public:
     Q_PROPERTY(QString         offsetY3         READ offsetY3         NOTIFY offsetY3Changed)
     Q_PROPERTY(QStringList     colorList3       READ colorList3       NOTIFY colorList3Changed)
     // Row 4
+    Q_PROPERTY(QStringList     tableList4       READ tableList4       NOTIFY tableList4Changed)
     Q_PROPERTY(bool            visible4         READ visible4         NOTIFY visible4Changed)
     Q_PROPERTY(QStringList     fieldList4       READ fieldList4       NOTIFY fieldList4Changed)
     Q_PROPERTY(QString         scale4           READ scale4           NOTIFY scale4Changed)
@@ -47,6 +50,7 @@ public:
     Q_PROPERTY(QString         offsetY4         READ offsetY4         NOTIFY offsetY4Changed)
     Q_PROPERTY(QStringList     colorList4       READ colorList4       NOTIFY colorList4Changed)
     // Row 5
+    Q_PROPERTY(QStringList     tableList5       READ tableList5       NOTIFY tableList5Changed)
     Q_PROPERTY(bool            visible5         READ visible5         NOTIFY visible5Changed)
     Q_PROPERTY(QStringList     fieldList5       READ fieldList5       NOTIFY fieldList5Changed)
     Q_PROPERTY(QString         scale5           READ scale5           NOTIFY scale5Changed)
@@ -54,6 +58,7 @@ public:
     Q_PROPERTY(QString         offsetY5         READ offsetY5         NOTIFY offsetY5Changed)
     Q_PROPERTY(QStringList     colorList5       READ colorList5       NOTIFY colorList5Changed)
     // Row 6
+    Q_PROPERTY(QStringList     tableList6       READ tableList6       NOTIFY tableList6Changed)
     Q_PROPERTY(bool            visible6         READ visible6         NOTIFY visible6Changed)
     Q_PROPERTY(QStringList     fieldList6       READ fieldList6       NOTIFY fieldList6Changed)
     Q_PROPERTY(QString         scale6           READ scale6           NOTIFY scale6Changed)
@@ -61,6 +66,7 @@ public:
     Q_PROPERTY(QString         offsetY6         READ offsetY6         NOTIFY offsetY6Changed)
     Q_PROPERTY(QStringList     colorList6       READ colorList6       NOTIFY colorList6Changed)
     // Row 7
+    Q_PROPERTY(QStringList     tableList7       READ tableList7       NOTIFY tableList7Changed)
     Q_PROPERTY(bool            visible7         READ visible7         NOTIFY visible7Changed)
     Q_PROPERTY(QStringList     fieldList7       READ fieldList7       NOTIFY fieldList7Changed)
     Q_PROPERTY(QString         scale7           READ scale7           NOTIFY scale7Changed)
@@ -68,6 +74,7 @@ public:
     Q_PROPERTY(QString         offsetY7         READ offsetY7         NOTIFY offsetY7Changed)
     Q_PROPERTY(QStringList     colorList7       READ colorList7       NOTIFY colorList7Changed)
     // Row 8
+    Q_PROPERTY(QStringList     tableList8       READ tableList8       NOTIFY tableList8Changed)
     Q_PROPERTY(bool            visible8         READ visible8         NOTIFY visible8Changed)
     Q_PROPERTY(QStringList     fieldList8       READ fieldList8       NOTIFY fieldList8Changed)
     Q_PROPERTY(QString         scale8           READ scale8           NOTIFY scale8Changed)
@@ -75,6 +82,7 @@ public:
     Q_PROPERTY(QString         offsetY8         READ offsetY8         NOTIFY offsetY8Changed)
     Q_PROPERTY(QStringList     colorList8       READ colorList8       NOTIFY colorList8Changed)
     // Row 9
+    Q_PROPERTY(QStringList     tableList9       READ tableList9       NOTIFY tableList9Changed)
     Q_PROPERTY(bool            visible9         READ visible9         NOTIFY visible9Changed)
     Q_PROPERTY(QStringList     fieldList9       READ fieldList9       NOTIFY fieldList9Changed)
     Q_PROPERTY(QString         scale9           READ scale9           NOTIFY scale9Changed)
@@ -82,6 +90,7 @@ public:
     Q_PROPERTY(QString         offsetY9         READ offsetY9         NOTIFY offsetY9Changed)
     Q_PROPERTY(QStringList     colorList9       READ colorList9       NOTIFY colorList9Changed)
     // Row 10
+    Q_PROPERTY(QStringList     tableList10      READ tableList10      NOTIFY tableList10Changed)
     Q_PROPERTY(bool            visible10        READ visible10        NOTIFY visible10Changed)
     Q_PROPERTY(QStringList     fieldList10      READ fieldList10      NOTIFY fieldList10Changed)
     Q_PROPERTY(QString         scale10          READ scale10          NOTIFY scale10Changed)
@@ -180,10 +189,10 @@ public:
     Q_INVOKABLE void setLineStyle10 (int style);
     Q_INVOKABLE void setLineColor10 (QString color);
 
-    QStringList      tableList              () { return _tableList; }
     QStringList      lineList               () { return _lineList; }
     QStringList      colorList              () { return _colorList; }
     // Row 1
+    QStringList      tableList1             () { return _tableList1; }
     QStringList      fieldList1             () { return _fieldList[0]; }
     QString          scale1                 () { return QString::number(_scale[0], 'f', 3); }
     QString          offsetX1               () { return QString::number(_offsetX[0]); }
@@ -191,6 +200,7 @@ public:
     bool             visible1               () { return _visible[0]; }
     QStringList      colorList1             () { return _available_colorList; }
     // Row 2
+    QStringList      tableList2             () { return _tableList2; }
     QStringList      fieldList2             () { return _fieldList[1]; }
     QString          scale2                 () { return QString::number(_scale[1], 'f', 3); }
     QString          offsetX2               () { return QString::number(_offsetX[1]); }
@@ -198,6 +208,7 @@ public:
     bool             visible2               () { return _visible[1]; }
     QStringList      colorList2             () { return _available_colorList; }
     // Row 3
+    QStringList      tableList3             () { return _tableList3; }
     QStringList      fieldList3             () { return _fieldList[2]; }
     QString          scale3                 () { return QString::number(_scale[2], 'f', 3); }
     QString          offsetX3               () { return QString::number(_offsetX[2]); }
@@ -205,6 +216,7 @@ public:
     bool             visible3               () { return _visible[2]; }
     QStringList      colorList3             () { return _available_colorList; }
     // Row 4
+    QStringList      tableList4             () { return _tableList4; }
     QStringList      fieldList4             () { return _fieldList[3]; }
     QString          scale4                 () { return QString::number(_scale[3], 'f', 3); }
     QString          offsetX4               () { return QString::number(_offsetX[3]); }
@@ -212,6 +224,7 @@ public:
     bool             visible4               () { return _visible[3]; }
     QStringList      colorList4             () { return _available_colorList; }
     // Row 5
+    QStringList      tableList5             () { return _tableList5; }
     QStringList      fieldList5             () { return _fieldList[4]; }
     QString          scale5                 () { return QString::number(_scale[4], 'f', 3); }
     QString          offsetX5               () { return QString::number(_offsetX[4]); }
@@ -219,6 +232,7 @@ public:
     bool             visible5               () { return _visible[4]; }
     QStringList      colorList5             () { return _available_colorList; }
     // Row 6
+    QStringList      tableList6             () { return _tableList6; }
     QStringList      fieldList6             () { return _fieldList[5]; }
     QString          scale6                 () { return QString::number(_scale[5], 'f', 3); }
     QString          offsetX6               () { return QString::number(_offsetX[5]); }
@@ -226,6 +240,7 @@ public:
     bool             visible6               () { return _visible[5]; }
     QStringList      colorList6             () { return _available_colorList; }
     // Row 7
+    QStringList      tableList7             () { return _tableList7; }
     QStringList      fieldList7             () { return _fieldList[6]; }
     QString          scale7                 () { return QString::number(_scale[6], 'f', 3); }
     QString          offsetX7               () { return QString::number(_offsetX[6]); }
@@ -233,6 +248,7 @@ public:
     bool             visible7               () { return _visible[6]; }
     QStringList      colorList7             () { return _available_colorList; }
     // Row 8
+    QStringList      tableList8             () { return _tableList8; }
     QStringList      fieldList8             () { return _fieldList[7]; }
     QString          scale8                 () { return QString::number(_scale[7], 'f', 3); }
     QString          offsetX8               () { return QString::number(_offsetX[7]); }
@@ -240,6 +256,7 @@ public:
     bool             visible8               () { return _visible[7]; }
     QStringList      colorList8             () { return _available_colorList; }
     // Row 9
+    QStringList      tableList9             () { return _tableList9; }
     QStringList      fieldList9             () { return _fieldList[8]; }
     QString          scale9                 () { return QString::number(_scale[8], 'f', 3); }
     QString          offsetX9               () { return QString::number(_offsetX[8]); }
@@ -247,6 +264,7 @@ public:
     bool             visible9               () { return _visible[8]; }
     QStringList      colorList9             () { return _available_colorList; }
     // Row 10
+    QStringList      tableList10            () { return _tableList10; }
     QStringList      fieldList10            () { return _fieldList[9]; }
     QString          scale10                () { return QString::number(_scale[9], 'f', 3); }
     QString          offsetX10              () { return QString::number(_offsetX[9]); }
@@ -255,10 +273,10 @@ public:
     QStringList      colorList10            () { return _available_colorList; }
 
 signals:
-    void tableListChanged       ();
     void lineListChanged        ();
     void colorListChanged       ();
     // Row 1
+    void tableList1Changed      ();
     void fieldList1Changed      ();
     void scale1Changed          ();
     void offsetX1Changed        ();
@@ -266,6 +284,7 @@ signals:
     void visible1Changed        ();
     void colorList1Changed      ();
     // Row 2
+    void tableList2Changed      ();
     void fieldList2Changed      ();
     void scale2Changed          ();
     void offsetX2Changed        ();
@@ -273,6 +292,7 @@ signals:
     void visible2Changed        ();
     void colorList2Changed      ();
     // Row 3
+    void tableList3Changed      ();
     void fieldList3Changed      ();
     void scale3Changed          ();
     void offsetX3Changed        ();
@@ -280,6 +300,7 @@ signals:
     void visible3Changed        ();
     void colorList3Changed      ();
     // Row 4
+    void tableList4Changed      ();
     void fieldList4Changed      ();
     void scale4Changed          ();
     void offsetX4Changed        ();
@@ -287,6 +308,7 @@ signals:
     void visible4Changed        ();
     void colorList4Changed      ();
     // Row 5
+    void tableList5Changed      ();
     void fieldList5Changed      ();
     void scale5Changed          ();
     void offsetX5Changed        ();
@@ -294,6 +316,7 @@ signals:
     void visible5Changed        ();
     void colorList5Changed      ();
     // Row 6
+    void tableList6Changed      ();
     void fieldList6Changed      ();
     void scale6Changed          ();
     void offsetX6Changed        ();
@@ -301,6 +324,7 @@ signals:
     void visible6Changed        ();
     void colorList6Changed      ();
     // Row 7
+    void tableList7Changed      ();
     void fieldList7Changed      ();
     void scale7Changed          ();
     void offsetX7Changed        ();
@@ -308,6 +332,7 @@ signals:
     void visible7Changed        ();
     void colorList7Changed      ();
     // Row 8
+    void tableList8Changed      ();
     void fieldList8Changed      ();
     void scale8Changed          ();
     void offsetX8Changed        ();
@@ -315,6 +340,7 @@ signals:
     void visible8Changed        ();
     void colorList8Changed      ();
     // Row 9
+    void tableList9Changed      ();
     void fieldList9Changed      ();
     void scale9Changed          ();
     void offsetX9Changed        ();
@@ -322,12 +348,13 @@ signals:
     void visible9Changed        ();
     void colorList9Changed      ();
     // Row 10
+    void tableList10Changed     ();
     void fieldList10Changed     ();
     void scale10Changed         ();
     void offsetX10Changed       ();
     void offsetY10Changed       ();
     void visible10Changed       ();
-    void colorList10Changed      ();
+    void colorList10Changed     ();
 
     void clear_alreadyPloted    ();
     void plotGraph              (QString tables,
@@ -348,8 +375,19 @@ private:
     void                _plot();
     void                _lineStyle(int index, int i);
     void                _update_colorList();
+    void                _update_hide_tables(QString table);
     bool                _visible[MAX_LINE_NUM];
     QStringList         _tableList;
+    QStringList         _tableList1;
+    QStringList         _tableList2;
+    QStringList         _tableList3;
+    QStringList         _tableList4;
+    QStringList         _tableList5;
+    QStringList         _tableList6;
+    QStringList         _tableList7;
+    QStringList         _tableList8;
+    QStringList         _tableList9;
+    QStringList         _tableList10;
     QStringList         _lineList;
     QStringList         _colorList;
     QStringList         _available_colorList;
