@@ -506,7 +506,7 @@ MainWindow::plotGraph(QString tables,
         customPlot->legend->setRowSpacing(-3);
         customPlot->graph()->setName(plot_target);
 
-        _lineStyle(linestyle, color);
+        _lineStyle(linestyle, color, from);
 
         customPlot->xAxis->setLabel(MainWindow::getMainWindow()->ui().comboBox->currentText());
         customPlot->yAxis->setLabel("y");
@@ -517,66 +517,58 @@ MainWindow::plotGraph(QString tables,
 }
 
 void
-MainWindow::_lineStyle(int index, int i){
+MainWindow::_lineStyle(int index, int i, bool from){
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
     QPen pen;
+
+    if(from){
+        int  R = 0+qrand()%(255-0);
+        int  G = 0+qrand()%(255-0);
+        int  B = 0+qrand()%(255-0);
+        qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+        pen.setColor(QColor(R, G, B));
+    } else {
+        pen.setColor(colors[0].at(i));
+    }
+
     switch (index) {
     case 0: // Normal
-        pen.setColor(colors[0].at(i));
-        customPlot->graph()->setPen(pen);
         break;
     case 1: // Line1
-        pen.setColor(colors[0].at(i));
         pen.setWidthF(2);
-        customPlot->graph()->setPen(pen);
         break;
     case 2: // Line2
-        pen.setColor(colors[0].at(i));
-        customPlot->graph()->setPen(pen);
         customPlot->graph()->setBrush(QBrush(QColor(0, 0, 255, 20)));
         break;
     case 3: // Line3
-        pen.setColor(colors[0].at(i));
         pen.setWidthF(2);
-        customPlot->graph()->setPen(pen);
         customPlot->graph()->setBrush(QBrush(QColor(0, 0, 255, 20)));
         break;
     case 4: // Dot1
-        pen.setColor(colors[0].at(i));
         pen.setStyle(Qt::DashLine);
-        customPlot->graph()->setPen(pen);
         break;
     case 5: // Dot2
-        pen.setColor(colors[0].at(i));
         pen.setStyle(Qt::DotLine);
         pen.setWidthF(2);
-        customPlot->graph()->setPen(pen);
         break;
     case 6: // Dot3
-        pen.setColor(colors[0].at(i));
         pen.setStyle(Qt::DashDotLine);
-        customPlot->graph()->setPen(pen);
         customPlot->graph()->setBrush(QBrush(QColor(0, 255, 0, 20)));
         break;
     case 7: // Mark1
-        pen.setColor(colors[0].at(i));
         pen.setWidthF(1);
-        customPlot->graph()->setPen(pen);
         customPlot->graph()->setScatterStyle(QCPScatterStyle(shapes[0].at(0)));
         break;
     case 8: // Mark2
-        pen.setColor(colors[0].at(i));
         pen.setWidthF(1);
-        customPlot->graph()->setPen(pen);
         customPlot->graph()->setScatterStyle(QCPScatterStyle(shapes[0].at(1)));
         break;
     case 9: // Mark3
-        pen.setColor(colors[0].at(i));
-        customPlot->graph()->setPen(pen);
         customPlot->graph()->setLineStyle(QCPGraph::lsNone);
         customPlot->graph()->setScatterStyle(QCPScatterStyle(shapes[0].at(0)));
         break;
-    default:
+    default: // Normal
         break;
     }
+    customPlot->graph()->setPen(pen);
 }

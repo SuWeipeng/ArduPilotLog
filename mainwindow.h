@@ -87,7 +87,7 @@ private:
     bool _createInnerDockWidget(const QString& widgetName);
     void _fileOpenedTrigger();
     void _clearTreeWidget(QTreeWidget *treeWidget);
-    void _lineStyle(int index, int i);
+    void _lineStyle(int index, int i, bool from);
 };
 
 #endif // MAINWINDOW_H
