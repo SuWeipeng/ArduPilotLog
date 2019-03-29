@@ -1317,4 +1317,28 @@ Rectangle {
             controller.setVisible10(false)
         }
     }
+
+    Button{
+        anchors.top       : _buttonState10.bottom
+        anchors.topMargin : _margins
+        anchors.left      : _buttonState10.left
+
+        id: _buttonInit
+        width : _Width
+        height: _Height
+        text  : qsTr("Init")
+        onClicked:{
+            controller.init()
+            controller.setVisible1(false)
+            controller.setVisible2(false)
+            controller.setVisible3(false)
+            controller.setVisible4(false)
+            controller.setVisible5(false)
+            controller.setVisible6(false)
+            controller.setVisible7(false)
+            controller.setVisible8(false)
+            controller.setVisible9(false)
+            controller.setVisible10(false)
+        }
+    }
 }

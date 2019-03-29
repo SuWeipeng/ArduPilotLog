@@ -14,6 +14,11 @@ DataAnalyzeController::DataAnalyzeController()
     connect(this, &DataAnalyzeController::clearGraph, MainWindow::getMainWindow(),  &MainWindow::clearGraph);
     connect(this, &DataAnalyzeController::clear_alreadyPloted, MainWindow::getMainWindow(),  &MainWindow::clear_alreadyPloted);
 
+    init();
+}
+
+void DataAnalyzeController::init()
+{
     MainWindow::getMainWindow()->requestTableList();
 
     _lineList  << LINE_LIST_INIT;
@@ -28,8 +33,18 @@ DataAnalyzeController::DataAnalyzeController()
         _style[i]   = 0;
         _color[i]   = 0;
     }
-}
 
+    emit tableList1Changed();
+    emit tableList2Changed();
+    emit tableList3Changed();
+    emit tableList4Changed();
+    emit tableList5Changed();
+    emit tableList6Changed();
+    emit tableList7Changed();
+    emit tableList8Changed();
+    emit tableList9Changed();
+    emit tableList10Changed();
+}
 void DataAnalyzeController::_setTableList(QString table)
 {
     MainWindow::getMainWindow()->setComboboxList(table);

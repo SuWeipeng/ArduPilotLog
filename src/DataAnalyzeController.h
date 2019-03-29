@@ -189,6 +189,8 @@ public:
     Q_INVOKABLE void setLineStyle10 (int style);
     Q_INVOKABLE void setLineColor10 (QString color);
 
+    Q_INVOKABLE void init ();
+
     QStringList      lineList               () { return _lineList; }
     QStringList      colorList              () { return _colorList; }
     // Row 1
