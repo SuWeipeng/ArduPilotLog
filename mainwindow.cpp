@@ -308,11 +308,6 @@ void MainWindow::_removeGraph(QTreeWidgetItem *item, int column)
     customPlot->replot();
 }
 
-void MainWindow::_reverseHoldOn()
-{
-    _customPlot_hold_on = !_customPlot_hold_on;
-}
-
 void MainWindow::_clearGraph()
 {
     legends.clear();
@@ -343,10 +338,6 @@ void MainWindow::on_customPlot_customContextMenuRequested()
 {
     QMenu *menu=new QMenu(_ui.customPlot);
 
-    // Hold on
-    QAction* pHoldOn = new QAction(tr("Hold On"), this);
-    connect(pHoldOn, &QAction::triggered, this, &MainWindow::_reverseHoldOn);
-    menu->addAction(pHoldOn);
     // Clear graph
     QAction* pClearGraph = new QAction(tr("Clear"), this);
     connect(pClearGraph, &QAction::triggered, this, &MainWindow::_clearGraph);
