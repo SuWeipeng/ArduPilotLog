@@ -49,6 +49,7 @@ public slots:
                    int     color,
                    bool    visible,
                    bool    from);    // false:DataAnalyzeController,true:Other
+    void clear_alreadyPloted() { _alreadyPloted.clear(); }
 
 private slots:
     void _showDockWidgetAction(bool show);

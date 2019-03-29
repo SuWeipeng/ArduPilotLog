@@ -278,7 +278,7 @@ void MainWindow::_removeGraph(QTreeWidgetItem *item, int column)
     if(_alreadyPloted.contains(remove_target)){
         _alreadyPloted.removeOne(remove_target);
         alreadyPloted = _alreadyPloted;
-        _alreadyPloted.clear();
+        clear_alreadyPloted();
 
         if(alreadyPloted.length() == 0){
             _ui.customPlot->legend->setVisible(false);
@@ -478,8 +478,10 @@ MainWindow::plotGraph(QString tables,
     bool getYSuccess = false;
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
-
     QString plot_target = QString("%1.%2").arg(tables).arg(fields);
+
+    qCDebug(MAIN_WINDOW_LOG) << "from: "<<from<<"target: "<<plot_target;
+
     if(!_alreadyPloted.contains(plot_target))
         _alreadyPloted << plot_target;
     else

@@ -299,6 +299,7 @@ signals:
     void offsetY10Changed       ();
     void visible10Changed       ();
 
+    void clear_alreadyPloted    ();
     void plotGraph              (QString tables,
                                  QString fields,
                                  int     offsetX,

@@ -11,6 +11,7 @@ DataAnalyzeController::DataAnalyzeController()
 {
     connect(MainWindow::getMainWindow(),  &MainWindow::treeWidgetAddItem, this, &DataAnalyzeController::_setTableList);
     connect(this, &DataAnalyzeController::plotGraph, MainWindow::getMainWindow(),  &MainWindow::plotGraph);
+    connect(this, &DataAnalyzeController::clear_alreadyPloted, MainWindow::getMainWindow(),  &MainWindow::clear_alreadyPloted);
 
     MainWindow::getMainWindow()->requestTableList();
 
@@ -53,16 +54,20 @@ DataAnalyzeController::_plot(){
     customPlot->clearGraphs();
     customPlot->replot();
 
+    emit clear_alreadyPloted();
+
     for(int i=0; i<MAX_LINE_NUM; i++){
-        emit plotGraph(tables[i],
-                       fields[i],
-                       _offsetX[i],
-                       _offsetY[i],
-                       _scale[i],
-                       _style[i],
-                       _color[i],
-                       _visible[i],
-                       false);
+        if(_visible[i]){
+            emit plotGraph(tables[i],
+                           fields[i],
+                           _offsetX[i],
+                           _offsetY[i],
+                           _scale[i],
+                           _style[i],
+                           _color[i],
+                           _visible[i],
+                           false);
+        }
     }
     customPlot->replot();
 }
