@@ -227,9 +227,9 @@ Rectangle {
         id    : _comboboxColor1
         width : _Width
         height: _Height
-        model: controller.colorList
+        model: controller.colorList1
         onCurrentTextChanged: {
-            controller.setLineColor1(parseInt(_comboboxColor1.currentIndex))
+            controller.setLineColor1(_comboboxColor1.currentText)
         }
     }
 
@@ -345,9 +345,9 @@ Rectangle {
         id    : _comboboxColor2
         width : _Width
         height: _Height
-        model: controller.colorList
+        model: controller.colorList2
         onCurrentTextChanged: {
-            controller.setLineColor2(parseInt(_comboboxColor2.currentIndex))
+            controller.setLineColor2(_comboboxColor2.currentText)
         }
     }
 
@@ -463,9 +463,9 @@ Rectangle {
         id    : _comboboxColor3
         width : _Width
         height: _Height
-        model: controller.colorList
+        model: controller.colorList3
         onCurrentTextChanged: {
-            controller.setLineColor3(parseInt(_comboboxColor3.currentIndex))
+            controller.setLineColor3(_comboboxColor3.currentText)
         }
     }
 
@@ -581,9 +581,9 @@ Rectangle {
         id    : _comboboxColor4
         width : _Width
         height: _Height
-        model: controller.colorList
+        model: controller.colorList4
         onCurrentTextChanged: {
-            controller.setLineColor4(parseInt(_comboboxColor4.currentIndex))
+            controller.setLineColor4(_comboboxColor4.currentText)
         }
     }
 
@@ -699,9 +699,9 @@ Rectangle {
         id    : _comboboxColor5
         width : _Width
         height: _Height
-        model: controller.colorList
+        model: controller.colorList5
         onCurrentTextChanged: {
-            controller.setLineColor5(parseInt(_comboboxColor5.currentIndex))
+            controller.setLineColor5(_comboboxColor5.currentText)
         }
     }
 
@@ -817,9 +817,9 @@ Rectangle {
         id    : _comboboxColor6
         width : _Width
         height: _Height
-        model: controller.colorList
+        model: controller.colorList6
         onCurrentTextChanged: {
-            controller.setLineColor6(parseInt(_comboboxColor6.currentIndex))
+            controller.setLineColor6(_comboboxColor6.currentText)
         }
     }
 
@@ -935,9 +935,9 @@ Rectangle {
         id    : _comboboxColor7
         width : _Width
         height: _Height
-        model: controller.colorList
+        model: controller.colorList7
         onCurrentTextChanged: {
-            controller.setLineColor7(parseInt(_comboboxColor7.currentIndex))
+            controller.setLineColor7(_comboboxColor7.currentText)
         }
     }
 
@@ -1053,9 +1053,9 @@ Rectangle {
         id    : _comboboxColor8
         width : _Width
         height: _Height
-        model: controller.colorList
+        model: controller.colorList8
         onCurrentTextChanged: {
-            controller.setLineColor8(parseInt(_comboboxColor8.currentIndex))
+            controller.setLineColor8(_comboboxColor8.currentText)
         }
     }
 
@@ -1171,9 +1171,9 @@ Rectangle {
         id    : _comboboxColor9
         width : _Width
         height: _Height
-        model: controller.colorList
+        model: controller.colorList9
         onCurrentTextChanged: {
-            controller.setLineColor9(parseInt(_comboboxColor9.currentIndex))
+            controller.setLineColor9(_comboboxColor9.currentText)
         }
     }
 
@@ -1289,9 +1289,9 @@ Rectangle {
         id    : _comboboxColor10
         width : _Width
         height: _Height
-        model: controller.colorList
+        model: controller.colorList10
         onCurrentTextChanged: {
-            controller.setLineColor10(parseInt(_comboboxColor10.currentIndex))
+            controller.setLineColor10(_comboboxColor10.currentText)
         }
     }
 }

@@ -17,6 +17,7 @@ DataAnalyzeController::DataAnalyzeController()
 
     _lineList  << LINE_LIST_INIT;
     _colorList << COLOR_LIST_INIT;
+    _available_colorList = _colorList;
 
     for(int i=0; i<MAX_LINE_NUM; i++){
         _visible[i] = false;
@@ -46,6 +47,55 @@ DataAnalyzeController::_isNumber(QString n)
 }
 
 void
+DataAnalyzeController::_update_colorList(){
+    _available_colorList = _colorList;
+    for(int i=0; i<MAX_LINE_NUM; i++){
+        if (_visible[i] &&
+            _available_colorList.contains(_colorList.at(_color[i])))
+        {
+            _available_colorList.removeOne(_colorList.at(_color[i]));
+        }
+    }
+
+    for(int i=0; i<MAX_LINE_NUM; i++){
+        if(!_visible[i]){
+            switch(i){
+            case 0:
+                emit colorList1Changed();
+                break;
+            case 1:
+                emit colorList2Changed();
+                break;
+            case 2:
+                emit colorList3Changed();
+                break;
+            case 3:
+                emit colorList4Changed();
+                break;
+            case 4:
+                emit colorList5Changed();
+                break;
+            case 5:
+                emit colorList6Changed();
+                break;
+            case 6:
+                emit colorList7Changed();
+                break;
+            case 7:
+                emit colorList8Changed();
+                break;
+            case 8:
+                emit colorList9Changed();
+                break;
+            case 9:
+                emit colorList10Changed();
+                break;
+            }
+        }
+    }
+}
+
+void
 DataAnalyzeController::_plot(){
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
@@ -55,6 +105,8 @@ DataAnalyzeController::_plot(){
     customPlot->replot();
 
     emit clear_alreadyPloted();
+
+    _update_colorList();
 
     for(int i=0; i<MAX_LINE_NUM; i++){
         if(_visible[i]){
@@ -148,8 +200,8 @@ DataAnalyzeController::setLineStyle1(int style){
 }
 
 void
-DataAnalyzeController::setLineColor1(int color){
-    _color[0] = color;
+DataAnalyzeController::setLineColor1(QString color){
+    _color[0] = _colorList.indexOf(color);
 
     _plot();
 }
@@ -228,8 +280,8 @@ DataAnalyzeController::setLineStyle2(int style){
 }
 
 void
-DataAnalyzeController::setLineColor2(int color){
-    _color[1] = color;
+DataAnalyzeController::setLineColor2(QString color){
+    _color[1] = _colorList.indexOf(color);
 
     _plot();
 }
@@ -308,8 +360,8 @@ DataAnalyzeController::setLineStyle3(int style){
 }
 
 void
-DataAnalyzeController::setLineColor3(int color){
-    _color[2] = color;
+DataAnalyzeController::setLineColor3(QString color){
+    _color[2] = _colorList.indexOf(color);
 
     _plot();
 }
@@ -388,8 +440,8 @@ DataAnalyzeController::setLineStyle4(int style){
 }
 
 void
-DataAnalyzeController::setLineColor4(int color){
-    _color[3] = color;
+DataAnalyzeController::setLineColor4(QString color){
+    _color[3] = _colorList.indexOf(color);
 
     _plot();
 }
@@ -468,8 +520,8 @@ DataAnalyzeController::setLineStyle5(int style){
 }
 
 void
-DataAnalyzeController::setLineColor5(int color){
-    _color[4] = color;
+DataAnalyzeController::setLineColor5(QString color){
+    _color[4] = _colorList.indexOf(color);
 
     _plot();
 }
@@ -548,8 +600,8 @@ DataAnalyzeController::setLineStyle6(int style){
 }
 
 void
-DataAnalyzeController::setLineColor6(int color){
-    _color[5] = color;
+DataAnalyzeController::setLineColor6(QString color){
+    _color[5] = _colorList.indexOf(color);
 
     _plot();
 }
@@ -628,8 +680,8 @@ DataAnalyzeController::setLineStyle7(int style){
 }
 
 void
-DataAnalyzeController::setLineColor7(int color){
-    _color[6] = color;
+DataAnalyzeController::setLineColor7(QString color){
+    _color[6] = _colorList.indexOf(color);
 
     _plot();
 }
@@ -708,8 +760,8 @@ DataAnalyzeController::setLineStyle8(int style){
 }
 
 void
-DataAnalyzeController::setLineColor8(int color){
-    _color[7] = color;
+DataAnalyzeController::setLineColor8(QString color){
+    _color[7] = _colorList.indexOf(color);
 
     _plot();
 }
@@ -788,8 +840,8 @@ DataAnalyzeController::setLineStyle9(int style){
 }
 
 void
-DataAnalyzeController::setLineColor9(int color){
-    _color[8] = color;
+DataAnalyzeController::setLineColor9(QString color){
+    _color[8] = _colorList.indexOf(color);
 
     _plot();
 }
@@ -868,8 +920,8 @@ DataAnalyzeController::setLineStyle10(int style){
 }
 
 void
-DataAnalyzeController::setLineColor10(int color){
-    _color[9] = color;
+DataAnalyzeController::setLineColor10(QString color){
+    _color[9] = _colorList.indexOf(color);
 
     _plot();
 }
