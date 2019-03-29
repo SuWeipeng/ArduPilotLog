@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     , _table("")
     , _field("")
     , _comboBoxListINIT(true)
+    , _action_bold(0x1<<0)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
@@ -319,6 +320,7 @@ void MainWindow::_clearGraph()
 
 void MainWindow::_resetGraph()
 {
+    _action_bold = (0x1<<0);
     _ui.customPlot->axisRect()->setRangeZoomAxes(_ui.customPlot->xAxis, _ui.customPlot->yAxis);
     _ui.customPlot->rescaleAxes();
     _ui.customPlot->replot();
@@ -326,16 +328,19 @@ void MainWindow::_resetGraph()
 
 void MainWindow::_zoomX()
 {
+    _action_bold = (0x1<<1);
     _ui.customPlot->axisRect()->setRangeZoomAxes(_ui.customPlot->xAxis, NULL);
 }
 
 void MainWindow::_zoomY()
 {
+    _action_bold = (0x1<<2);
     _ui.customPlot->axisRect()->setRangeZoomAxes(NULL, _ui.customPlot->yAxis);
 }
 
 void MainWindow::on_customPlot_customContextMenuRequested()
 {
+    QFont ft;
     QMenu *menu=new QMenu(_ui.customPlot);
 
     // Clear graph
@@ -344,14 +349,20 @@ void MainWindow::on_customPlot_customContextMenuRequested()
     menu->addAction(pClearGraph);
     // Reset graph
     QAction* pResetGraph = new QAction(tr("Set to default"), this);
+    ft.setBold((_action_bold & 0x1) != 0);
+    pResetGraph->setFont(ft);
     connect(pResetGraph, &QAction::triggered, this, &MainWindow::_resetGraph);
     menu->addAction(pResetGraph);
     // Zoom X
     QAction* pZoomX = new QAction(tr("zoom X"), this);
+    ft.setBold((_action_bold & 0x2) != 0);
+    pZoomX->setFont(ft);
     connect(pZoomX, &QAction::triggered, this, &MainWindow::_zoomX);
     menu->addAction(pZoomX);
     // Zoom Y
     QAction* pZoomY = new QAction(tr("zoom Y"), this);
+    ft.setBold((_action_bold & 0x4) != 0);
+    pZoomY->setFont(ft);
     connect(pZoomY, &QAction::triggered, this, &MainWindow::_zoomY);
     menu->addAction(pZoomY);
 

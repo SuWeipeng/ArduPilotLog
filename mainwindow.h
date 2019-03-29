@@ -77,6 +77,7 @@ private:
     QStringList         _comboBoxList;
     QStringList         _alreadyPloted;
     bool                _comboBoxListINIT;
+    int                 _action_bold;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;
     QMap<QString, QAction*>         _mapName2Action;
