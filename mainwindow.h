@@ -86,7 +86,6 @@ private:
     void _showDockWidget(const QString &name, bool show);
     bool _createInnerDockWidget(const QString& widgetName);
     void _fileOpenedTrigger();
-    void _plot2d(QCustomPlot *customPlot, QString& table, QString& field);
     void _clearTreeWidget(QTreeWidget *treeWidget);
     void _lineStyle(int index, int i);
 };

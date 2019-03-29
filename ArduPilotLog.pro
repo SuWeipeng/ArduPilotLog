@@ -48,7 +48,6 @@ SOURCES += \
     src/APLRead.cpp \
     src/APLDB.cpp \
     qcustomplot.cpp \
-    Plot2D.cpp \
     src/DataAnalyzeController.cpp \
     src/APLQmlWidgetHolder.cpp \
 

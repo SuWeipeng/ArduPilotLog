@@ -25,8 +25,6 @@ enum DockWidgetTypes {
     DATA_ANALYZE
 };
 
-extern QStringList legends;
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , _dialog(new Dialog)
@@ -311,7 +309,6 @@ void MainWindow::_removeGraph(QTreeWidgetItem *item, int column)
 
 void MainWindow::_clearGraph()
 {
-    legends.clear();
     _ui.customPlot->legend->setVisible(false);
     _ui.customPlot->clearGraphs();
     _ui.customPlot->replot();
@@ -374,7 +371,6 @@ void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
     if(arg1.compare("") == 0) return;
     _X_axis_changed = true;
     _comboBoxIndex  = _ui.comboBox->currentIndex();
-    legends.clear();
     _ui.customPlot->legend->setVisible(false);
     _ui.customPlot->clearGraphs();
     _ui.customPlot->xAxis->setLabel(MainWindow::getMainWindow()->ui().comboBox->currentText());
