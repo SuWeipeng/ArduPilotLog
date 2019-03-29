@@ -366,6 +366,7 @@ signals:
                                  int     color,
                                  bool    visible,
                                  bool    from);             // false:DataAnalyzeController,true:Other
+    void clearGraph             ();
 
 private slots:
     void                _setTableList(QString table);

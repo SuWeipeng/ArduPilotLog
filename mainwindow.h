@@ -50,12 +50,12 @@ public slots:
                    bool    visible,
                    bool    from);    // false:DataAnalyzeController,true:Other
     void clear_alreadyPloted() { _alreadyPloted.clear(); }
+    void clearGraph();
 
 private slots:
     void _showDockWidgetAction(bool show);
     void _plotGraph(QTreeWidgetItem *item, int column);
     void _removeGraph(QTreeWidgetItem *item, int column);
-    void _clearGraph();
     void _resetGraph();
     void _zoomX();
     void _zoomY();

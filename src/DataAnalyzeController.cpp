@@ -11,6 +11,7 @@ DataAnalyzeController::DataAnalyzeController()
 {
     connect(MainWindow::getMainWindow(),  &MainWindow::treeWidgetAddItem, this, &DataAnalyzeController::_setTableList);
     connect(this, &DataAnalyzeController::plotGraph, MainWindow::getMainWindow(),  &MainWindow::plotGraph);
+    connect(this, &DataAnalyzeController::clearGraph, MainWindow::getMainWindow(),  &MainWindow::clearGraph);
     connect(this, &DataAnalyzeController::clear_alreadyPloted, MainWindow::getMainWindow(),  &MainWindow::clear_alreadyPloted);
 
     MainWindow::getMainWindow()->requestTableList();
@@ -170,10 +171,7 @@ void
 DataAnalyzeController::_plot(){
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
-    customPlot->legend->clear();
-    customPlot->legend->setVisible(false);
-    customPlot->clearGraphs();
-    customPlot->replot();
+    emit clearGraph();
 
     emit clear_alreadyPloted();
 

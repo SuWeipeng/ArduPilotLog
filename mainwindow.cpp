@@ -65,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _ui.treeWidget, &QTreeWidget::clear);
-    connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::_clearGraph);
+    connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::clearGraph);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
     connect(_ui.actionSaveDBFile,  &QAction::triggered, _dialog, &Dialog::saveFile);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
@@ -307,7 +307,7 @@ void MainWindow::_removeGraph(QTreeWidgetItem *item, int column)
     customPlot->replot();
 }
 
-void MainWindow::_clearGraph()
+void MainWindow::clearGraph()
 {
     _ui.customPlot->legend->setVisible(false);
     _ui.customPlot->clearGraphs();
@@ -342,7 +342,7 @@ void MainWindow::on_customPlot_customContextMenuRequested()
 
     // Clear graph
     QAction* pClearGraph = new QAction(tr("Clear"), this);
-    connect(pClearGraph, &QAction::triggered, this, &MainWindow::_clearGraph);
+    connect(pClearGraph, &QAction::triggered, this, &MainWindow::clearGraph);
     menu->addAction(pClearGraph);
     // Reset graph
     QAction* pResetGraph = new QAction(tr("Set to default"), this);
