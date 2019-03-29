@@ -45,17 +45,6 @@ void DataAnalyzeController::_setTableList(QString table)
     _tableList8 = _tableList;
     _tableList9 = _tableList;
     _tableList10= _tableList;
-
-    emit tableList1Changed();
-    emit tableList2Changed();
-    emit tableList3Changed();
-    emit tableList4Changed();
-    emit tableList5Changed();
-    emit tableList6Changed();
-    emit tableList7Changed();
-    emit tableList8Changed();
-    emit tableList9Changed();
-    emit tableList10Changed();
 }
 
 bool
