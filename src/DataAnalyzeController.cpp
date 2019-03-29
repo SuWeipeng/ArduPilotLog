@@ -96,6 +96,7 @@ DataAnalyzeController::setFieldList1(QString table)
 void
 DataAnalyzeController::setField1(QString field){
     fields[0] = field;
+    if(field.compare("TimeUS") != 0) setVisible1(true);
     _plot();
 }
 
@@ -175,6 +176,7 @@ DataAnalyzeController::setFieldList2(QString table)
 void
 DataAnalyzeController::setField2(QString field){
     fields[1] = field;
+    if(field.compare("TimeUS") != 0) setVisible2(true);
     _plot();
 }
 
@@ -254,6 +256,7 @@ DataAnalyzeController::setFieldList3(QString table)
 void
 DataAnalyzeController::setField3(QString field){
     fields[2] = field;
+    if(field.compare("TimeUS") != 0) setVisible3(true);
     _plot();
 }
 
@@ -333,6 +336,7 @@ DataAnalyzeController::setFieldList4(QString table)
 void
 DataAnalyzeController::setField4(QString field){
     fields[3] = field;
+    if(field.compare("TimeUS") != 0) setVisible4(true);
     _plot();
 }
 
@@ -412,6 +416,7 @@ DataAnalyzeController::setFieldList5(QString table)
 void
 DataAnalyzeController::setField5(QString field){
     fields[4] = field;
+    if(field.compare("TimeUS") != 0) setVisible5(true);
     _plot();
 }
 
@@ -491,6 +496,7 @@ DataAnalyzeController::setFieldList6(QString table)
 void
 DataAnalyzeController::setField6(QString field){
     fields[5] = field;
+    if(field.compare("TimeUS") != 0) setVisible6(true);
     _plot();
 }
 
@@ -570,6 +576,7 @@ DataAnalyzeController::setFieldList7(QString table)
 void
 DataAnalyzeController::setField7(QString field){
     fields[6] = field;
+    if(field.compare("TimeUS") != 0) setVisible7(true);
     _plot();
 }
 
@@ -649,6 +656,7 @@ DataAnalyzeController::setFieldList8(QString table)
 void
 DataAnalyzeController::setField8(QString field){
     fields[7] = field;
+    if(field.compare("TimeUS") != 0) setVisible8(true);
     _plot();
 }
 
@@ -728,6 +736,7 @@ DataAnalyzeController::setFieldList9(QString table)
 void
 DataAnalyzeController::setField9(QString field){
     fields[8] = field;
+    if(field.compare("TimeUS") != 0) setVisible9(true);
     _plot();
 }
 
@@ -807,6 +816,7 @@ DataAnalyzeController::setFieldList10(QString table)
 void
 DataAnalyzeController::setField10(QString field){
     fields[9] = field;
+    if(field.compare("TimeUS") != 0) setVisible10(true);
     _plot();
 }
 
