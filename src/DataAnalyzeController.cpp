@@ -10,6 +10,7 @@ APL_LOGGING_CATEGORY(DATA_ANALYZE_LOG,        "DataAnalyzeLog")
 DataAnalyzeController::DataAnalyzeController()
 {
     connect(MainWindow::getMainWindow(),  &MainWindow::treeWidgetAddItem, this, &DataAnalyzeController::_setTableList);
+    connect(this, &DataAnalyzeController::plotGraph, MainWindow::getMainWindow(),  &MainWindow::plotGraph);
 
     MainWindow::getMainWindow()->requestTableList();
 
@@ -23,23 +24,6 @@ DataAnalyzeController::DataAnalyzeController()
         _offsetY[i] = 0.0f;
         _style[i]   = 0;
         _color[i]   = 0;
-
-        shapes[i] << QCPScatterStyle::ssCircle;
-        shapes[i] << QCPScatterStyle::ssDisc;
-        shapes[i] << QCPScatterStyle::ssDiamond;
-        shapes[i] << QCPScatterStyle::ssCrossCircle;
-        shapes[i] << QCPScatterStyle::ssPlusCircle;
-
-        colors[i] << QColor(255, 0, 0);    // Red
-        colors[i] << QColor(34, 139, 34);  // Green
-        colors[i] << QColor(0, 0, 255);     // Blue
-        colors[i] << QColor(160, 32, 240);  // Purple
-        colors[i] << QColor(139, 35, 35);   // Brown
-        colors[i] << QColor(255, 20, 147);  // Pink
-        colors[i] << QColor(0, 104, 139);   // DeepSkyBlue
-        colors[i] << QColor(255, 140, 0);   // Orange
-        colors[i] << QColor(0, 139, 139);   // DarkCyan
-        colors[i] << QColor(205, 149, 12);  // Gold
     }
 }
 
@@ -61,75 +45,7 @@ DataAnalyzeController::_isNumber(QString n)
 }
 
 void
-DataAnalyzeController::_lineStyle(int index, int i){
-    QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
-    QPen pen;
-    switch (index) {
-    case 0: // Normal
-        pen.setColor(colors[0].at(_color[i]));
-        customPlot->graph()->setPen(pen);
-        break;
-    case 1: // Line1
-        pen.setColor(colors[0].at(_color[i]));
-        pen.setWidthF(2);
-        customPlot->graph()->setPen(pen);
-        break;
-    case 2: // Line2
-        pen.setColor(colors[0].at(_color[i]));
-        customPlot->graph()->setPen(pen);
-        customPlot->graph()->setBrush(QBrush(QColor(0, 0, 255, 20)));
-        break;
-    case 3: // Line3
-        pen.setColor(colors[0].at(_color[i]));
-        pen.setWidthF(2);
-        customPlot->graph()->setPen(pen);
-        customPlot->graph()->setBrush(QBrush(QColor(0, 0, 255, 20)));
-        break;
-    case 4: // Dot1
-        pen.setColor(colors[0].at(_color[i]));
-        pen.setStyle(Qt::DashLine);
-        customPlot->graph()->setPen(pen);
-        break;
-    case 5: // Dot2
-        pen.setColor(colors[0].at(_color[i]));
-        pen.setStyle(Qt::DotLine);
-        pen.setWidthF(2);
-        customPlot->graph()->setPen(pen);
-        break;
-    case 6: // Dot3
-        pen.setColor(colors[0].at(_color[i]));
-        pen.setStyle(Qt::DashDotLine);
-        customPlot->graph()->setPen(pen);
-        customPlot->graph()->setBrush(QBrush(QColor(0, 255, 0, 20)));
-        break;
-    case 7: // Mark1
-        pen.setColor(colors[0].at(_color[i]));
-        pen.setWidthF(1);
-        customPlot->graph()->setPen(pen);
-        customPlot->graph()->setScatterStyle(QCPScatterStyle(shapes[0].at(0)));
-        break;
-    case 8: // Mark2
-        pen.setColor(colors[0].at(_color[i]));
-        pen.setWidthF(1);
-        customPlot->graph()->setPen(pen);
-        customPlot->graph()->setScatterStyle(QCPScatterStyle(shapes[0].at(1)));
-        break;
-    case 9: // Mark3
-        pen.setColor(colors[0].at(_color[i]));
-        customPlot->graph()->setPen(pen);
-        customPlot->graph()->setLineStyle(QCPGraph::lsNone);
-        customPlot->graph()->setScatterStyle(QCPScatterStyle(shapes[0].at(0)));
-        break;
-    default:
-        break;
-    }
-}
-
-void
 DataAnalyzeController::_plot(){
-    bool getXSuccess = false;
-    bool getYSuccess = false;
-
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
     customPlot->legend->clear();
@@ -138,33 +54,20 @@ DataAnalyzeController::_plot(){
     customPlot->replot();
 
     for(int i=0; i<MAX_LINE_NUM; i++){
-        if(_visible[i]){
-            customPlot->addGraph();
-            int length = APLDB::getAPLDB() -> getLen(tables[i], fields[i]);
-            QVector<double> x(length), y(length);
-
-            getXSuccess = APLDB::getAPLDB() -> getData(tables[i], MainWindow::getMainWindow()->ui().comboBox->currentText(), length, x, _offsetX[i]);
-            getYSuccess = APLDB::getAPLDB() -> getData(tables[i], fields[i], length, y, _offsetY[i], _scale[i]);
-            if(getXSuccess && getYSuccess){
-                customPlot->graph()->setData(x, y);
-            }
-
-            customPlot->legend->setVisible(true);
-            customPlot->legend->setFont(QFont("Helvetica", 9));
-            customPlot->legend->setRowSpacing(-3);
-            customPlot->graph()->setName(QString("%1.%2").arg(tables[i]).arg(fields[i]));
-
-            _lineStyle(_style[i], i);
-
-            customPlot->xAxis->setLabel(MainWindow::getMainWindow()->ui().comboBox->currentText());
-            customPlot->yAxis->setLabel("y");
-            customPlot->rescaleAxes();
-
-            customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-        }
+        emit plotGraph(tables[i],
+                       fields[i],
+                       _offsetX[i],
+                       _offsetY[i],
+                       _scale[i],
+                       _style[i],
+                       _color[i],
+                       _visible[i],
+                       false);
     }
     customPlot->replot();
 }
+
+
 
 // Row 1
 void

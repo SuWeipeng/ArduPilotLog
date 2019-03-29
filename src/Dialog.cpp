@@ -1,6 +1,7 @@
 #include "Dialog.h"
 #include "APLRead.h"
 #include "APLDB.h"
+#include "mainwindow.h"
 #include <QFileDialog>
 
 APL_LOGGING_CATEGORY(DIALOG_LOG,        "DialogLog")
@@ -26,6 +27,8 @@ void Dialog::showFile()
                                                   ,"/"
                                                   ,"Binary files(*.bin)");
     emit _qfiledialog->fileSelected(logdir);
+
+    MainWindow::getMainWindow()->requestTableList();
 
     qCDebug(DIALOG_LOG) << logdir;
 }

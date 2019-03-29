@@ -46,12 +46,32 @@ MainWindow::MainWindow(QWidget *parent)
     initTreeWidget();
     _instance = this;
 
+    for(int i=0; i<10; i++){
+        shapes[i] << QCPScatterStyle::ssCircle;
+        shapes[i] << QCPScatterStyle::ssDisc;
+        shapes[i] << QCPScatterStyle::ssDiamond;
+        shapes[i] << QCPScatterStyle::ssCrossCircle;
+        shapes[i] << QCPScatterStyle::ssPlusCircle;
+
+        colors[i] << QColor(255, 0, 0);    // Red
+        colors[i] << QColor(34, 139, 34);  // Green
+        colors[i] << QColor(0, 0, 255);     // Blue
+        colors[i] << QColor(160, 32, 240);  // Purple
+        colors[i] << QColor(139, 35, 35);   // Brown
+        colors[i] << QColor(255, 20, 147);  // Pink
+        colors[i] << QColor(0, 104, 139);   // DeepSkyBlue
+        colors[i] << QColor(255, 140, 0);   // Orange
+        colors[i] << QColor(0, 139, 139);   // DarkCyan
+        colors[i] << QColor(205, 149, 12);  // Gold
+    }
+
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _ui.treeWidget, &QTreeWidget::clear);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::_clearGraph);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
     connect(_ui.actionSaveDBFile,  &QAction::triggered, _dialog, &Dialog::saveFile);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
     connect(_dialog,  &Dialog::saveSuccess, this, &MainWindow::_saveSuccessMessage);
+    connect(this,  &MainWindow::treeWidgetAddItem, this, &MainWindow::setComboboxList);
 }
 
 MainWindow::~MainWindow()
@@ -219,17 +239,35 @@ void MainWindow::setComboboxList(QString table)
 void MainWindow::_plotGraph(QTreeWidgetItem *item, int column)
 {
     QTreeWidgetItem*   parent = item->parent();
-    int                index;
+    QCustomPlot*       customPlot = MainWindow::getMainWindow()->ui().customPlot;
+    int                index;    
 
     if(NULL==parent) return;
+
+    customPlot->legend->clear();
+    customPlot->legend->setVisible(false);
+    customPlot->clearGraphs();
+    customPlot->replot();
+
 
     index = parent->indexOfChild(item);
     _table = parent->text(column);
     _field = parent->child(index)->text(column);
 
-    setComboboxList(_table);
+    plotGraph(_table,
+              _field,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              true);
+    customPlot->replot();
 
-    _plot2d(_ui.customPlot, _table, _field);
+    //setComboboxList(_table);
+
+    //_plot2d(_ui.customPlot, _table, _field);
 }
 
 void MainWindow::_reverseHoldOn()
@@ -384,5 +422,116 @@ void MainWindow::_clearTreeWidget(QTreeWidget *treeWidget)
             QTreeWidgetItem* child=treeWidget->topLevelItem(i)->child(j);
             child->setCheckState(0, Qt::Unchecked);
         }
+    }
+}
+
+void
+MainWindow::plotGraph(QString tables,
+                      QString fields,
+                      int     offsetX,
+                      float   offsetY,
+                      float   scale,
+                      int     linestyle,
+                      int     color,
+                      bool    visible,
+                      bool    from)
+{
+    bool getXSuccess = false;
+    bool getYSuccess = false;
+    QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
+
+    if(visible || from){
+        customPlot->addGraph();
+        int length = APLDB::getAPLDB() -> getLen(tables, fields);
+        QVector<double> x(length), y(length);
+
+        getXSuccess = APLDB::getAPLDB() -> getData(tables, MainWindow::getMainWindow()->ui().comboBox->currentText(), length, x, offsetX);
+        getYSuccess = APLDB::getAPLDB() -> getData(tables, fields, length, y, offsetY, scale);
+        if(getXSuccess && getYSuccess){
+            customPlot->graph()->setData(x, y);
+        } else {
+            if(!getXSuccess)
+                qCDebug(MAIN_WINDOW_LOG) << "getData X Error";
+            if(!getYSuccess)
+                qCDebug(MAIN_WINDOW_LOG) << "getData Y Error";
+        }
+
+        customPlot->legend->setVisible(true);
+        customPlot->legend->setFont(QFont("Helvetica", 9));
+        customPlot->legend->setRowSpacing(-3);
+        customPlot->graph()->setName(QString("%1.%2").arg(tables).arg(fields));
+
+        _lineStyle(linestyle, color);
+
+        customPlot->xAxis->setLabel(MainWindow::getMainWindow()->ui().comboBox->currentText());
+        customPlot->yAxis->setLabel("y");
+        customPlot->rescaleAxes();
+
+        customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    }
+}
+
+void
+MainWindow::_lineStyle(int index, int i){
+    QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
+    QPen pen;
+    switch (index) {
+    case 0: // Normal
+        pen.setColor(colors[0].at(i));
+        customPlot->graph()->setPen(pen);
+        break;
+    case 1: // Line1
+        pen.setColor(colors[0].at(i));
+        pen.setWidthF(2);
+        customPlot->graph()->setPen(pen);
+        break;
+    case 2: // Line2
+        pen.setColor(colors[0].at(i));
+        customPlot->graph()->setPen(pen);
+        customPlot->graph()->setBrush(QBrush(QColor(0, 0, 255, 20)));
+        break;
+    case 3: // Line3
+        pen.setColor(colors[0].at(i));
+        pen.setWidthF(2);
+        customPlot->graph()->setPen(pen);
+        customPlot->graph()->setBrush(QBrush(QColor(0, 0, 255, 20)));
+        break;
+    case 4: // Dot1
+        pen.setColor(colors[0].at(i));
+        pen.setStyle(Qt::DashLine);
+        customPlot->graph()->setPen(pen);
+        break;
+    case 5: // Dot2
+        pen.setColor(colors[0].at(i));
+        pen.setStyle(Qt::DotLine);
+        pen.setWidthF(2);
+        customPlot->graph()->setPen(pen);
+        break;
+    case 6: // Dot3
+        pen.setColor(colors[0].at(i));
+        pen.setStyle(Qt::DashDotLine);
+        customPlot->graph()->setPen(pen);
+        customPlot->graph()->setBrush(QBrush(QColor(0, 255, 0, 20)));
+        break;
+    case 7: // Mark1
+        pen.setColor(colors[0].at(i));
+        pen.setWidthF(1);
+        customPlot->graph()->setPen(pen);
+        customPlot->graph()->setScatterStyle(QCPScatterStyle(shapes[0].at(0)));
+        break;
+    case 8: // Mark2
+        pen.setColor(colors[0].at(i));
+        pen.setWidthF(1);
+        customPlot->graph()->setPen(pen);
+        customPlot->graph()->setScatterStyle(QCPScatterStyle(shapes[0].at(1)));
+        break;
+    case 9: // Mark3
+        pen.setColor(colors[0].at(i));
+        customPlot->graph()->setPen(pen);
+        customPlot->graph()->setLineStyle(QCPGraph::lsNone);
+        customPlot->graph()->setScatterStyle(QCPScatterStyle(shapes[0].at(0)));
+        break;
+    default:
+        break;
     }
 }

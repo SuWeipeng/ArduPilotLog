@@ -299,8 +299,18 @@ signals:
     void offsetY10Changed       ();
     void visible10Changed       ();
 
+    void plotGraph              (QString tables,
+                                 QString fields,
+                                 int     offsetX,
+                                 float   offsetY,
+                                 float   scale,
+                                 int     linestyle,
+                                 int     color,
+                                 bool    visible,
+                                 bool    from);             // false:DataAnalyzeController,true:Other
+
 private slots:
-    void _setTableList(QString table);
+    void                _setTableList(QString table);
 
 private:
     bool                _isNumber(QString n);
@@ -318,8 +328,6 @@ private:
     int                 _color[MAX_LINE_NUM];
 
 public:
-    QVector<QCPScatterStyle::ScatterShape> shapes[MAX_LINE_NUM];
-    QVector<QColor>                        colors[MAX_LINE_NUM];
     QString                                tables[MAX_LINE_NUM];
     QString                                fields[MAX_LINE_NUM];
 };

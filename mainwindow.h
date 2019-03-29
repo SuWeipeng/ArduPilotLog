@@ -27,16 +27,28 @@ public:
     Ui::MainWindow&    ui()                       { return _ui; }
     void        requestTableList();
     void        closeEvent(QCloseEvent * event);
-    void        setComboboxList(QString table);
 
     void initTreeWidget();
     bool isTopItem(QTreeWidgetItem* item);
     void setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs, int column);
     void setParentCheckState(QTreeWidgetItem *item, int column);
 
+    QVector<QCPScatterStyle::ScatterShape> shapes[10];
+    QVector<QColor>                        colors[10];
+
 public slots:
     void resizeEvent(QResizeEvent* event);
     void itemChangedSlot(QTreeWidgetItem* item, int column);
+    void setComboboxList(QString table);
+    void plotGraph(QString tables,
+                   QString fields,
+                   int     offsetX,
+                   float   offsetY,
+                   float   scale,
+                   int     linestyle,
+                   int     color,
+                   bool    visible,
+                   bool    from);    // false:DataAnalyzeController,true:Other
 
 private slots:
     void _showDockWidgetAction(bool show);
@@ -74,6 +86,7 @@ private:
     void _fileOpenedTrigger();
     void _plot2d(QCustomPlot *customPlot, QString& table, QString& field);
     void _clearTreeWidget(QTreeWidget *treeWidget);
+    void _lineStyle(int index, int i);
 };
 
 #endif // MAINWINDOW_H
