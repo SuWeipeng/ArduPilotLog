@@ -1294,4 +1294,27 @@ Rectangle {
             controller.setLineColor10(_comboboxColor10.currentText)
         }
     }
+
+    Button{
+        anchors.top       : _comboboxColor10.bottom
+        anchors.topMargin : _margins
+        anchors.right     : _comboboxColor10.right
+
+        id: _buttonHideAll
+        width : _Width
+        height: _Height
+        text  : qsTr("Hide All")
+        onClicked:{
+            controller.setVisible1(false)
+            controller.setVisible2(false)
+            controller.setVisible3(false)
+            controller.setVisible4(false)
+            controller.setVisible5(false)
+            controller.setVisible6(false)
+            controller.setVisible7(false)
+            controller.setVisible8(false)
+            controller.setVisible9(false)
+            controller.setVisible10(false)
+        }
+    }
 }
