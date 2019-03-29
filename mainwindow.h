@@ -53,6 +53,7 @@ public slots:
 private slots:
     void _showDockWidgetAction(bool show);
     void _plotGraph(QTreeWidgetItem *item, int column);
+    void _removeGraph(QTreeWidgetItem *item, int column);
     void _reverseHoldOn();
     void _clearGraph();
     void _resetGraph();

@@ -261,6 +261,53 @@ void MainWindow::_plotGraph(QTreeWidgetItem *item, int column)
     customPlot->replot();
 }
 
+void MainWindow::_removeGraph(QTreeWidgetItem *item, int column)
+{
+    QTreeWidgetItem*   parent = item->parent();
+    QCustomPlot*       customPlot = MainWindow::getMainWindow()->ui().customPlot;
+    int                index;
+
+    if(NULL==parent) return;
+
+    index = parent->indexOfChild(item);
+    _table = parent->text(column);
+    _field = parent->child(index)->text(column);
+
+    QString remove_target = QString("%1.%2").arg(_table).arg(_field);
+
+    QStringList alreadyPloted;
+    if(_alreadyPloted.contains(remove_target)){
+        _alreadyPloted.removeOne(remove_target);
+        alreadyPloted = _alreadyPloted;
+        _alreadyPloted.clear();
+
+        if(alreadyPloted.length() == 0){
+            _ui.customPlot->legend->setVisible(false);
+        }
+    } else {
+        return;
+    }
+
+    _ui.customPlot->clearGraphs();
+
+    for(int i=0; i<alreadyPloted.length(); i++){
+        QStringList list = alreadyPloted.at(i).split(".");
+        _table = list[0];
+        _field = list[1];
+        plotGraph(_table,
+                  _field,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  true);
+    }
+
+    customPlot->replot();
+}
+
 void MainWindow::_reverseHoldOn()
 {
     _customPlot_hold_on = !_customPlot_hold_on;
@@ -377,6 +424,8 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
         {
             selectedCount++;
             _plotGraph(item->child(i), column);
+        } else {
+            _removeGraph(item->child(i), column);
         }
     }
 
