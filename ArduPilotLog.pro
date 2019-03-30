@@ -45,7 +45,9 @@ SOURCES += \
     APLLoggingCategory.cpp \
     APLDockWidget.cpp \
     src/Dialog.cpp \
+    src/DialogLoad.cpp \
     src/APLRead.cpp \
+    src/APLReadConf.cpp \
     src/APLDB.cpp \
     qcustomplot.cpp \
     src/DataAnalyzeController.cpp \
@@ -56,7 +58,9 @@ HEADERS += \
     APLLoggingCategory.h \
     APLDockWidget.h \
     src/Dialog.h \
+    src/DialogLoad.h \
     src/APLRead.h \
+    src/APLReadConf.h \
     src/LogStructure.h \
     src/APLDB.h \
     qcustomplot.h \

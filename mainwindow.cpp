@@ -28,6 +28,7 @@ enum DockWidgetTypes {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , _dialog(new Dialog)
+    , _dialog_load(new DialogLoad)
     , _table("")
     , _field("")
     , _comboBoxListINIT(true)
@@ -67,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _ui.treeWidget, &QTreeWidget::clear);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::clearGraph);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
+    connect(_ui.actionLoad,  &QAction::triggered, _dialog_load, &DialogLoad::showFile);
     connect(_ui.actionSaveDBFile,  &QAction::triggered, _dialog, &Dialog::saveFile);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
     connect(_dialog,  &Dialog::saveSuccess, this, &MainWindow::_saveSuccessMessage);
@@ -180,22 +182,38 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 void MainWindow::_fileOpenedTrigger()
 {
     QTreeWidgetItem* groupItem;
-    QStringList      groupName;
     int GroupCount     = APLDB::getAPLDB() -> getGroupCount();
     int ItemCount      = 0;
     int treeGroupCount = 0;
 
     for(int i = 1; i <= GroupCount; i++){
         if(APLDB::getAPLDB() -> isEmpty(APLDB::getAPLDB() -> getGroupName(i)) == false){
-            groupName << QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i));
+            _groupName << QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i));
             treeGroupCount++;
         }
     }
 
-    groupName.sort();
+    _groupName.sort();
+
+    QString table = "ATT";
+    QString field = "Roll";
+    if(_findTable(table)){
+        if(_findField(table, field)){
+            plotGraph(table,
+                      field,
+                      0,
+                      0,
+                      1,
+                      0,
+                      0,
+                      0,
+                      true);
+            _ui.customPlot->replot();
+        }
+    }
 
     for(int i = 0; i < treeGroupCount; i++){
-        QString table_name = groupName.at(i);
+        QString table_name = _groupName.at(i);
         groupItem = new QTreeWidgetItem(_ui.treeWidget,QStringList(table_name));
         ItemCount = APLDB::getAPLDB() -> getItemCount(table_name);
         for (int j = 1; j <= ItemCount; j++)
@@ -592,4 +610,33 @@ MainWindow::_lineStyle(int index, int i, bool from){
         break;
     }
     customPlot->graph()->setPen(pen);
+}
+
+bool
+MainWindow::_findTable(QString table)
+{
+    qCDebug(MAIN_WINDOW_LOG) << _groupName;
+    if(_groupName.contains(table)){
+        qCDebug(MAIN_WINDOW_LOG) << "find table";
+        return true;
+    }
+
+    qCDebug(MAIN_WINDOW_LOG) << "can not find table";
+    return false;
+}
+
+bool
+MainWindow::_findField(QString table, QString field)
+{
+    int ItemCount = APLDB::getAPLDB() -> getItemCount(table);
+    for (int j = 1; j <= ItemCount; j++)
+    {
+        if(APLDB::getAPLDB() -> getItemName(table, j).compare(field) == 0){
+            qCDebug(MAIN_WINDOW_LOG) << "find field";
+            return true;
+        }
+    }
+
+    qCDebug(MAIN_WINDOW_LOG) << "can not find field";
+    return false;
 }

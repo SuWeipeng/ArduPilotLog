@@ -7,6 +7,7 @@
 #include "APLLoggingCategory.h"
 #include "APLDockWidget.h"
 #include "src/Dialog.h"
+#include "src/DialogLoad.h"
 #include "qcustomplot.h"
 
 Q_DECLARE_LOGGING_CATEGORY(MAIN_WINDOW_LOG)
@@ -69,6 +70,7 @@ signals:
 private:
     Ui::MainWindow      _ui;
     Dialog*             _dialog;
+    DialogLoad*         _dialog_load;
     static bool         _customPlot_hold_on;
     static int          _comboBoxIndex;
     static bool         _X_axis_changed;
@@ -77,6 +79,7 @@ private:
     QString             _field;
     QStringList         _comboBoxList;
     QStringList         _alreadyPloted;
+    QStringList         _groupName;
     bool                _comboBoxListINIT;
     int                 _action_bold;
 
@@ -89,6 +92,8 @@ private:
     void _fileOpenedTrigger();
     void _clearTreeWidget(QTreeWidget *treeWidget);
     void _lineStyle(int index, int i, bool from);
+    bool _findTable(QString table);
+    bool _findField(QString table, QString field);
 };
 
 #endif // MAINWINDOW_H
