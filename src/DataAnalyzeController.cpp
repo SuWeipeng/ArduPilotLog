@@ -14,6 +14,9 @@ DataAnalyzeController::DataAnalyzeController()
     connect(this, &DataAnalyzeController::clearGraph, MainWindow::getMainWindow(),  &MainWindow::clearGraph);
     connect(this, &DataAnalyzeController::clear_alreadyPloted, MainWindow::getMainWindow(),  &MainWindow::clear_alreadyPloted);
 
+    QList<int> list;
+    MainWindow::getMainWindow()->ui().splitter->setSizes(list<<0<<1);
+
     init();
 }
 

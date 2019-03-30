@@ -171,7 +171,7 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
    //resize the verticalLayoutWidget
    resizeRect.setWidth(widgetWidth*horRatio);
-   resizeRect.setHeight(widgetHeight*verRatio - _ui.toolBar->height() - 10);
+   resizeRect.setHeight(widgetHeight*verRatio - 10);
 
    //set Geometry
    mainWidget->setGeometry(resizeRect);
