@@ -653,8 +653,6 @@ MainWindow::plotConf(QStringList conf)
         style = list[2];
         color = list[3];
 
-        qDebug()<<table<<field<<style<<color;
-
         if(_findTable(table)){
             if(_findField(table, field)){
                 plotGraph(table,
