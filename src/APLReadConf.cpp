@@ -3,6 +3,7 @@
 #include <QRegExpValidator>
 #include <QFileInfo>
 #include "APLReadConf.h"
+#include "mainwindow.h"
 
 APL_LOGGING_CATEGORY(APLREAD_CONF_LOG,        "APLReadConfLog")
 
@@ -24,5 +25,35 @@ void APLReadConf::getFileDir(const QString &file_dir)
 
 void APLReadConf::getDatastream(const QString &file_dir)
 {
+    QFile  file;
 
+    file.setFileName(file_dir);
+    if(!file.open(QIODevice::ReadOnly))
+    {
+         qCDebug(APLREAD_CONF_LOG)<< "can not open file!";
+         return;
+    }
+
+    QTextStream in(&file);
+    _decode(in);
+
+    emit fileOpened();
+    qCDebug(APLREAD_CONF_LOG) << "All plot config have been read";
+
+    file.close();
+}
+
+void APLReadConf::_decode(QTextStream &in) const
+{
+    QStringList conf;
+    QString lineStr;
+    while(!in.atEnd())
+    {
+        lineStr = in.readLine();
+        if(!lineStr.isEmpty()){
+            conf.append(lineStr);
+        }
+    }
+
+    MainWindow::getMainWindow()->set_conf(conf);
 }

@@ -23,6 +23,8 @@ public slots:
     void getFileDir(const QString &file_dir);
 
 private:
+    void    _decode(QTextStream &in) const;
+
     QString _file_name;
 };
 

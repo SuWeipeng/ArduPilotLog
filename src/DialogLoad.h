@@ -18,7 +18,7 @@ public:
     DialogLoad(QWidget *parent = 0);
     ~DialogLoad();
 
-    APLReadConf* getAPLRead() const { return _aplReadConf; }
+    APLReadConf* getAPLReadConf() const { return _aplReadConf; }
 
 public slots:
     void showFile();

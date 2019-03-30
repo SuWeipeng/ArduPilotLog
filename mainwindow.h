@@ -33,6 +33,7 @@ public:
     bool isTopItem(QTreeWidgetItem* item);
     void setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs, int column);
     void setParentCheckState(QTreeWidgetItem *item, int column);
+    void set_conf(QStringList conf) { _conf = conf; }
 
     QVector<QCPScatterStyle::ScatterShape> shapes[10];
     QVector<QColor>                        colors[10];
@@ -52,6 +53,7 @@ public slots:
                    bool    from);    // false:DataAnalyzeController,true:Other
     void clear_alreadyPloted() { _alreadyPloted.clear(); }
     void clearGraph();
+    void plotConf(QStringList conf);
 
 private slots:
     void _showDockWidgetAction(bool show);
@@ -63,6 +65,7 @@ private slots:
     void on_customPlot_customContextMenuRequested();
     void on_comboBox_currentIndexChanged(const QString &arg1);
     void _saveSuccessMessage();
+    void _confOpenedTrigger();
 
 signals:
     void treeWidgetAddItem(QString name);
@@ -80,6 +83,7 @@ private:
     QStringList         _comboBoxList;
     QStringList         _alreadyPloted;
     QStringList         _groupName;
+    QStringList         _conf;
     bool                _comboBoxListINIT;
     int                 _action_bold;
 

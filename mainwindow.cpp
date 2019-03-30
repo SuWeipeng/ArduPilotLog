@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "src/APLRead.h"
+#include "src/APLReadConf.h"
 #include "src/APLDB.h"
 #include "src/DataAnalyze.h"
 #include "src/DataAnalyzeController.h"
@@ -71,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_ui.actionLoad,  &QAction::triggered, _dialog_load, &DialogLoad::showFile);
     connect(_ui.actionSaveDBFile,  &QAction::triggered, _dialog, &Dialog::saveFile);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
+    connect(_dialog_load->getAPLReadConf(),  &APLReadConf::fileOpened, this, &MainWindow::_confOpenedTrigger);
     connect(_dialog,  &Dialog::saveSuccess, this, &MainWindow::_saveSuccessMessage);
     connect(this,  &MainWindow::treeWidgetAddItem, this, &MainWindow::setComboboxList);
 }
@@ -194,23 +196,6 @@ void MainWindow::_fileOpenedTrigger()
     }
 
     _groupName.sort();
-
-    QString table = "ATT";
-    QString field = "Roll";
-    if(_findTable(table)){
-        if(_findField(table, field)){
-            plotGraph(table,
-                      field,
-                      0,
-                      0,
-                      1,
-                      0,
-                      0,
-                      0,
-                      true);
-            _ui.customPlot->replot();
-        }
-    }
 
     for(int i = 0; i < treeGroupCount; i++){
         QString table_name = _groupName.at(i);
@@ -639,4 +624,39 @@ MainWindow::_findField(QString table, QString field)
 
     qCDebug(MAIN_WINDOW_LOG) << "can not find field";
     return false;
+}
+
+void MainWindow::_confOpenedTrigger()
+{
+    plotConf(_conf);
+}
+
+void
+MainWindow::plotConf(QStringList conf)
+{
+    QString table;
+    QString field;
+
+    clearGraph();
+
+    for(int i=0; i<conf.length(); i++){
+        QStringList list = conf.at(i).split(".");
+        table = list[0];
+        field = list[1];
+
+        if(_findTable(table)){
+            if(_findField(table, field)){
+                plotGraph(table,
+                          field,
+                          0,
+                          0,
+                          1,
+                          0,
+                          0,
+                          0,
+                          true);
+            }
+        }
+    }
+    _ui.customPlot->replot();
 }
