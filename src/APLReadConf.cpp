@@ -5,6 +5,8 @@
 #include "APLReadConf.h"
 #include "mainwindow.h"
 
+#define APPEND_STR ".0.0"
+
 APL_LOGGING_CATEGORY(APLREAD_CONF_LOG,        "APLReadConfLog")
 
 APLReadConf::APLReadConf()
@@ -51,9 +53,12 @@ void APLReadConf::_decode(QTextStream &in) const
     {
         lineStr = in.readLine();
 
+        lineStr.append(APPEND_STR);
+        qDebug()<<lineStr;
+
         if(lineStr.left(1).compare("#") == 0) continue;
 
-        if(!lineStr.isEmpty()){
+        if(lineStr.compare(APPEND_STR) != 0){
             conf.append(lineStr);
         }
     }
