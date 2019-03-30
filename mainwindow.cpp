@@ -500,14 +500,13 @@ MainWindow::plotGraph(QString tables,
 
     QString plot_target = QString("%1.%2").arg(tables).arg(fields);
 
-    qCDebug(MAIN_WINDOW_LOG) << "from: "<<from<<"target: "<<plot_target;
-
     if(!_alreadyPloted.contains(plot_target))
         _alreadyPloted << plot_target;
     else
         return;
 
     if(visible || from){
+        qCDebug(MAIN_WINDOW_LOG) << "from: "<<from<<"target: "<<plot_target;
         customPlot->addGraph();
         int length = APLDB::getAPLDB() -> getLen(tables, fields);
         QVector<double> x(length), y(length);
