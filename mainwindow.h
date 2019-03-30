@@ -85,6 +85,7 @@ private:
     QStringList         _groupName;
     QStringList         _conf;
     bool                _comboBoxListINIT;
+    bool                _conf_plot;
     int                 _action_bold;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;

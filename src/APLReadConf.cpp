@@ -50,6 +50,9 @@ void APLReadConf::_decode(QTextStream &in) const
     while(!in.atEnd())
     {
         lineStr = in.readLine();
+
+        if(lineStr.left(1).compare("#") == 0) continue;
+
         if(!lineStr.isEmpty()){
             conf.append(lineStr);
         }

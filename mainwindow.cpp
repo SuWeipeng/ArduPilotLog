@@ -545,7 +545,7 @@ MainWindow::_lineStyle(int index, int i, bool from){
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
     QPen pen;
 
-    if(from){
+    if(from && !_conf_plot){
         int  R = 0+qrand()%(255-0);
         int  G = 0+qrand()%(255-0);
         int  B = 0+qrand()%(255-0);
@@ -628,6 +628,7 @@ MainWindow::_findField(QString table, QString field)
 
 void MainWindow::_confOpenedTrigger()
 {
+    _conf_plot = true;
     plotConf(_conf);
 }
 
@@ -636,6 +637,8 @@ MainWindow::plotConf(QStringList conf)
 {
     QString table;
     QString field;
+    QString style;
+    QString color;
 
     clearGraph();
 
@@ -643,6 +646,8 @@ MainWindow::plotConf(QStringList conf)
         QStringList list = conf.at(i).split(".");
         table = list[0];
         field = list[1];
+        style = list[2];
+        color = list[3];
 
         if(_findTable(table)){
             if(_findField(table, field)){
@@ -651,12 +656,14 @@ MainWindow::plotConf(QStringList conf)
                           0,
                           0,
                           1,
-                          0,
-                          0,
+                          style.toInt(),
+                          color.toInt(),
                           0,
                           true);
             }
         }
     }
     _ui.customPlot->replot();
+
+    _conf_plot = false;
 }
