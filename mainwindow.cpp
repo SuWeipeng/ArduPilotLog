@@ -628,7 +628,11 @@ MainWindow::_findField(QString table, QString field)
 
 void MainWindow::_confOpenedTrigger()
 {
+    QList<int> list;
+
+    _ui.splitter->setSizes(list<<0<<1);
     _conf_plot = true;
+
     plotConf(_conf);
 }
 
