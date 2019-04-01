@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     , _field("")
     , _comboBoxListINIT(true)
     , _action_bold(0x1<<0)
+    , _conf_plot(false)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
