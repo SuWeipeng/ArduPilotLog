@@ -644,23 +644,81 @@ MainWindow::plotConf(QStringList conf)
     QString field;
     QString style;
     QString color;
+    QString scale("1");
+    QString offsetX("0");
+    QString offsetY("0");
 
     clearGraph();
 
     for(int i=0; i<conf.length(); i++){
-        QStringList list = conf.at(i).split(".");
-        table = list[0];
-        field = list[1];
-        style = list[2];
-        color = list[3];
+        QString str(conf.at(i));
+        QRegExp reg_1("[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.\\d\\.\\d");
+        QRegExp reg_2("[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.\\d\\.\\d\\(\\-?\\d+\\.?\\d*\\s*\\,\\s*\\-?\\d+\\.?\\d*\\s*\\,\\s*\\-?\\d+\\.?\\d*\\)");
+        QRegExpValidator validator_1(reg_1,0);
+        QRegExpValidator validator_2(reg_2,0);
+        bool check_ok = false;
+
+        int pos = 0;
+
+        if(reg_1.isValid() && !check_ok){
+            switch(validator_1.validate(str,pos)){
+            case QValidator::Invalid:
+                qCDebug(MAIN_WINDOW_LOG)<<"reg_1 QValidator::Invalid";
+                break;
+            case QValidator::Intermediate:
+                qCDebug(MAIN_WINDOW_LOG)<<"reg_1 QValidator::Intermediate";
+                if(str.count(".")==1){
+                    str.append(".0.0");
+                }
+                break;
+            case QValidator::Acceptable:
+                QStringList list = str.split(".");
+                table = list[0];
+                field = list[1];
+                style = list[2];
+                color = list[3];
+
+                check_ok = true;
+
+                break;
+            }
+        }
+
+        if(reg_2.isValid() && !check_ok){
+            switch(validator_2.validate(str,pos)){
+            case QValidator::Invalid:
+                qCDebug(MAIN_WINDOW_LOG)<<"reg_2 QValidator::Invalid";
+                break;
+            case QValidator::Intermediate:
+                qCDebug(MAIN_WINDOW_LOG)<<"reg_2 QValidator::Intermediate";
+                break;
+            case QValidator::Acceptable:
+                QString table_filed_style_color(str.left(str.indexOf("(")));
+                QStringList list_1 = table_filed_style_color.split(".");
+                table = list_1[0];
+                field = list_1[1];
+                style = list_1[2];
+                color = list_1[3];
+
+                QString scale_offsetX_offsetY(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1).remove(QRegExp("\\s")));
+                QStringList list = scale_offsetX_offsetY.split(",");
+                scale   = list[0];
+                offsetX = list[1];
+                offsetY = list[2];
+
+                check_ok = true;
+
+                break;
+            }
+        }
 
         if(_findTable(table)){
             if(_findField(table, field)){
                 plotGraph(table,
                           field,
-                          0,
-                          0,
-                          1,
+                          offsetX.toInt(),
+                          offsetY.toFloat(),
+                          scale.toFloat(),
                           style.toInt(),
                           color.toInt(),
                           0,
