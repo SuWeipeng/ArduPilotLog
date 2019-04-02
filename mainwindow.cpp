@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     , _comboBoxListINIT(true)
     , _action_bold(0x1<<0)
     , _conf_plot(false)
+    , _is_constant(false)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
@@ -504,6 +505,10 @@ MainWindow::plotGraph(QString tables,
 
     QString plot_target = QString("%1.%2").arg(tables).arg(fields);
 
+    if(_is_constant){
+        plot_target = QString("const: %1").arg(_constant_value);
+    }
+
     if(!_alreadyPloted.contains(plot_target))
         _alreadyPloted << plot_target;
     else
@@ -517,6 +522,13 @@ MainWindow::plotGraph(QString tables,
 
         getXSuccess = APLDB::getAPLDB() -> getData(tables, MainWindow::getMainWindow()->ui().comboBox->currentText(), length, x, offsetX);
         getYSuccess = APLDB::getAPLDB() -> getData(tables, fields, length, y, offsetY, scale);
+
+        if(_is_constant){
+            QVector<double> constant(length, _constant_value);
+            y.swap(constant);
+            _is_constant = false;
+        }
+
         if(getXSuccess && getYSuccess){
             customPlot->graph()->setData(x, y);
         } else {
@@ -601,9 +613,9 @@ MainWindow::_lineStyle(int index, int i, bool from){
 bool
 MainWindow::_findTable(QString table)
 {
-    qCDebug(MAIN_WINDOW_LOG) << _groupName;
+//    qCDebug(MAIN_WINDOW_LOG) << _groupName;
     if(_groupName.contains(table)){
-        qCDebug(MAIN_WINDOW_LOG) << "find table";
+//        qCDebug(MAIN_WINDOW_LOG) << "find table";
         return true;
     }
 
@@ -618,7 +630,7 @@ MainWindow::_findField(QString table, QString field)
     for (int j = 1; j <= ItemCount; j++)
     {
         if(APLDB::getAPLDB() -> getItemName(table, j).compare(field) == 0){
-            qCDebug(MAIN_WINDOW_LOG) << "find field";
+//            qCDebug(MAIN_WINDOW_LOG) << "find field";
             return true;
         }
     }
@@ -654,8 +666,10 @@ MainWindow::plotConf(QStringList conf)
         QString str(conf.at(i));
         QRegExp reg_1("[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.\\d\\.\\d");
         QRegExp reg_2("[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.\\d\\.\\d\\(\\-?\\d+\\.?\\d*\\s*\\,\\s*\\-?\\d+\\.?\\d*\\s*\\,\\s*\\-?\\d+\\.?\\d*\\)");
+        QRegExp reg_3("\\<\\s*[A-Za-z0-9]*\\s*\\>\\s*[A-Za-Z0-9]+\\:\\d+\\.?\\d*\\s+\\d\\.\\d");
         QRegExpValidator validator_1(reg_1,0);
         QRegExpValidator validator_2(reg_2,0);
+        QRegExpValidator validator_3(reg_3,0);
         bool check_ok = false;
 
         int pos = 0;
@@ -712,6 +726,37 @@ MainWindow::plotConf(QStringList conf)
             }
         }
 
+        if(reg_3.isValid() && !check_ok){
+            switch(validator_3.validate(str,pos)){
+            case QValidator::Invalid:
+                qCDebug(MAIN_WINDOW_LOG)<<"reg_3 QValidator::Invalid";
+                break;
+            case QValidator::Intermediate:
+                qCDebug(MAIN_WINDOW_LOG)<<"reg_3 QValidator::Intermediate";
+                break;
+            case QValidator::Acceptable:
+                qCDebug(MAIN_WINDOW_LOG)<<"reg_3 QValidator::Acceptable";
+                QString command_str(str.simplified());
+                QString command = command_str.mid(command_str.indexOf("<")+1, command_str.indexOf(">")-command_str.indexOf("<")-1);
+                if(command.compare("const")==0 || command.compare("")==0){
+                    QStringList list = command_str.split(QRegExp("[:\\s]"));
+                    table = list[1];
+                    field = MainWindow::getMainWindow()->ui().comboBox->currentText();
+                    QString constant_value  = list[2];
+                    QString style_color = list[3];
+                    QStringList style_color_list = style_color.split(".");
+                    style = style_color_list[0];
+                    color = style_color_list[1];
+                    _constant_value = constant_value.toDouble();
+
+                    _is_constant = true;
+                }
+
+                check_ok = true;
+
+                break;
+            }
+        }
         if(_findTable(table)){
             if(_findField(table, field)){
                 plotGraph(table,
