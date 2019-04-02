@@ -191,6 +191,8 @@ void MainWindow::_fileOpenedTrigger()
     int ItemCount      = 0;
     int treeGroupCount = 0;
 
+    _groupName.clear();
+
     for(int i = 1; i <= GroupCount; i++){
         if(APLDB::getAPLDB() -> isEmpty(APLDB::getAPLDB() -> getGroupName(i)) == false){
             _groupName << QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i));
