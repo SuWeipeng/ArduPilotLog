@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     , _action_bold(0x1<<0)
     , _conf_plot(false)
     , _is_constant(false)
+    , _replot(false)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
@@ -384,6 +385,8 @@ void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
     QStringList alreadyPloted = _alreadyPloted;
     clear_alreadyPloted();
 
+    if(!_replot) return;
+
     for(int i=0; i<alreadyPloted.length(); i++){
         QStringList list = alreadyPloted.at(i).split(".");
         _table = list[0];
@@ -564,8 +567,10 @@ MainWindow::_lineStyle(int index, int i, bool from){
         int  B = 0+qrand()%(255-0);
         qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
         pen.setColor(QColor(R, G, B));
+        _replot = true;
     } else {
         pen.setColor(colors[0].at(i));
+        _replot = false;
     }
 
     switch (index) {
