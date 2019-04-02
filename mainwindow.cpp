@@ -646,6 +646,8 @@ void MainWindow::_confOpenedTrigger()
     _ui.splitter->setSizes(list<<0<<1);
     _conf_plot = true;
 
+    clear_alreadyPloted();
+
     plotConf(_conf);
 }
 
@@ -679,13 +681,17 @@ MainWindow::plotConf(QStringList conf)
             case QValidator::Invalid:
                 qCDebug(MAIN_WINDOW_LOG)<<"reg_1 QValidator::Invalid";
                 break;
-            case QValidator::Intermediate:
+            case QValidator::Intermediate:{
                 qCDebug(MAIN_WINDOW_LOG)<<"reg_1 QValidator::Intermediate";
+                QStringList list = str.split(".");
+                table = list[0];
+                field = list[1];
                 if(str.count(".")==1){
                     str.append(".0.0");
                 }
                 break;
-            case QValidator::Acceptable:
+            }
+            case QValidator::Acceptable:{
                 QStringList list = str.split(".");
                 table = list[0];
                 field = list[1];
@@ -695,6 +701,7 @@ MainWindow::plotConf(QStringList conf)
                 check_ok = true;
 
                 break;
+            }
             }
         }
 
@@ -706,7 +713,7 @@ MainWindow::plotConf(QStringList conf)
             case QValidator::Intermediate:
                 qCDebug(MAIN_WINDOW_LOG)<<"reg_2 QValidator::Intermediate";
                 break;
-            case QValidator::Acceptable:
+            case QValidator::Acceptable:{
                 QString table_filed_style_color(str.left(str.indexOf("(")));
                 QStringList list_1 = table_filed_style_color.split(".");
                 table = list_1[0];
@@ -723,6 +730,7 @@ MainWindow::plotConf(QStringList conf)
                 check_ok = true;
 
                 break;
+                }
             }
         }
 
@@ -734,7 +742,7 @@ MainWindow::plotConf(QStringList conf)
             case QValidator::Intermediate:
                 qCDebug(MAIN_WINDOW_LOG)<<"reg_3 QValidator::Intermediate";
                 break;
-            case QValidator::Acceptable:
+            case QValidator::Acceptable:{
                 qCDebug(MAIN_WINDOW_LOG)<<"reg_3 QValidator::Acceptable";
                 QString command_str(str.simplified());
                 QString command = command_str.mid(command_str.indexOf("<")+1, command_str.indexOf(">")-command_str.indexOf("<")-1);
@@ -756,7 +764,9 @@ MainWindow::plotConf(QStringList conf)
 
                 break;
             }
+            }
         }
+
         if(_findTable(table)){
             if(_findField(table, field)){
                 plotGraph(table,
