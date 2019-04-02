@@ -626,6 +626,8 @@ MainWindow::_findTable(QString table)
 bool
 MainWindow::_findField(QString table, QString field)
 {
+    if(_is_constant) return true;
+
     int ItemCount = APLDB::getAPLDB() -> getItemCount(table);
     for (int j = 1; j <= ItemCount; j++)
     {
