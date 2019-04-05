@@ -30,13 +30,13 @@ ArduPilotLog 是 ardupilot 日志数据绘图软件。为快速展示 Log 日志
 
 3. 脚本绘图
 > “脚本绘图”用于反复验证已锁定的目标数据是否合理的情形。
-> 将与当前问题有关的数据锁定后，往往需要多次采集 Log 日志，重复分析以遍验证。这时使用脚本绘图比较方便，以免去每次点选、调整比例等麻烦。
+> 将与当前问题有关的数据锁定后，往往需要多次采集 Log 日志，重复分析以便证实。这时使用脚本绘图比较方便，以免去每次点选、调整比例等麻烦。
 
 <br/>加载脚本</br>
 <br/>![ArduPilotLog_7_ScriptPlot.png](http://qiniu.suwp.fun/ArduPilotLog_7_ScriptPlot.png)</br>
 <br/>![ArduPilotLog_8_ScriptPlot.png](http://qiniu.suwp.fun/ArduPilotLog_8_ScriptPlot.png)</br>
 
-<br/>脚本语法如下图（也可见 **conf/ReadMe.md**）</br>
+<br/>脚本语法如下图（也可见 **[conf/ReadMe.md](https://github.com/SuWeipeng/ArduPilotLog/blob/master/conf/ReadMe.md)**）</br>
 ![ArduPilotLog_9_ScriptPlot.png](http://qiniu.suwp.fun/ArduPilotLog_9_ScriptPlot.png)
 
 ## 编译方法
@@ -47,7 +47,7 @@ ArduPilotLog 软件架构源于[qgroundcontrol](https://github.com/mavlink/qgrou
 <br/>后来在研究ardupilot的过程中经常要分析Log。使用过MissionPlanner、APM Planner等软件看Log日志，有几个体验一直觉得不爽：</br>
 1. MissionPlanner最难受的是有时看看日志会卡死。
 2. 我更关心图线，不是很在意数据，而界面留了一部分展示数据，每次都要手动拉小数据部分。
-3. “看Log日志数据”只是这些软件的的“一部分”功能。也就是说每次为了看数据，必须先要打开这些软件，等待其余功能加载完毕，然后点到这个功能，浪费时间。
+3. “看Log日志数据”只是这些软件的“一部分”功能。也就是说每次为了看数据，必须先要打开这些软件，等待其余功能加载完毕，然后点到这个功能，浪费时间。
 4. 于上位机的角度讲，QGC的界面划分和操作方式更适合我，却单单缺少查看Log日志数据这个功能。
 
 <br/>基于以上原因，就自己写个软件搞定自己的需求吧。</br>
@@ -69,7 +69,7 @@ ArduPilotLog 软件架构源于[qgroundcontrol](https://github.com/mavlink/qgrou
 5. QT SQLite 数据库。
 6. QT 界面与后台数据的分离与整合。
 7. QT 信号与槽通信机制。
-8. QT 二制制文件读写。
+8. QT 二进制文件读写。
 9. QT 文本文件读取。
 10. QT 正则表达式使用。
 11. ardupilot 日志文件结构。
@@ -102,3 +102,6 @@ ArduPilotLog 软件架构源于[qgroundcontrol](https://github.com/mavlink/qgrou
 5）其他各种想到的值得分享的东西。
 
 **这是一个因学习而生的项目，它未来更大的意义不是从丑小鸭进化成白天鹅，而是为同样0起点的后来人铺上一块前往更高层次的砖。**
+
+## 喜欢交流的朋友可以加作者微信
+<br/>![weixin.png](http://qiniu.suwp.fun/weixin.png)</br>
