@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#define PACKED
+
 /*
   unfortunately these need to be macros because of a limitation of
   named member structure initialisation in g++
