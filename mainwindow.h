@@ -53,6 +53,7 @@ public slots:
                    bool    from);    // false:DataAnalyzeController,true:Other
     void clear_alreadyPloted() { _alreadyPloted.clear(); }
     void clearGraph();
+    void clearGraphNotTree();
     void plotConf(QStringList conf);
 
 private slots:
@@ -62,6 +63,7 @@ private slots:
     void _resetGraph();
     void _zoomX();
     void _zoomY();
+    void _zoomAll();
     void on_customPlot_customContextMenuRequested();
     void on_comboBox_currentIndexChanged(const QString &arg1);
     void _saveSuccessMessage();
@@ -88,6 +90,7 @@ private:
     bool                _conf_plot;
     bool                _is_constant;
     bool                _replot;
+    bool                _plotConf;
     double              _constant_value;
     int                 _action_bold;
 

@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
     , _conf_plot(false)
     , _is_constant(false)
     , _replot(false)
+    , _plotConf(false)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
@@ -317,10 +318,20 @@ void MainWindow::_removeGraph(QTreeWidgetItem *item, int column)
 
 void MainWindow::clearGraph()
 {
+    clear_alreadyPloted();
     _ui.customPlot->legend->setVisible(false);
     _ui.customPlot->clearGraphs();
     _ui.customPlot->replot();
     _clearTreeWidget(_ui.treeWidget);
+}
+
+void MainWindow::clearGraphNotTree()
+{
+    clear_alreadyPloted();
+    _ui.customPlot->legend->setVisible(false);
+    _ui.customPlot->clearGraphs();
+    _ui.customPlot->replot();
+//    _clearTreeWidget(_ui.treeWidget);
 }
 
 void MainWindow::_resetGraph()
@@ -343,6 +354,12 @@ void MainWindow::_zoomY()
     _ui.customPlot->axisRect()->setRangeZoomAxes(NULL, _ui.customPlot->yAxis);
 }
 
+void MainWindow::_zoomAll()
+{
+    _action_bold = (0x1<<3);
+    _ui.customPlot->axisRect()->setRangeZoomAxes(_ui.customPlot->xAxis, _ui.customPlot->yAxis);
+}
+
 void MainWindow::on_customPlot_customContextMenuRequested()
 {
     QFont ft;
@@ -353,7 +370,7 @@ void MainWindow::on_customPlot_customContextMenuRequested()
     connect(pClearGraph, &QAction::triggered, this, &MainWindow::clearGraph);
     menu->addAction(pClearGraph);
     // Reset graph
-    QAction* pResetGraph = new QAction(tr("Set to default"), this);
+    QAction* pResetGraph = new QAction(tr("Reset graph"), this);
     ft.setBold((_action_bold & 0x1) != 0);
     pResetGraph->setFont(ft);
     connect(pResetGraph, &QAction::triggered, this, &MainWindow::_resetGraph);
@@ -370,7 +387,12 @@ void MainWindow::on_customPlot_customContextMenuRequested()
     pZoomY->setFont(ft);
     connect(pZoomY, &QAction::triggered, this, &MainWindow::_zoomY);
     menu->addAction(pZoomY);
-
+    // Zoom All
+    QAction* pZoomAll = new QAction(tr("Zoom All"), this);
+    ft.setBold((_action_bold & 0x8) != 0);
+    pZoomAll->setFont(ft);
+    connect(pZoomAll, &QAction::triggered, this, &MainWindow::_zoomAll);
+    menu->addAction(pZoomAll);
     menu->exec(QCursor::pos());
 }
 
@@ -445,6 +467,15 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
     if(!item) return;
     int selectedCount=0;
     int childCount = item->childCount();
+
+    if(_plotConf){
+        clear_alreadyPloted();
+        _ui.customPlot->legend->setVisible(false);
+        _ui.customPlot->clearGraphs();
+        _ui.customPlot->replot();
+        _plotConf = false;
+    }
+
     for (int i=0;i<childCount;i++)
     {
         QTreeWidgetItem* child= item->child(i);
@@ -506,6 +537,16 @@ MainWindow::plotGraph(QString tables,
 {
     bool getXSuccess = false;
     bool getYSuccess = false;
+    static bool from_last = from;
+
+    if(!from_last && from){
+        clear_alreadyPloted();
+        _ui.customPlot->legend->setVisible(false);
+        _ui.customPlot->clearGraphs();
+        _ui.customPlot->replot();
+    }
+    from_last = from;
+
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
     QString plot_target = QString("%1.%2").arg(tables).arg(fields);
@@ -671,7 +712,8 @@ MainWindow::plotConf(QStringList conf)
     QString offsetX("0");
     QString offsetY("0");
 
-    clearGraph();
+    clearGraphNotTree();
+    _plotConf = true;
 
     for(int i=0; i<conf.length(); i++){
         QString str(conf.at(i));
