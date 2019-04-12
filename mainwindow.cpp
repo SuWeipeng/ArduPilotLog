@@ -343,6 +343,12 @@ void MainWindow::_zoomY()
     _ui.customPlot->axisRect()->setRangeZoomAxes(NULL, _ui.customPlot->yAxis);
 }
 
+void MainWindow::_zoomAll()
+{
+    _action_bold = (0x1<<3);
+    _ui.customPlot->axisRect()->setRangeZoomAxes(_ui.customPlot->xAxis, _ui.customPlot->yAxis);
+}
+
 void MainWindow::on_customPlot_customContextMenuRequested()
 {
     QFont ft;
@@ -353,7 +359,7 @@ void MainWindow::on_customPlot_customContextMenuRequested()
     connect(pClearGraph, &QAction::triggered, this, &MainWindow::clearGraph);
     menu->addAction(pClearGraph);
     // Reset graph
-    QAction* pResetGraph = new QAction(tr("Set to default"), this);
+    QAction* pResetGraph = new QAction(tr("Reset graph"), this);
     ft.setBold((_action_bold & 0x1) != 0);
     pResetGraph->setFont(ft);
     connect(pResetGraph, &QAction::triggered, this, &MainWindow::_resetGraph);
@@ -370,7 +376,12 @@ void MainWindow::on_customPlot_customContextMenuRequested()
     pZoomY->setFont(ft);
     connect(pZoomY, &QAction::triggered, this, &MainWindow::_zoomY);
     menu->addAction(pZoomY);
-
+    // Zoom All
+    QAction* pZoomAll = new QAction(tr("Zoom All"), this);
+    ft.setBold((_action_bold & 0x8) != 0);
+    pZoomAll->setFont(ft);
+    connect(pZoomAll, &QAction::triggered, this, &MainWindow::_zoomAll);
+    menu->addAction(pZoomAll);
     menu->exec(QCursor::pos());
 }
 

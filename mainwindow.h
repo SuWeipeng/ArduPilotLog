@@ -62,6 +62,7 @@ private slots:
     void _resetGraph();
     void _zoomX();
     void _zoomY();
+    void _zoomAll();
     void on_customPlot_customContextMenuRequested();
     void on_comboBox_currentIndexChanged(const QString &arg1);
     void _saveSuccessMessage();
