@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
     , _conf_plot(false)
     , _is_constant(false)
     , _replot(false)
+    , _plotConf(false)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
@@ -317,6 +318,7 @@ void MainWindow::_removeGraph(QTreeWidgetItem *item, int column)
 
 void MainWindow::clearGraph()
 {
+    clear_alreadyPloted();
     _ui.customPlot->legend->setVisible(false);
     _ui.customPlot->clearGraphs();
     _ui.customPlot->replot();
@@ -456,6 +458,15 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
     if(!item) return;
     int selectedCount=0;
     int childCount = item->childCount();
+
+    if(_plotConf){
+        clear_alreadyPloted();
+        _ui.customPlot->legend->setVisible(false);
+        _ui.customPlot->clearGraphs();
+        _ui.customPlot->replot();
+        _plotConf = false;
+    }
+
     for (int i=0;i<childCount;i++)
     {
         QTreeWidgetItem* child= item->child(i);
@@ -517,6 +528,16 @@ MainWindow::plotGraph(QString tables,
 {
     bool getXSuccess = false;
     bool getYSuccess = false;
+    static bool from_last = from;
+
+    if(!from_last && from){
+        clear_alreadyPloted();
+        _ui.customPlot->legend->setVisible(false);
+        _ui.customPlot->clearGraphs();
+        _ui.customPlot->replot();
+    }
+    from_last = from;
+
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
     QString plot_target = QString("%1.%2").arg(tables).arg(fields);
@@ -683,6 +704,7 @@ MainWindow::plotConf(QStringList conf)
     QString offsetY("0");
 
     clearGraph();
+    _plotConf = true;
 
     for(int i=0; i<conf.length(); i++){
         QString str(conf.at(i));

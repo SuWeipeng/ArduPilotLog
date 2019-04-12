@@ -89,6 +89,7 @@ private:
     bool                _conf_plot;
     bool                _is_constant;
     bool                _replot;
+    bool                _plotConf;
     double              _constant_value;
     int                 _action_bold;
 
