@@ -11,7 +11,7 @@ DataAnalyzeController::DataAnalyzeController()
 {
     connect(MainWindow::getMainWindow(),  &MainWindow::treeWidgetAddItem, this, &DataAnalyzeController::_setTableList);
     connect(this, &DataAnalyzeController::plotGraph, MainWindow::getMainWindow(),  &MainWindow::plotGraph);
-    connect(this, &DataAnalyzeController::clearGraph, MainWindow::getMainWindow(),  &MainWindow::clearGraph);
+    connect(this, &DataAnalyzeController::clearGraph, MainWindow::getMainWindow(),  &MainWindow::clearGraphNotTree);
     connect(this, &DataAnalyzeController::clear_alreadyPloted, MainWindow::getMainWindow(),  &MainWindow::clear_alreadyPloted);
 
     QList<int> list;
@@ -188,6 +188,9 @@ DataAnalyzeController::_update_hide_tables(QString table)
 void
 DataAnalyzeController::_plot(){
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
+    QList<int> list;
+
+    MainWindow::getMainWindow()->ui().splitter->setSizes(list<<0<<1);
 
     emit clearGraph();
 

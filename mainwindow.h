@@ -53,6 +53,7 @@ public slots:
                    bool    from);    // false:DataAnalyzeController,true:Other
     void clear_alreadyPloted() { _alreadyPloted.clear(); }
     void clearGraph();
+    void clearGraphNotTree();
     void plotConf(QStringList conf);
 
 private slots:

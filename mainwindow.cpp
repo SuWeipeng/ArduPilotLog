@@ -325,6 +325,15 @@ void MainWindow::clearGraph()
     _clearTreeWidget(_ui.treeWidget);
 }
 
+void MainWindow::clearGraphNotTree()
+{
+    clear_alreadyPloted();
+    _ui.customPlot->legend->setVisible(false);
+    _ui.customPlot->clearGraphs();
+    _ui.customPlot->replot();
+//    _clearTreeWidget(_ui.treeWidget);
+}
+
 void MainWindow::_resetGraph()
 {
     _action_bold = (0x1<<0);
@@ -703,7 +712,7 @@ MainWindow::plotConf(QStringList conf)
     QString offsetX("0");
     QString offsetY("0");
 
-    clearGraph();
+    clearGraphNotTree();
     _plotConf = true;
 
     for(int i=0; i<conf.length(); i++){
