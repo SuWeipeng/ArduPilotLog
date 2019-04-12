@@ -5,7 +5,7 @@
 
 2. 加载`\*.db`数据库文件
 > <br/>\*.db 数据库文件来源于ArduPilotLog软件：File -> Save DB file</br>
-> <br/> *.db 的加载速度比 *.bin 快**数十倍**，且文件越大速度加别越明显。</br>
+> <br/> *.db 的加载速度比 *.bin 快**数十倍**，且文件越大加载速度差别越明显。</br>
 
 <br/>![ArduPilotLog_matlab_2.png](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_matlab_2.png)</br>
 
