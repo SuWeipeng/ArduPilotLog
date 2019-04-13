@@ -78,6 +78,7 @@ ArduPilotLog 软件架构源于[qgroundcontrol](https://github.com/mavlink/qgrou
 
 ## 对于更进一步的数据分析
 本软件以快速显示图线为目的，对于三种绘图方式仍不能满足的数据分析需求，则须将数据导入MATLAB（诸如：给数据进行低通滤波、数据作为控制仿真的输入等需求。）
+<br/>[将数据导入MATLAB的脚本点此链接](https://github.com/SuWeipeng/ArduPilotLog/tree/master/matlab)</br>
 
 ## arduplilot日志数据的交换
 <br/>本软件设计的目的之一是：让不同平台能方便的使用Log日志数据。因此引入了SQLite数据库。</br>
@@ -85,7 +86,6 @@ ArduPilotLog 软件架构源于[qgroundcontrol](https://github.com/mavlink/qgrou
 <br/>![ArduPilotLog_10_SQLite.png](http://qiniu.suwp.fun/ArduPilotLog_10_SQLite.png)</br>
 * MATLAB、Excel等可通过\*.db文件获取日志内容。
 * 对数据感兴趣的时候，可通过 SQLite Expert 之类软件直接展示数据内容。
-`MATLAB 读取 SQLite 的脚本已写好，后续整理好会分享。`
 
 ## 后续的更新
 本软件后续会把作者已知未实现的功能写个 feature list，已知 bug 写个 bug list。对于 feature 和 bug 的划分是软件开发纠分不清的问题，在此作者表示：后续这些只是个 list 而已，很可能不会再加入新 feature 或解决小 bug（致命 bug 除外）。
