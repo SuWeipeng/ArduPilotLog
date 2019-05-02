@@ -6,8 +6,8 @@ ArduPilotLog 是 ardupilot 日志数据绘图软件。为快速展示 Log 日志
 打开"_\*.bin_"类型日志
 ---
 打开方法如下图所示：
-<br/>![ArduPilotLog_1_OpenLog.png](http://qiniu.suwp.fun/ArduPilotLog_1_OpenLog.png)</br>
-<br/>![ArduPilotLog_2_OpenLog.png](http://qiniu.suwp.fun/ArduPilotLog_2_OpenLog.png)</br>
+<br/>![ArduPilotLog_1_OpenLog.png](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_1_OpenLog.png)</br>
+<br/>![ArduPilotLog_2_OpenLog.png](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_2_OpenLog.png)</br>
 
 三种绘图方法
 ---
@@ -15,29 +15,29 @@ ArduPilotLog 是 ardupilot 日志数据绘图软件。为快速展示 Log 日志
 > “点选绘图”在不明确看哪一种日志数据时使用。
 > 比如：对于飞机的某种奇怪表现，往往不能立刻明确是哪里出了问题，这时怀疑对象泛围大，用点选方式为猜测快速提供依据。
 
-![ArduPilotLog_3_ClickPlot.png](http://qiniu.suwp.fun/ArduPilotLog_3_ClickPlot.png)
+![ArduPilotLog_3_ClickPlot.png](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_3_ClickPlot.png)
 
 2. 数据分析窗（点选绘图Plus）
 > “数据分析窗”在小泛围锁定目标数据时使用。
 > 比如：通过点选绘图已初步锁定某种现象与某几类数据表现相关`（注：少于10类）`，此时须要精确绘图。
 
 <br/>打开“数据分析窗”</br>
-<br/>![ArduPilotLog_4_DataAnalyze.png](http://qiniu.suwp.fun/ArduPilotLog_4_DataAnalyze.png)</br>
+<br/>![ArduPilotLog_4_DataAnalyze.png](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_4_DataAnalyze.png)</br>
 <br/>“数据分析窗”说明</br>
-<br/>![ArduPilotLog_5_DataAnalyze.png](http://qiniu.suwp.fun/ArduPilotLog_5_DataAnalyze.png)</br>
+<br/>![ArduPilotLog_5_DataAnalyze.png](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_5_DataAnalyze.png)</br>
 <br/>通过“数据分析窗”绘图</br>
-<br/>![ArduPilotLog_6_DataAnalyze.jpg](http://qiniu.suwp.fun/ArduPilotLog_6_DataAnalyze.jpg)</br>
+<br/>![ArduPilotLog_6_DataAnalyze.jpg](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_6_DataAnalyze.jpg)</br>
 
 3. 脚本绘图
 > “脚本绘图”用于反复验证已锁定的目标数据是否合理的情形。
 > 将与当前问题有关的数据锁定后，往往需要多次采集 Log 日志，重复分析以便证实。这时使用脚本绘图比较方便，以免去每次点选、调整比例等麻烦。
 
 <br/>加载脚本</br>
-<br/>![ArduPilotLog_7_ScriptPlot.png](http://qiniu.suwp.fun/ArduPilotLog_7_ScriptPlot.png)</br>
-<br/>![ArduPilotLog_8_ScriptPlot.png](http://qiniu.suwp.fun/ArduPilotLog_8_ScriptPlot.png)</br>
+<br/>![ArduPilotLog_7_ScriptPlot.png](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_7_ScriptPlot.png)</br>
+<br/>![ArduPilotLog_8_ScriptPlot.png](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_8_ScriptPlot.png)</br>
 
 <br/>脚本语法如下图（也可见 **[conf/ReadMe.md](https://github.com/SuWeipeng/ArduPilotLog/blob/master/conf/ReadMe.md)**）</br>
-![ArduPilotLog_9_ScriptPlot.png](http://qiniu.suwp.fun/ArduPilotLog_9_ScriptPlot.png)
+![ArduPilotLog_9_ScriptPlot.png](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_9_ScriptPlot.png)
 
 ## 编译方法
 ArduPilotLog 软件架构源于[qgroundcontrol](https://github.com/mavlink/qgroundcontrol)，因此[编译方法](https://dev.qgroundcontrol.com/en/getting_started/)与QGC相同。
@@ -83,7 +83,7 @@ ArduPilotLog 软件架构源于[qgroundcontrol](https://github.com/mavlink/qgrou
 ## arduplilot日志数据的交换
 <br/>本软件设计的目的之一是：让不同平台能方便的使用Log日志数据。因此引入了SQLite数据库。</br>
 <br/>数据的存在形式：ardupilot存入SD卡中的 \*.bin 二进制格式，转到 SQLite 数据库的 \*.db 格式。</br>
-<br/>![ArduPilotLog_10_SQLite.png](http://qiniu.suwp.fun/ArduPilotLog_10_SQLite.png)</br>
+<br/>![ArduPilotLog_10_SQLite.png](https://github.com/SuWeipeng/img/raw/master/1_ArduPilotLog/ArduPilotLog_10_SQLite.png)</br>
 * MATLAB、Excel等可通过\*.db文件获取日志内容。
 * 对数据感兴趣的时候，可通过 SQLite Expert 之类软件直接展示数据内容。
 
@@ -104,4 +104,4 @@ ArduPilotLog 软件架构源于[qgroundcontrol](https://github.com/mavlink/qgrou
 **这是一个因学习而生的项目，它未来更大的意义不是从丑小鸭进化成白天鹅，而是为同样0起点的后来人铺上一块前往更高层次的砖。**
 
 ## 喜欢交流的朋友可以加作者微信
-<br/>![weixin.png](http://qiniu.suwp.fun/weixin.png)</br>
+<br/>![weixin.png](https://github.com/SuWeipeng/img/raw/master/weixinhaoyou.png)</br>
