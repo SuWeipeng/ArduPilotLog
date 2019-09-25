@@ -189,8 +189,6 @@ public:
     Q_INVOKABLE void setLineStyle10 (int style);
     Q_INVOKABLE void setLineColor10 (QString color);
 
-    Q_INVOKABLE void init ();
-
     QStringList      lineList               () { return _lineList; }
     QStringList      colorList              () { return _colorList; }
     // Row 1
@@ -404,6 +402,9 @@ private:
 public:
     QString                                tables[MAX_LINE_NUM];
     QString                                fields[MAX_LINE_NUM];
+
+public slots:
+    Q_INVOKABLE void init ();
 };
 
 #endif // DATAANALYZECONTROLLER_H

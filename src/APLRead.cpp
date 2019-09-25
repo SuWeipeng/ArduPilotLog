@@ -12,11 +12,14 @@ APL_LOGGING_CATEGORY(APLREAD_LOG,        "APLReadLog")
 #define FORMAT_LEN 16
 #define LABELS_LEN 64
 
+APLRead* APLRead::_instance;
+
 static LFMT FMT[256]; // 256 at least
 
 APLRead::APLRead()
     : _apldb(new APLDB)
 {
+    _instance = this;
     _resetDataBase();
 }
 

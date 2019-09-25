@@ -33,6 +33,8 @@ public:
     void    getDatastream(const QString &file_dir);
     QString getFileName(void) { return _file_name; }
 
+    static APLRead* getAPLRead() { return _instance; }
+
 signals:
     void fileOpened();
 
@@ -50,6 +52,8 @@ private:
     void    _resetDataBase();
     void    _resetFMT(int i);
     QString _file_name;
+
+    static APLRead*  _instance;
 };
 
 #endif // APLREAD_H

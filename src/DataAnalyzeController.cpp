@@ -1,6 +1,7 @@
 #include "DataAnalyzeController.h"
 #include "mainwindow.h"
 #include "APLDB.h"
+#include "APLRead.h"
 
 APL_LOGGING_CATEGORY(DATA_ANALYZE_LOG,        "DataAnalyzeLog")
 
@@ -10,6 +11,7 @@ APL_LOGGING_CATEGORY(DATA_ANALYZE_LOG,        "DataAnalyzeLog")
 DataAnalyzeController::DataAnalyzeController()
 {
     connect(MainWindow::getMainWindow(),  &MainWindow::treeWidgetAddItem, this, &DataAnalyzeController::_setTableList);
+    connect(APLRead::getAPLRead(),  &APLRead::fileOpened, this, &DataAnalyzeController::init);
     connect(this, &DataAnalyzeController::plotGraph, MainWindow::getMainWindow(),  &MainWindow::plotGraph);
     connect(this, &DataAnalyzeController::clearGraph, MainWindow::getMainWindow(),  &MainWindow::clearGraphNotTree);
     connect(this, &DataAnalyzeController::clear_alreadyPloted, MainWindow::getMainWindow(),  &MainWindow::clear_alreadyPloted);
