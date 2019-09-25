@@ -719,7 +719,7 @@ MainWindow::plotConf(QStringList conf)
         QString str(conf.at(i));
         QRegExp reg_1("[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.\\d\\.\\d");
         QRegExp reg_2("[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.\\d\\.\\d\\(\\-?\\d+\\.?\\d*\\s*\\,\\s*\\-?\\d+\\.?\\d*\\s*\\,\\s*\\-?\\d+\\.?\\d*\\)");
-        QRegExp reg_3("\\<\\s*[A-Za-z0-9]*\\s*\\>\\s*[A-Za-Z0-9]+\\:\\d+\\.?\\d*\\s+\\d\\.\\d");
+        QRegExp reg_3("\\<\\s*[A-Za-z0-9]*\\s*\\>\\s*[A-Za-Z0-9]+\\:\\-?\\d+\\.?\\d*\\s+\\d\\.\\d");
         QRegExpValidator validator_1(reg_1,0);
         QRegExpValidator validator_2(reg_2,0);
         QRegExpValidator validator_3(reg_3,0);
