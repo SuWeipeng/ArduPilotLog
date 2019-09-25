@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
     MainWindow w;
 
     APLLoggingCategoryRegister::instance()->setFilterRulesFromSettings(QCDEBUG_FILTER_RULES);
+    w.setWindowTitle("ArduPilotLog");
     w.show();
 
     return a.exec();

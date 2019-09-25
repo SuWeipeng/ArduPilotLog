@@ -4,6 +4,7 @@
 #include <QFileInfo>
 #include "APLRead.h"
 #include "APLDB.h"
+#include "mainwindow.h"
 
 APL_LOGGING_CATEGORY(APLREAD_LOG,        "APLReadLog")
 
@@ -44,6 +45,7 @@ void  APLRead::_resetFMT(int i)
 void APLRead::getFileDir(const QString &file_dir)
 {
     _file_name = QFileInfo(file_dir).fileName();
+    MainWindow::getMainWindow()->setWindowTitle(QString("ArduPilotLog ").append(file_dir));
     _resetDataBase();
     getDatastream(file_dir);
 }
