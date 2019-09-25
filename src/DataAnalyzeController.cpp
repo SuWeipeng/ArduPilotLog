@@ -22,11 +22,18 @@ DataAnalyzeController::DataAnalyzeController()
 
 void DataAnalyzeController::init()
 {
+    _tableList.clear();
     MainWindow::getMainWindow()->requestTableList();
 
+    _lineList.clear();
+    _colorList.clear();
     _lineList  << LINE_LIST_INIT;
     _colorList << COLOR_LIST_INIT;
     _available_colorList = _colorList;
+
+    for(int i=0; i<10; i++){
+        _fieldList[i].clear();
+    }
 
     for(int i=0; i<MAX_LINE_NUM; i++){
         _visible[i] = false;
@@ -47,7 +54,41 @@ void DataAnalyzeController::init()
     emit tableList8Changed();
     emit tableList9Changed();
     emit tableList10Changed();
+
+    emit scale1Changed();
+    emit scale2Changed();
+    emit scale3Changed();
+    emit scale4Changed();
+    emit scale5Changed();
+    emit scale6Changed();
+    emit scale7Changed();
+    emit scale8Changed();
+    emit scale9Changed();
+    emit scale10Changed();
+
+    emit offsetX1Changed();
+    emit offsetX2Changed();
+    emit offsetX3Changed();
+    emit offsetX4Changed();
+    emit offsetX5Changed();
+    emit offsetX6Changed();
+    emit offsetX7Changed();
+    emit offsetX8Changed();
+    emit offsetX9Changed();
+    emit offsetX10Changed();
+
+    emit offsetY1Changed();
+    emit offsetY2Changed();
+    emit offsetY3Changed();
+    emit offsetY4Changed();
+    emit offsetY5Changed();
+    emit offsetY6Changed();
+    emit offsetY7Changed();
+    emit offsetY8Changed();
+    emit offsetY9Changed();
+    emit offsetY10Changed();
 }
+
 void DataAnalyzeController::_setTableList(QString table)
 {
     MainWindow::getMainWindow()->setComboboxList(table);
@@ -227,9 +268,7 @@ DataAnalyzeController::setFieldList1(QString table)
         QTreeWidgetItem* item = itemList.at(i);
         _fieldList[0].clear();
         for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[0].contains(table)){
-                _fieldList[0]<<item->child(j)->text(0);
-            }
+            _fieldList[0]<<item->child(j)->text(0);
         }
         emit fieldList1Changed();
     }
@@ -308,9 +347,7 @@ DataAnalyzeController::setFieldList2(QString table)
         QTreeWidgetItem* item = itemList.at(i);
         _fieldList[1].clear();
         for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[1].contains(table)){
-                _fieldList[1]<<item->child(j)->text(0);
-            }
+            _fieldList[1]<<item->child(j)->text(0);
         }
         emit fieldList2Changed();
     }
@@ -389,9 +426,7 @@ DataAnalyzeController::setFieldList3(QString table)
         QTreeWidgetItem* item = itemList.at(i);
         _fieldList[2].clear();
         for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[2].contains(table)){
-                _fieldList[2]<<item->child(j)->text(0);
-            }
+            _fieldList[2]<<item->child(j)->text(0);
         }
         emit fieldList3Changed();
     }
@@ -470,9 +505,7 @@ DataAnalyzeController::setFieldList4(QString table)
         QTreeWidgetItem* item = itemList.at(i);
         _fieldList[3].clear();
         for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[3].contains(table)){
-                _fieldList[3]<<item->child(j)->text(0);
-            }
+            _fieldList[3]<<item->child(j)->text(0);
         }
         emit fieldList4Changed();
     }
@@ -551,9 +584,7 @@ DataAnalyzeController::setFieldList5(QString table)
         QTreeWidgetItem* item = itemList.at(i);
         _fieldList[4].clear();
         for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[4].contains(table)){
-                _fieldList[4]<<item->child(j)->text(0);
-            }
+            _fieldList[4]<<item->child(j)->text(0);
         }
         emit fieldList5Changed();
     }
@@ -632,9 +663,7 @@ DataAnalyzeController::setFieldList6(QString table)
         QTreeWidgetItem* item = itemList.at(i);
         _fieldList[5].clear();
         for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[5].contains(table)){
-                _fieldList[5]<<item->child(j)->text(0);
-            }
+            _fieldList[5]<<item->child(j)->text(0);
         }
         emit fieldList6Changed();
     }
@@ -713,9 +742,7 @@ DataAnalyzeController::setFieldList7(QString table)
         QTreeWidgetItem* item = itemList.at(i);
         _fieldList[6].clear();
         for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[6].contains(table)){
-                _fieldList[6]<<item->child(j)->text(0);
-            }
+            _fieldList[6]<<item->child(j)->text(0);
         }
         emit fieldList7Changed();
     }
@@ -794,9 +821,7 @@ DataAnalyzeController::setFieldList8(QString table)
         QTreeWidgetItem* item = itemList.at(i);
         _fieldList[7].clear();
         for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[7].contains(table)){
-                _fieldList[7]<<item->child(j)->text(0);
-            }
+            _fieldList[7]<<item->child(j)->text(0);
         }
         emit fieldList8Changed();
     }
@@ -875,9 +900,7 @@ DataAnalyzeController::setFieldList9(QString table)
         QTreeWidgetItem* item = itemList.at(i);
         _fieldList[8].clear();
         for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[8].contains(table)){
-                _fieldList[8]<<item->child(j)->text(0);
-            }
+            _fieldList[8]<<item->child(j)->text(0);
         }
         emit fieldList9Changed();
     }
@@ -956,9 +979,7 @@ DataAnalyzeController::setFieldList10(QString table)
         QTreeWidgetItem* item = itemList.at(i);
         _fieldList[9].clear();
         for(int j=0; j<item->childCount(); j++){
-            if (!_fieldList[9].contains(table)){
-                _fieldList[9]<<item->child(j)->text(0);
-            }
+            _fieldList[9]<<item->child(j)->text(0);
         }
         emit fieldList10Changed();
     }
