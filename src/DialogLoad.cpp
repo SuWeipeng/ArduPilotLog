@@ -24,7 +24,7 @@ void DialogLoad::showFile()
     QString confdir = _qfileDialogLoad->getOpenFileName(this
                                                   ,"open plot config"
                                                   ,"/"
-                                                  ,"Binary files(*.conf)");
+                                                  ,"Config files(*.conf)");
     emit _qfileDialogLoad->fileSelected(confdir);
 
     qCDebug(DialogLoad_LOG) << confdir;
