@@ -25,7 +25,7 @@ void Dialog::showFile()
     QString logdir = _qfiledialog->getOpenFileName(this
                                                   ,"open ArduPilot binary log file"
                                                   ,"/"
-                                                  ,"Binary files(*.bin)");
+                                                  ,"Binary files(*.bin *.BIN)");
     emit _qfiledialog->fileSelected(logdir);
 
     MainWindow::getMainWindow()->requestTableList();
@@ -37,7 +37,7 @@ void Dialog::saveFile()
 {
     QString dbdir = _qfiledialog->getSaveFileName(this
                                                   ,"Save as DB file"
-                                                  ,_aplRead->getFileName().section('.',0,0)
+                                                  ,_aplRead->getFileName().section('.',0,0)+".db"
                                                   ,"DB files(*.db)");
 
     if (!dbdir.isNull())
