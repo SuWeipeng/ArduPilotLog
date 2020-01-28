@@ -90,9 +90,11 @@ void DataAnalyzeController::init()
     emit offsetY9Changed();
     emit offsetY10Changed();
 
-    for(int i=0; i<2; i++){
-        _tableList1.swap(0, _tableList1.length()-1);
-        emit tableList1Changed();
+    if(_tableList1.length()>0){
+        for(int i=0; i<2; i++){
+            _tableList1.swap(0, _tableList1.length()-1);
+            emit tableList1Changed();
+        }
     }
 }
 
