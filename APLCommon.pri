@@ -35,7 +35,8 @@ linux {
         DEFINES += __STDC_LIMIT_MACROS
         DEFINES += PACKED=/**/
     } else {
-        error("Unsupported Windows toolchain, only Visual Studio 2010, 2012, and 2013 are supported")
+        DEFINES += PACKED=/**/
+        #error("Unsupported Windows toolchain, only Visual Studio 2010, 2012, and 2013 are supported")
     }
 } else : macx {
     macx-clang | macx-llvm {
