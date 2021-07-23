@@ -28,8 +28,6 @@ void Dialog::showFile()
                                                   ,"Binary files(*.bin *.BIN)");
     emit _qfiledialog->fileSelected(logdir);
 
-    MainWindow::getMainWindow()->requestTableList();
-
     qCDebug(DIALOG_LOG) << logdir;
 }
 

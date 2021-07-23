@@ -214,6 +214,8 @@ void MainWindow::_fileOpenedTrigger()
             groupItem->addChild(item);
         }
     }
+
+    requestTableList();
 }
 
 void MainWindow::requestTableList()
