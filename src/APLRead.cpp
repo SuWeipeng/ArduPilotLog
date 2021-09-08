@@ -319,7 +319,32 @@ bool APLRead::_checkLabels(QString &labels) const
     }
 
     int index_of_Primary = labels.indexOf("Primary", Qt::CaseInsensitive);
-    if( index_of_Primary != -1 ) labels.replace(index_of_Primary, 7, "Primari");
+    if( index_of_Primary != -1 ) {
+        labels.insert(index_of_Primary+7, QString('\''));
+        labels.insert(index_of_Primary, '\'');
+        qCDebug(APLREAD_LOG) <<labels;
+    }
+
+    int index_of_Limit = labels.indexOf("Limit", Qt::CaseInsensitive);
+    if(index_of_Limit != -1) {
+        labels.insert(index_of_Limit+5, '\'');
+        labels.insert(index_of_Limit, '\'');
+        qCDebug(APLREAD_LOG) <<labels;
+    }
+
+    int index_of_IS = labels.indexOf(",IS", Qt::CaseInsensitive);
+    if(index_of_IS != -1) {
+        labels.insert(index_of_IS+3, '\'');
+        labels.insert(index_of_IS+1, '\'');
+        qCDebug(APLREAD_LOG) <<labels;
+    }
+
+    int index_of_As = labels.indexOf("As,", Qt::CaseInsensitive);
+    if(index_of_As != -1) {
+        labels.insert(index_of_As+2, '\'');
+        labels.insert(index_of_As, '\'');
+        qCDebug(APLREAD_LOG) <<labels;
+    }
 
     return true;
 }
