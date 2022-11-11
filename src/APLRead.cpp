@@ -84,11 +84,11 @@ void APLRead::_decode(QDataStream &in) const
     {
         in >> currentByte;
 
-        if(ptr_pos<3){
+        if(ptr_pos<=3){
             ptr_pos++;
         }
 
-        if (ptr_pos >= 3){
+        if (ptr_pos > 3){
             head_check[0] = head_check[1];
             head_check[1] = head_check[2];
             head_check[2] = currentByte;
