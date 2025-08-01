@@ -1,6 +1,9 @@
 ﻿#include <QDebug>
 #include <QtQml>
+#include <QGuiApplication>
+#include <QScreen>
 #include <QTreeWidgetItem>
+#include <QRandomGenerator>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "src/APLRead.h"
@@ -41,8 +44,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
-    int screenWidth=QApplication::desktop()->width();
-    int screenHeight=QApplication::desktop()->height();
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
+    int screenWidth=screenGeometry.width();
+    int screenHeight=screenGeometry.height();
     _ui.setupUi(this);
     this->resize(screenWidth/2, screenHeight/2);
     _buildCommonWidgets();
@@ -216,6 +220,18 @@ void MainWindow::_fileOpenedTrigger()
     }
 
     requestTableList();
+
+    QMap<QString, QStringList> data;
+    for(int i = 0; i < _ui.treeWidget->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* tableItem = _ui.treeWidget->topLevelItem(i);
+        QString tableName = tableItem->text(0);
+        QStringList fields;
+        for (int j = 0; j < tableItem->childCount(); ++j) {
+            fields << tableItem->child(j)->text(0);
+        }
+        data.insert(tableName, fields);
+    }
+    emit dataReady(data);
 }
 
 void MainWindow::requestTableList()
@@ -398,9 +414,10 @@ void MainWindow::on_customPlot_customContextMenuRequested()
     menu->exec(QCursor::pos());
 }
 
-void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
+void MainWindow::on_comboBox_currentIndexChanged(int index)
 {
-    if(arg1.compare("") == 0) return;
+    Q_UNUSED(index);
+    if(MainWindow::getMainWindow()->ui().comboBox->currentText().compare("") == 0) return;
     _X_axis_changed = true;
     _comboBoxIndex  = _ui.comboBox->currentIndex();
     _ui.customPlot->legend->setVisible(false);
@@ -607,10 +624,9 @@ MainWindow::_lineStyle(int index, int i, bool from){
     QPen pen;
 
     if(from && !_conf_plot){
-        int  R = 0+qrand()%(255-0);
-        int  G = 0+qrand()%(255-0);
-        int  B = 0+qrand()%(255-0);
-        qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+        int  R = QRandomGenerator::global()->bounded(255);
+        int  G = QRandomGenerator::global()->bounded(255);
+        int  B = QRandomGenerator::global()->bounded(255);
         pen.setColor(QColor(R, G, B));
         _replot = true;
     } else {
@@ -719,12 +735,12 @@ MainWindow::plotConf(QStringList conf)
 
     for(int i=0; i<conf.length(); i++){
         QString str(conf.at(i));
-        QRegExp reg_1("[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.\\d\\.\\d");
-        QRegExp reg_2("[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.\\d\\.\\d\\(\\-?\\d+\\.?\\d*\\s*\\,\\s*\\-?\\d+\\.?\\d*\\s*\\,\\s*\\-?\\d+\\.?\\d*\\)");
-        QRegExp reg_3("\\<\\s*[A-Za-z0-9]*\\s*\\>\\s*[A-Za-Z0-9]+\\:\\-?\\d+\\.?\\d*\\s+\\d\\.\\d");
-        QRegExpValidator validator_1(reg_1,0);
-        QRegExpValidator validator_2(reg_2,0);
-        QRegExpValidator validator_3(reg_3,0);
+        QRegularExpression reg_1("[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.\\d\\.\\d");
+        QRegularExpression reg_2("[A-Za-z0-9]+\\.[A-Za-z0-9]+\\.\\d\\.\\d\\(\\-?\\d+\\.?\\d*\\s*\\,\\s*\\-?\\d+\\.?\\d*\\s*\\,\\s*\\-?\\d+\\.?\\d*\\)");
+        QRegularExpression reg_3("\\<\\s*[A-Za-z0-9]*\\s*\\>\\s*[A-Za-Z0-9]+\\:\\-?\\d+\\.?\\d*\\s+\\d\\.\\d");
+        QRegularExpressionValidator validator_1(reg_1,0);
+        QRegularExpressionValidator validator_2(reg_2,0);
+        QRegularExpressionValidator validator_3(reg_3,0);
         bool check_ok = false;
 
         int pos = 0;
@@ -774,7 +790,7 @@ MainWindow::plotConf(QStringList conf)
                 style = list_1[2];
                 color = list_1[3];
 
-                QString scale_offsetX_offsetY(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1).remove(QRegExp("\\s")));
+                QString scale_offsetX_offsetY(str.mid(str.indexOf("(")+1, str.indexOf(")")-str.indexOf("(")-1).remove(QRegularExpression("\\s")));
                 QStringList list = scale_offsetX_offsetY.split(",");
                 scale   = list[0];
                 offsetX = list[1];
@@ -800,7 +816,7 @@ MainWindow::plotConf(QStringList conf)
                 QString command_str(str.simplified());
                 QString command = command_str.mid(command_str.indexOf("<")+1, command_str.indexOf(">")-command_str.indexOf("<")-1);
                 if(command.compare("const")==0 || command.compare("")==0){
-                    QStringList list = command_str.split(QRegExp("[:\\s]"));
+                    QStringList list = command_str.split(QRegularExpression("[:\\s]"));
                     table = list[1];
                     field = MainWindow::getMainWindow()->ui().comboBox->currentText();
                     QString constant_value  = list[2];

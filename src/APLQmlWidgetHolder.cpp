@@ -1,4 +1,3 @@
-#include <QDesktopWidget>
 #include "APLQmlWidgetHolder.h"
 
 APLQmlWidgetHolder::APLQmlWidgetHolder(const QString& title, QAction* action, QWidget *parent) :

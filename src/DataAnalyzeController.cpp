@@ -10,7 +10,6 @@ APL_LOGGING_CATEGORY(DATA_ANALYZE_LOG,        "DataAnalyzeLog")
 
 DataAnalyzeController::DataAnalyzeController()
 {
-    connect(MainWindow::getMainWindow(),  &MainWindow::treeWidgetAddItem, this, &DataAnalyzeController::_setTableList);
     connect(APLRead::getAPLRead(),  &APLRead::fileOpened, this, &DataAnalyzeController::init);
     connect(this, &DataAnalyzeController::plotGraph, MainWindow::getMainWindow(),  &MainWindow::plotGraph);
     connect(this, &DataAnalyzeController::clearGraph, MainWindow::getMainWindow(),  &MainWindow::clearGraphNotTree);
@@ -25,7 +24,25 @@ DataAnalyzeController::DataAnalyzeController()
 void DataAnalyzeController::init()
 {
     _tableList.clear();
-    MainWindow::getMainWindow()->requestTableList();
+    int groupCount = APLDB::getAPLDB()->getGroupCount();
+    for (int i = 1; i <= groupCount; i++) {
+        QString groupName = APLDB::getAPLDB()->getGroupName(i);
+        if (!groupName.isEmpty() && !_tableList.contains(groupName)) {
+            _tableList << groupName;
+        }
+    }
+    _tableList.sort();
+
+    _tableList1 = _tableList;
+    _tableList2 = _tableList;
+    _tableList3 = _tableList;
+    _tableList4 = _tableList;
+    _tableList5 = _tableList;
+    _tableList6 = _tableList;
+    _tableList7 = _tableList;
+    _tableList8 = _tableList;
+    _tableList9 = _tableList;
+    _tableList10= _tableList;
 
     _lineList.clear();
     _colorList.clear();
@@ -35,6 +52,20 @@ void DataAnalyzeController::init()
 
     for(int i=0; i<10; i++){
         _fieldList[i].clear();
+    }
+
+    if (!_tableList.isEmpty()) {
+        QString firstTable = _tableList.first();
+        setFieldList1(firstTable);
+        setFieldList2(firstTable);
+        setFieldList3(firstTable);
+        setFieldList4(firstTable);
+        setFieldList5(firstTable);
+        setFieldList6(firstTable);
+        setFieldList7(firstTable);
+        setFieldList8(firstTable);
+        setFieldList9(firstTable);
+        setFieldList10(firstTable);
     }
 
     for(int i=0; i<MAX_LINE_NUM; i++){
@@ -89,31 +120,6 @@ void DataAnalyzeController::init()
     emit offsetY8Changed();
     emit offsetY9Changed();
     emit offsetY10Changed();
-
-    if(_tableList1.length()>0){
-        for(int i=0; i<2; i++){
-            _tableList1.swap(0, _tableList1.length()-1);
-            emit tableList1Changed();
-        }
-    }
-}
-
-void DataAnalyzeController::_setTableList(QString table)
-{
-    MainWindow::getMainWindow()->setComboboxList(table);
-    if (!_tableList.contains(table)){
-        _tableList<<table;
-    }
-    _tableList1 = _tableList;
-    _tableList2 = _tableList;
-    _tableList3 = _tableList;
-    _tableList4 = _tableList;
-    _tableList5 = _tableList;
-    _tableList6 = _tableList;
-    _tableList7 = _tableList;
-    _tableList8 = _tableList;
-    _tableList9 = _tableList;
-    _tableList10= _tableList;
 }
 
 bool
@@ -129,6 +135,7 @@ DataAnalyzeController::_update_colorList(){
     _available_colorList = _colorList;
     for(int i=0; i<MAX_LINE_NUM; i++){
         if (_visible[i] &&
+            _color[i] >= 0 && _color[i] < _colorList.size() &&
             _available_colorList.contains(_colorList.at(_color[i])))
         {
             _available_colorList.removeOne(_colorList.at(_color[i]));
@@ -190,46 +197,66 @@ DataAnalyzeController::_update_hide_tables(QString table)
     for(int i=0; i<MAX_LINE_NUM; i++){
         if(!_visible[i]){
             switch(i){
-            case 0:
-                _tableList1.swap(0, _tableList1.indexOf(table));
+            case 0: {
+                int index1 = _tableList1.indexOf(table);
+                if (index1 > 0) _tableList1.swapItemsAt(0, index1);
                 emit tableList1Changed();
                 break;
-            case 1:
-                _tableList2.swap(0, _tableList2.indexOf(table));
+            }
+            case 1: {
+                int index2 = _tableList2.indexOf(table);
+                if (index2 > 0) _tableList2.swapItemsAt(0, index2);
                 emit tableList2Changed();
                 break;
-            case 2:
-                _tableList3.swap(0, _tableList3.indexOf(table));
+            }
+            case 2: {
+                int index3 = _tableList3.indexOf(table);
+                if (index3 > 0) _tableList3.swapItemsAt(0, index3);
                 emit tableList3Changed();
                 break;
-            case 3:
-                _tableList4.swap(0, _tableList4.indexOf(table));
+            }
+            case 3: {
+                int index4 = _tableList4.indexOf(table);
+                if (index4 > 0) _tableList4.swapItemsAt(0, index4);
                 emit tableList4Changed();
                 break;
-            case 4:
-                _tableList5.swap(0, _tableList5.indexOf(table));
+            }
+            case 4: {
+                int index5 = _tableList5.indexOf(table);
+                if (index5 > 0) _tableList5.swapItemsAt(0, index5);
                 emit tableList5Changed();
                 break;
-            case 5:
-                _tableList6.swap(0, _tableList6.indexOf(table));
+            }
+            case 5: {
+                int index6 = _tableList6.indexOf(table);
+                if (index6 > 0) _tableList6.swapItemsAt(0, index6);
                 emit tableList6Changed();
                 break;
-            case 6:
-                _tableList7.swap(0, _tableList7.indexOf(table));
+            }
+            case 6: {
+                int index7 = _tableList7.indexOf(table);
+                if (index7 > 0) _tableList7.swapItemsAt(0, index7);
                 emit tableList7Changed();
                 break;
-            case 7:
-                _tableList8.swap(0, _tableList8.indexOf(table));
+            }
+            case 7: {
+                int index8 = _tableList8.indexOf(table);
+                if (index8 > 0) _tableList8.swapItemsAt(0, index8);
                 emit tableList8Changed();
                 break;
-            case 8:
-                _tableList9.swap(0, _tableList9.indexOf(table));
+            }
+            case 8: {
+                int index9 = _tableList9.indexOf(table);
+                if (index9 > 0) _tableList9.swapItemsAt(0, index9);
                 emit tableList9Changed();
                 break;
-            case 9:
-                _tableList10.swap(0, _tableList10.indexOf(table));
+            }
+            case 9: {
+                int index10 = _tableList10.indexOf(table);
+                if (index10 > 0) _tableList10.swapItemsAt(0, index10);
                 emit tableList10Changed();
                 break;
+            }
             }
         }
     }
@@ -249,8 +276,8 @@ DataAnalyzeController::_plot(){
     _update_colorList();
 
     for(int i=0; i<MAX_LINE_NUM; i++){
-        if(_visible[i]){
-            emit plotGraph(tables[i],
+        if(_visible[i] && !_tableList.isEmpty() && i < _tableList.count()){
+             emit plotGraph(tables[i],
                            fields[i],
                            _offsetX[i],
                            _offsetY[i],
@@ -264,23 +291,20 @@ DataAnalyzeController::_plot(){
     customPlot->replot();
 }
 
-
-
 // Row 1
 void
 DataAnalyzeController::setFieldList1(QString table)
 {
     tables[0] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[0].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[0]<<item->child(j)->text(0);
-        }
-        emit fieldList1Changed();
+    _fieldList[0].clear();
+    int itemCount = APLDB::getAPLDB()->getItemCount(table);
+    for (int i = 1; i <= itemCount; i++) {
+        _fieldList[0] << APLDB::getAPLDB()->getItemName(table, i);
     }
+    if (!_fieldList[0].isEmpty()) {
+        fields[0] = _fieldList[0].first();
+    }
+    emit fieldList1Changed();
     _update_hide_tables(table);
 }
 
@@ -350,16 +374,15 @@ void
 DataAnalyzeController::setFieldList2(QString table)
 {
     tables[1] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[1].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[1]<<item->child(j)->text(0);
-        }
-        emit fieldList2Changed();
+    _fieldList[1].clear();
+    int itemCount = APLDB::getAPLDB()->getItemCount(table);
+    for (int i = 1; i <= itemCount; i++) {
+        _fieldList[1] << APLDB::getAPLDB()->getItemName(table, i);
     }
+    if (!_fieldList[1].isEmpty()) {
+        fields[1] = _fieldList[1].first();
+    }
+    emit fieldList2Changed();
     _update_hide_tables(table);
 }
 
@@ -429,16 +452,15 @@ void
 DataAnalyzeController::setFieldList3(QString table)
 {
     tables[2] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[2].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[2]<<item->child(j)->text(0);
-        }
-        emit fieldList3Changed();
+    _fieldList[2].clear();
+    int itemCount = APLDB::getAPLDB()->getItemCount(table);
+    for (int i = 1; i <= itemCount; i++) {
+        _fieldList[2] << APLDB::getAPLDB()->getItemName(table, i);
     }
+    if (!_fieldList[2].isEmpty()) {
+        fields[2] = _fieldList[2].first();
+    }
+    emit fieldList3Changed();
     _update_hide_tables(table);
 }
 
@@ -508,16 +530,15 @@ void
 DataAnalyzeController::setFieldList4(QString table)
 {
     tables[3] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[3].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[3]<<item->child(j)->text(0);
-        }
-        emit fieldList4Changed();
+    _fieldList[3].clear();
+    int itemCount = APLDB::getAPLDB()->getItemCount(table);
+    for (int i = 1; i <= itemCount; i++) {
+        _fieldList[3] << APLDB::getAPLDB()->getItemName(table, i);
     }
+    if (!_fieldList[3].isEmpty()) {
+        fields[3] = _fieldList[3].first();
+    }
+    emit fieldList4Changed();
     _update_hide_tables(table);
 }
 
@@ -587,16 +608,15 @@ void
 DataAnalyzeController::setFieldList5(QString table)
 {
     tables[4] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[4].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[4]<<item->child(j)->text(0);
-        }
-        emit fieldList5Changed();
+    _fieldList[4].clear();
+    int itemCount = APLDB::getAPLDB()->getItemCount(table);
+    for (int i = 1; i <= itemCount; i++) {
+        _fieldList[4] << APLDB::getAPLDB()->getItemName(table, i);
     }
+    if (!_fieldList[4].isEmpty()) {
+        fields[4] = _fieldList[4].first();
+    }
+    emit fieldList5Changed();
     _update_hide_tables(table);
 }
 
@@ -666,16 +686,15 @@ void
 DataAnalyzeController::setFieldList6(QString table)
 {
     tables[5] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[5].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[5]<<item->child(j)->text(0);
-        }
-        emit fieldList6Changed();
+    _fieldList[5].clear();
+    int itemCount = APLDB::getAPLDB()->getItemCount(table);
+    for (int i = 1; i <= itemCount; i++) {
+        _fieldList[5] << APLDB::getAPLDB()->getItemName(table, i);
     }
+    if (!_fieldList[5].isEmpty()) {
+        fields[5] = _fieldList[5].first();
+    }
+    emit fieldList6Changed();
     _update_hide_tables(table);
 }
 
@@ -745,16 +764,15 @@ void
 DataAnalyzeController::setFieldList7(QString table)
 {
     tables[6] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[6].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[6]<<item->child(j)->text(0);
-        }
-        emit fieldList7Changed();
+    _fieldList[6].clear();
+    int itemCount = APLDB::getAPLDB()->getItemCount(table);
+    for (int i = 1; i <= itemCount; i++) {
+        _fieldList[6] << APLDB::getAPLDB()->getItemName(table, i);
     }
+    if (!_fieldList[6].isEmpty()) {
+        fields[6] = _fieldList[6].first();
+    }
+    emit fieldList7Changed();
     _update_hide_tables(table);
 }
 
@@ -824,16 +842,15 @@ void
 DataAnalyzeController::setFieldList8(QString table)
 {
     tables[7] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[7].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[7]<<item->child(j)->text(0);
-        }
-        emit fieldList8Changed();
+    _fieldList[7].clear();
+    int itemCount = APLDB::getAPLDB()->getItemCount(table);
+    for (int i = 1; i <= itemCount; i++) {
+        _fieldList[7] << APLDB::getAPLDB()->getItemName(table, i);
     }
+    if (!_fieldList[7].isEmpty()) {
+        fields[7] = _fieldList[7].first();
+    }
+    emit fieldList8Changed();
     _update_hide_tables(table);
 }
 
@@ -903,16 +920,15 @@ void
 DataAnalyzeController::setFieldList9(QString table)
 {
     tables[8] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[8].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[8]<<item->child(j)->text(0);
-        }
-        emit fieldList9Changed();
+    _fieldList[8].clear();
+    int itemCount = APLDB::getAPLDB()->getItemCount(table);
+    for (int i = 1; i <= itemCount; i++) {
+        _fieldList[8] << APLDB::getAPLDB()->getItemName(table, i);
     }
+    if (!_fieldList[8].isEmpty()) {
+        fields[8] = _fieldList[8].first();
+    }
+    emit fieldList9Changed();
     _update_hide_tables(table);
 }
 
@@ -982,16 +998,15 @@ void
 DataAnalyzeController::setFieldList10(QString table)
 {
     tables[9] = table;
-
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[9].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[9]<<item->child(j)->text(0);
-        }
-        emit fieldList10Changed();
+    _fieldList[9].clear();
+    int itemCount = APLDB::getAPLDB()->getItemCount(table);
+    for (int i = 1; i <= itemCount; i++) {
+        _fieldList[9] << APLDB::getAPLDB()->getItemName(table, i);
     }
+    if (!_fieldList[9].isEmpty()) {
+        fields[9] = _fieldList[9].first();
+    }
+    emit fieldList10Changed();
     _update_hide_tables(table);
 }
 

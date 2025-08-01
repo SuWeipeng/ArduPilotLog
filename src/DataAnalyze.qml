@@ -1,15 +1,13 @@
-import QtQuick                  2.5
-import QtQuick.Controls         1.2
-import QtQuick.Controls.Styles  1.2
-import QtQuick.Dialogs          1.2
-import QtQuick.Window           2.2
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Window
 
 import ArduPilotLog.Controllers   1.0
 
 Rectangle {
     property real _margins: 5
     property real _Width  : 47
-    property real _Height : 20
+    property real _Height : 36
 
     property bool button_state_1: false // true: hide
 
@@ -144,7 +142,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.tableList1
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setFieldList1(_comboboxTable1.currentText)
         }
     }
@@ -157,7 +155,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.fieldList1
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setField1(_comboboxField1.currentText)
         }
     }
@@ -215,7 +213,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.lineList
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineStyle1(parseInt(_comboboxLine1.currentIndex))
         }
     }
@@ -228,7 +226,7 @@ Rectangle {
         width : _Width
         height: _Height
         model: controller.colorList1
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineColor1(_comboboxColor1.currentText)
         }
     }
@@ -262,7 +260,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.tableList2
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setFieldList2(_comboboxTable2.currentText)
         }
     }
@@ -275,7 +273,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.fieldList2
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setField2(_comboboxField2.currentText)
         }
     }
@@ -333,7 +331,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.lineList
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineStyle2(parseInt(_comboboxLine2.currentIndex))
         }
     }
@@ -346,7 +344,7 @@ Rectangle {
         width : _Width
         height: _Height
         model: controller.colorList2
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineColor2(_comboboxColor2.currentText)
         }
     }
@@ -380,7 +378,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.tableList3
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setFieldList3(_comboboxTable3.currentText)
         }
     }
@@ -393,7 +391,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.fieldList3
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setField3(_comboboxField3.currentText)
         }
     }
@@ -451,7 +449,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.lineList
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineStyle3(parseInt(_comboboxLine3.currentIndex))
         }
     }
@@ -464,7 +462,7 @@ Rectangle {
         width : _Width
         height: _Height
         model: controller.colorList3
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineColor3(_comboboxColor3.currentText)
         }
     }
@@ -498,7 +496,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.tableList4
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setFieldList4(_comboboxTable4.currentText)
         }
     }
@@ -511,7 +509,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.fieldList4
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setField4(_comboboxField4.currentText)
         }
     }
@@ -569,7 +567,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.lineList
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineStyle4(parseInt(_comboboxLine4.currentIndex))
         }
     }
@@ -582,7 +580,7 @@ Rectangle {
         width : _Width
         height: _Height
         model: controller.colorList4
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineColor4(_comboboxColor4.currentText)
         }
     }
@@ -616,7 +614,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.tableList5
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setFieldList5(_comboboxTable5.currentText)
         }
     }
@@ -629,7 +627,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.fieldList5
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setField5(_comboboxField5.currentText)
         }
     }
@@ -687,7 +685,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.lineList
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineStyle5(parseInt(_comboboxLine5.currentIndex))
         }
     }
@@ -700,7 +698,7 @@ Rectangle {
         width : _Width
         height: _Height
         model: controller.colorList5
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineColor5(_comboboxColor5.currentText)
         }
     }
@@ -734,7 +732,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.tableList6
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setFieldList6(_comboboxTable6.currentText)
         }
     }
@@ -747,7 +745,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.fieldList6
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setField6(_comboboxField6.currentText)
         }
     }
@@ -805,7 +803,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.lineList
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineStyle6(parseInt(_comboboxLine6.currentIndex))
         }
     }
@@ -818,7 +816,7 @@ Rectangle {
         width : _Width
         height: _Height
         model: controller.colorList6
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineColor6(_comboboxColor6.currentText)
         }
     }
@@ -852,7 +850,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.tableList7
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setFieldList7(_comboboxTable7.currentText)
         }
     }
@@ -865,7 +863,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.fieldList7
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setField7(_comboboxField7.currentText)
         }
     }
@@ -923,7 +921,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.lineList
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineStyle7(parseInt(_comboboxLine7.currentIndex))
         }
     }
@@ -936,7 +934,7 @@ Rectangle {
         width : _Width
         height: _Height
         model: controller.colorList7
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineColor7(_comboboxColor7.currentText)
         }
     }
@@ -970,7 +968,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.tableList8
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setFieldList8(_comboboxTable8.currentText)
         }
     }
@@ -983,7 +981,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.fieldList8
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setField8(_comboboxField8.currentText)
         }
     }
@@ -1041,7 +1039,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.lineList
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineStyle8(parseInt(_comboboxLine8.currentIndex))
         }
     }
@@ -1054,7 +1052,7 @@ Rectangle {
         width : _Width
         height: _Height
         model: controller.colorList8
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineColor8(_comboboxColor8.currentText)
         }
     }
@@ -1088,7 +1086,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.tableList9
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setFieldList9(_comboboxTable9.currentText)
         }
     }
@@ -1101,7 +1099,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.fieldList9
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setField9(_comboboxField9.currentText)
         }
     }
@@ -1159,7 +1157,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.lineList
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineStyle9(parseInt(_comboboxLine9.currentIndex))
         }
     }
@@ -1172,7 +1170,7 @@ Rectangle {
         width : _Width
         height: _Height
         model: controller.colorList9
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineColor9(_comboboxColor9.currentText)
         }
     }
@@ -1206,7 +1204,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.tableList10
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setFieldList10(_comboboxTable10.currentText)
         }
     }
@@ -1219,7 +1217,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.fieldList10
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setField10(_comboboxField10.currentText)
         }
     }
@@ -1277,7 +1275,7 @@ Rectangle {
         width : _Width
         height: _Height
         model : controller.lineList
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineStyle10(parseInt(_comboboxLine10.currentIndex))
         }
     }
@@ -1290,7 +1288,7 @@ Rectangle {
         width : _Width
         height: _Height
         model: controller.colorList10
-        onCurrentTextChanged: {
+        onCurrentIndexChanged: {
             controller.setLineColor10(_comboboxColor10.currentText)
         }
     }

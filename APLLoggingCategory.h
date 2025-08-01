@@ -2,6 +2,7 @@
 #define APLLOGGINGCATEGORY_H
 
 #include <QLoggingCategory>
+#include <QObject>
 #include <QStringList>
 
 /// @def APL_LOGGING_CATEGORY

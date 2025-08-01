@@ -169,10 +169,10 @@ Item {
         Connections {
             target: targetItem
 
-            onWidthChanged: {
+            function onWidthChanged() {
                 resize();
             }
-            onHeightChanged:
+            function onHeightChanged()
             {
                 resize();
             }

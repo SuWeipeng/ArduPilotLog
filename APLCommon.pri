@@ -29,14 +29,14 @@ linux {
         error("Unsuported Linux toolchain, only GCC 32- or 64-bit is supported")
     }
 } else : win32 {
-    win32-msvc2010 | win32-msvc2012 | win32-msvc2013 | win32-msvc2015 {
+    win32-msvc* {
         message("Windows build")
         CONFIG += WindowsBuild
         DEFINES += __STDC_LIMIT_MACROS
         DEFINES += PACKED=/**/
     } else {
         DEFINES += PACKED=/**/
-        #error("Unsupported Windows toolchain, only Visual Studio 2010, 2012, and 2013 are supported")
+        #error("Unsupported Windows toolchain, only Visual Studio is supported")
     }
 } else : macx {
     macx-clang | macx-llvm {
@@ -185,15 +185,6 @@ MacBuild | LinuxBuild {
 }
 
 WindowsBuild {
-    win32-msvc2015 {
-        QMAKE_CFLAGS -= -Zc:strictStrings
-        QMAKE_CXXFLAGS -= -Zc:strictStrings
-    }
-    QMAKE_CFLAGS_RELEASE -= -Zc:strictStrings
-    QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO -= -Zc:strictStrings
-
-    QMAKE_CXXFLAGS_RELEASE -= -Zc:strictStrings
-    QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO -= -Zc:strictStrings
     QMAKE_CXXFLAGS_WARN_ON += /W3 \
         /wd4996 \   # silence warnings about deprecated strcpy and whatnot
         /wd4005 \   # silence warnings about macro redefinition

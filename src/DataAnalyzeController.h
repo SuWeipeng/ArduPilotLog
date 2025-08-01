@@ -2,6 +2,8 @@
 #define DATAANALYZECONTROLLER_H
 
 #include <QObject>
+#include <QMap>
+#include <QStringList>
 #include "APLLoggingCategory.h"
 #include "qcustomplot.h"
 
@@ -368,15 +370,13 @@ signals:
                                  bool    from);             // false:DataAnalyzeController,true:Other
     void clearGraph             ();
 
-private slots:
-    void                _setTableList(QString table);
-
 private:
     bool                _isNumber(QString n);
     void                _plot();
     void                _lineStyle(int index, int i);
     void                _update_colorList();
     void                _update_hide_tables(QString table);
+    QMap<QString, QStringList> _data;
     bool                _visible[MAX_LINE_NUM];
     QStringList         _tableList;
     QStringList         _tableList1;

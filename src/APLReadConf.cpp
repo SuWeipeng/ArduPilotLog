@@ -1,6 +1,6 @@
 #include <QFile>
 #include <QDataStream>
-#include <QRegExpValidator>
+#include <QRegularExpressionValidator>
 #include <QFileInfo>
 #include "APLReadConf.h"
 #include "mainwindow.h"

@@ -1,6 +1,6 @@
 #include <QFile>
 #include <QDataStream>
-#include <QRegExpValidator>
+#include <QRegularExpressionValidator>
 #include <QFileInfo>
 #include "APLRead.h"
 #include "APLDB.h"
@@ -284,8 +284,8 @@ bool APLRead::_checkMessage(QString &name, QString &format, QString &labels) con
 
 bool APLRead::_checkName(QString &name) const
 {
-    QRegExp reg("^[A-Z0-9]{1,4}$");
-    QRegExpValidator validator(reg,0);
+    QRegularExpression reg("^[A-Z0-9]{1,4}$");
+    QRegularExpressionValidator validator(reg,0);
 
     int pos = 0;
     if(QValidator::Acceptable!=validator.validate(name,pos)){
@@ -297,8 +297,8 @@ bool APLRead::_checkName(QString &name) const
 
 bool APLRead::_checkFormat(QString &format) const
 {
-    QRegExp reg("^[A-Za-z]{1,16}$");
-    QRegExpValidator validator(reg,0);
+    QRegularExpression reg("^[A-Za-z]{1,16}$");
+    QRegularExpressionValidator validator(reg,0);
 
     int pos = 0;
     if(QValidator::Acceptable!=validator.validate(format,pos)){
@@ -310,8 +310,8 @@ bool APLRead::_checkFormat(QString &format) const
 
 bool APLRead::_checkLabels(QString &labels) const
 {
-    QRegExp reg("^[A-Za-z0-9,]{1,64}$");
-    QRegExpValidator validator(reg,0);
+    QRegularExpression reg("^[A-Za-z0-9,]{1,64}$");
+    QRegularExpressionValidator validator(reg,0);
 
     int pos = 0;
     if(QValidator::Acceptable!=validator.validate(labels,pos)){

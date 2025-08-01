@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMap>
+#include <QStringList>
 #include "ui_mainwindow.h"
 
 #include "APLLoggingCategory.h"
@@ -65,12 +67,14 @@ private slots:
     void _zoomY();
     void _zoomAll();
     void on_customPlot_customContextMenuRequested();
-    void on_comboBox_currentIndexChanged(const QString &arg1);
+    void on_comboBox_currentIndexChanged(int index);
     void _saveSuccessMessage();
     void _confOpenedTrigger();
 
 signals:
     void treeWidgetAddItem(QString name);
+    void tableListReady();
+    void dataReady(QMap<QString, QStringList> data);
 
 private:
     Ui::MainWindow      _ui;

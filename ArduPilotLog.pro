@@ -4,14 +4,15 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql qml quick quickwidgets
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+QT       += core gui sql qml quick quickwidgets widgets printsupport
 
 include(APLCommon.pri)
 
 TARGET = ArduPilotLog
 TEMPLATE = app
+
+INCLUDEPATH += $$PWD $$PWD/src
+DEPENDPATH += $$PWD $$PWD/src
 
 DebugBuild {
     DESTDIR  = $${OUT_PWD}/debug
