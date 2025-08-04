@@ -44,14 +44,15 @@ Rectangle {
                 onClicked: controller.setVisible1(!controller.visible1)
             }
             ComboBox {
+                id    : _comboboxTable1
                 Layout.fillWidth: true
                 model: controller.tableList1
-                onActivated: controller.setFieldList1(model[index])
+                onCurrentTextChanged: controller.setFieldList1(currentText)
             }
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.fieldList1
-                onActivated: controller.setField1(model[index])
+                onActivated: function(index) { controller.setField1(model[index]) }
             }
             TextField {
                 Layout.fillWidth: true
@@ -74,12 +75,13 @@ Rectangle {
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.lineList
-                onCurrentIndexChanged: controller.setLineStyle1(currentIndex)
+                onCurrentIndexChanged: function() { controller.setLineStyle1(currentIndex) }
             }
             ComboBox {
+                id: _comboboxColor1
                 Layout.fillWidth: true
                 model: controller.colorList1
-                onActivated: controller.setLineColor1(model[index])
+                onCurrentTextChanged: controller.setLineColor1(currentText)
             }
 
             // --- 第 2 行: 数据 ---
@@ -89,14 +91,15 @@ Rectangle {
                 onClicked: controller.setVisible2(!controller.visible2)
             }
             ComboBox {
+                id: _comboboxTable2
                 Layout.fillWidth: true
                 model: controller.tableList2
-                onActivated: controller.setFieldList2(model[index])
+                onCurrentTextChanged: controller.setFieldList2(currentText)
             }
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.fieldList2
-                onActivated: controller.setField2(model[index])
+                onActivated: function(index) { controller.setField2(model[index]) }
             }
             TextField { Layout.fillWidth: true; text: controller.scale2; onAccepted: controller.setScale2(text) }
             TextField { Layout.fillWidth: true; text: controller.offsetX2; onAccepted: controller.setOffsetX2(text) }
@@ -104,12 +107,13 @@ Rectangle {
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.lineList
-                onCurrentIndexChanged: controller.setLineStyle2(currentIndex)
+                onCurrentIndexChanged: function() { controller.setLineStyle2(currentIndex) }
             }
             ComboBox {
+                id: _comboboxColor2
                 Layout.fillWidth: true
                 model: controller.colorList2
-                onActivated: controller.setLineColor2(model[index])
+                onCurrentTextChanged: controller.setLineColor2(currentText)
             }
 
             // --- 第 3 行: 数据 ---
@@ -119,14 +123,15 @@ Rectangle {
                 onClicked: controller.setVisible3(!controller.visible3)
             }
             ComboBox {
+                id: _comboboxTable3
                 Layout.fillWidth: true
                 model: controller.tableList3
-                onActivated: controller.setFieldList3(model[index])
+                onCurrentTextChanged: controller.setFieldList3(currentText)
             }
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.fieldList3
-                onActivated: controller.setField3(model[index])
+                onActivated: function(index) { controller.setField3(model[index]) }
             }
             TextField { Layout.fillWidth: true; text: controller.scale3; onAccepted: controller.setScale3(text) }
             TextField { Layout.fillWidth: true; text: controller.offsetX3; onAccepted: controller.setOffsetX3(text) }
@@ -134,12 +139,13 @@ Rectangle {
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.lineList
-                onCurrentIndexChanged: controller.setLineStyle3(currentIndex)
+                onCurrentIndexChanged: function() { controller.setLineStyle3(currentIndex) }
             }
             ComboBox {
+                id: _comboboxColor3
                 Layout.fillWidth: true
                 model: controller.colorList3
-                onActivated: controller.setLineColor3(model[index])
+                onCurrentTextChanged: controller.setLineColor3(currentText)
             }
 
             // --- 第 4 行: 数据 ---
@@ -149,14 +155,15 @@ Rectangle {
                 onClicked: controller.setVisible4(!controller.visible4)
             }
             ComboBox {
+                id: _comboboxTable4
                 Layout.fillWidth: true
                 model: controller.tableList4
-                onActivated: controller.setFieldList4(model[index])
+                onCurrentTextChanged: controller.setFieldList4(currentText)
             }
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.fieldList4
-                onActivated: controller.setField4(model[index])
+                onActivated: function(index) { controller.setField4(model[index]) }
             }
             TextField { Layout.fillWidth: true; text: controller.scale4; onAccepted: controller.setScale4(text) }
             TextField { Layout.fillWidth: true; text: controller.offsetX4; onAccepted: controller.setOffsetX4(text) }
@@ -164,12 +171,13 @@ Rectangle {
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.lineList
-                onCurrentIndexChanged: controller.setLineStyle4(currentIndex)
+                onCurrentIndexChanged: function() { controller.setLineStyle4(currentIndex) }
             }
             ComboBox {
+                id: _comboboxColor4
                 Layout.fillWidth: true
                 model: controller.colorList4
-                onActivated: controller.setLineColor4(model[index])
+                onCurrentTextChanged: controller.setLineColor4(currentText)
             }
 
             // --- 第 5 行: 数据 ---
@@ -179,14 +187,15 @@ Rectangle {
                 onClicked: controller.setVisible5(!controller.visible5)
             }
             ComboBox {
+                id: _comboboxTable5
                 Layout.fillWidth: true
                 model: controller.tableList5
-                onActivated: controller.setFieldList5(model[index])
+                onCurrentTextChanged: controller.setFieldList5(currentText)
             }
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.fieldList5
-                onActivated: controller.setField5(model[index])
+                onActivated: function(index) { controller.setField5(model[index]) }
             }
             TextField { Layout.fillWidth: true; text: controller.scale5; onAccepted: controller.setScale5(text) }
             TextField { Layout.fillWidth: true; text: controller.offsetX5; onAccepted: controller.setOffsetX5(text) }
@@ -194,12 +203,13 @@ Rectangle {
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.lineList
-                onCurrentIndexChanged: controller.setLineStyle5(currentIndex)
+                onCurrentIndexChanged: function() { controller.setLineStyle5(currentIndex) }
             }
             ComboBox {
+                id: _comboboxColor5
                 Layout.fillWidth: true
                 model: controller.colorList5
-                onActivated: controller.setLineColor5(model[index])
+                onCurrentTextChanged: controller.setLineColor5(currentText)
             }
 
             // --- 第 6 行: 数据 ---
@@ -209,14 +219,15 @@ Rectangle {
                 onClicked: controller.setVisible6(!controller.visible6)
             }
             ComboBox {
+                id: _comboboxTable6
                 Layout.fillWidth: true
                 model: controller.tableList6
-                onActivated: controller.setFieldList6(model[index])
+                onCurrentTextChanged: controller.setFieldList6(currentText)
             }
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.fieldList6
-                onActivated: controller.setField6(model[index])
+                onActivated: function(index) { controller.setField6(model[index]) }
             }
             TextField { Layout.fillWidth: true; text: controller.scale6; onAccepted: controller.setScale6(text) }
             TextField { Layout.fillWidth: true; text: controller.offsetX6; onAccepted: controller.setOffsetX6(text) }
@@ -224,12 +235,13 @@ Rectangle {
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.lineList
-                onCurrentIndexChanged: controller.setLineStyle6(currentIndex)
+                onCurrentIndexChanged: function() { controller.setLineStyle6(currentIndex) }
             }
             ComboBox {
+                id: _comboboxColor6
                 Layout.fillWidth: true
                 model: controller.colorList6
-                onActivated: controller.setLineColor6(model[index])
+                onCurrentTextChanged: controller.setLineColor6(currentText)
             }
 
             // --- 第 7 行: 数据 ---
@@ -239,14 +251,15 @@ Rectangle {
                 onClicked: controller.setVisible7(!controller.visible7)
             }
             ComboBox {
+                id: _comboboxTable7
                 Layout.fillWidth: true
                 model: controller.tableList7
-                onActivated: controller.setFieldList7(model[index])
+                onCurrentTextChanged: controller.setFieldList7(currentText)
             }
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.fieldList7
-                onActivated: controller.setField7(model[index])
+                onActivated: function(index) { controller.setField7(model[index]) }
             }
             TextField { Layout.fillWidth: true; text: controller.scale7; onAccepted: controller.setScale7(text) }
             TextField { Layout.fillWidth: true; text: controller.offsetX7; onAccepted: controller.setOffsetX7(text) }
@@ -254,12 +267,13 @@ Rectangle {
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.lineList
-                onCurrentIndexChanged: controller.setLineStyle7(currentIndex)
+                onCurrentIndexChanged: function() { controller.setLineStyle7(currentIndex) }
             }
             ComboBox {
+                id: _comboboxColor7
                 Layout.fillWidth: true
                 model: controller.colorList7
-                onActivated: controller.setLineColor7(model[index])
+                onCurrentTextChanged: controller.setLineColor7(currentText)
             }
 
             // --- 第 8 行: 数据 ---
@@ -269,14 +283,15 @@ Rectangle {
                 onClicked: controller.setVisible8(!controller.visible8)
             }
             ComboBox {
+                id: _comboboxTable8
                 Layout.fillWidth: true
                 model: controller.tableList8
-                onActivated: controller.setFieldList8(model[index])
+                onCurrentTextChanged: controller.setFieldList8(currentText)
             }
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.fieldList8
-                onActivated: controller.setField8(model[index])
+                onActivated: function(index) { controller.setField8(model[index]) }
             }
             TextField { Layout.fillWidth: true; text: controller.scale8; onAccepted: controller.setScale8(text) }
             TextField { Layout.fillWidth: true; text: controller.offsetX8; onAccepted: controller.setOffsetX8(text) }
@@ -284,12 +299,13 @@ Rectangle {
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.lineList
-                onCurrentIndexChanged: controller.setLineStyle8(currentIndex)
+                onCurrentIndexChanged: function() { controller.setLineStyle8(currentIndex) }
             }
             ComboBox {
+                id: _comboboxColor8
                 Layout.fillWidth: true
                 model: controller.colorList8
-                onActivated: controller.setLineColor8(model[index])
+                onCurrentTextChanged: controller.setLineColor8(currentText)
             }
 
             // --- 第 9 行: 数据 ---
@@ -299,14 +315,15 @@ Rectangle {
                 onClicked: controller.setVisible9(!controller.visible9)
             }
             ComboBox {
+                id: _comboboxTable9
                 Layout.fillWidth: true
                 model: controller.tableList9
-                onActivated: controller.setFieldList9(model[index])
+                onCurrentTextChanged: controller.setFieldList9(currentText)
             }
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.fieldList9
-                onActivated: controller.setField9(model[index])
+                onActivated: function(index) { controller.setField9(model[index]) }
             }
             TextField { Layout.fillWidth: true; text: controller.scale9; onAccepted: controller.setScale9(text) }
             TextField { Layout.fillWidth: true; text: controller.offsetX9; onAccepted: controller.setOffsetX9(text) }
@@ -314,12 +331,13 @@ Rectangle {
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.lineList
-                onCurrentIndexChanged: controller.setLineStyle9(currentIndex)
+                onCurrentIndexChanged: function() { controller.setLineStyle9(currentIndex) }
             }
             ComboBox {
+                id: _comboboxColor9
                 Layout.fillWidth: true
                 model: controller.colorList9
-                onActivated: controller.setLineColor9(model[index])
+                onCurrentTextChanged: controller.setLineColor9(currentText)
             }
 
             // --- 第 10 行: 数据 ---
@@ -329,14 +347,15 @@ Rectangle {
                 onClicked: controller.setVisible10(!controller.visible10)
             }
             ComboBox {
+                id: _comboboxTable10
                 Layout.fillWidth: true
                 model: controller.tableList10
-                onActivated: controller.setFieldList10(model[index])
+                onCurrentTextChanged: controller.setFieldList10(currentText)
             }
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.fieldList10
-                onActivated: controller.setField10(model[index])
+                onActivated: function(index) { controller.setField10(model[index]) }
             }
             TextField { Layout.fillWidth: true; text: controller.scale10; onAccepted: controller.setScale10(text) }
             TextField { Layout.fillWidth: true; text: controller.offsetX10; onAccepted: controller.setOffsetX10(text) }
@@ -344,12 +363,13 @@ Rectangle {
             ComboBox {
                 Layout.fillWidth: true
                 model: controller.lineList
-                onCurrentIndexChanged: controller.setLineStyle10(currentIndex)
+                onCurrentIndexChanged: function() { controller.setLineStyle10(currentIndex) }
             }
             ComboBox {
+                id: _comboboxColor10
                 Layout.fillWidth: true
                 model: controller.colorList10
-                onActivated: controller.setLineColor10(model[index])
+                onCurrentTextChanged: controller.setLineColor10(currentText)
             }
         }
 

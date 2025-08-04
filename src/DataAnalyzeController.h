@@ -376,7 +376,7 @@ private:
     void                _plot();
     void                _lineStyle(int index, int i);
     void                _update_colorList();
-    void                _update_hide_tables(QString table);
+    void                _update_hide_tables(QString table, uint8_t idx);
     bool                _visible[MAX_LINE_NUM];
     QStringList         _tableList;
     QStringList         _tableList1;

@@ -167,7 +167,7 @@ DataAnalyzeController::_update_colorList(){
 }
 
 void
-DataAnalyzeController::_update_hide_tables(QString table)
+DataAnalyzeController::_update_hide_tables(QString table, uint8_t idx)
 {
     if (table.isEmpty()) return;
 
@@ -183,7 +183,7 @@ DataAnalyzeController::_update_hide_tables(QString table)
     _tableList10= _tableList;
 
     for(int i=0; i<MAX_LINE_NUM; i++){
-        if(!_visible[i]){
+        if(!_visible[i] && i > idx){
             switch(i){
             case 0:
                 _tableList1.swapItemsAt(0, _tableList1.indexOf(table));
@@ -277,14 +277,16 @@ DataAnalyzeController::setFieldList1(QString table)
         emit fieldList1Changed();
     }
 
-    _update_hide_tables(table);
+    _update_hide_tables(table, 0);
 }
 
 void
 DataAnalyzeController::setField1(QString field){
     fields[0] = field;
     if(field.compare("TimeUS") != 0) setVisible1(true);
-    _plot();
+    if (_visible[0]) {
+        _plot();
+    }
 }
 
 void
@@ -294,8 +296,9 @@ DataAnalyzeController::setScale1(QString scale){
     _scale[0] = scale.left(scale.length()).toFloat();
     _scale[0] = QString::number(_scale[0], 'f', 3).toFloat();
     emit scale1Changed();
-
-    _plot();
+    if (_visible[0]) {
+        _plot();
+    }
 }
 
 void
@@ -304,8 +307,9 @@ DataAnalyzeController::setOffsetX1(QString offset){
 
     _offsetX[0] = (int)offset.left(offset.length()).toFloat();
     emit offsetX1Changed();
-
-    _plot();
+    if (_visible[0]) {
+        _plot();
+    }
 }
 
 void
@@ -315,30 +319,34 @@ DataAnalyzeController::setOffsetY1(QString offset){
     _offsetY[0] = offset.left(offset.length()).toFloat();
     _offsetY[0] = QString::number(_offsetY[0], 'f', 2).toFloat();
     emit offsetY1Changed();
-
-    _plot();
+    if (_visible[0]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setVisible1(bool visible){
     _visible[0] = visible;
     emit visible1Changed();
-
-    _plot();
+    if (_visible[0]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineStyle1(int style){
     _style[0] = style;
-
-    _plot();
+    if (_visible[0]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineColor1(QString color){
     _color[0] = _colorList.indexOf(color);
-
-    _plot();
+    if (_visible[0]) {
+        _plot();
+    }
 }
 
 // Row 2
@@ -356,14 +364,16 @@ DataAnalyzeController::setFieldList2(QString table)
         }
         emit fieldList2Changed();
     }
-    _update_hide_tables(table);
+    _update_hide_tables(table, 1);
 }
 
 void
 DataAnalyzeController::setField2(QString field){
     fields[1] = field;
     if(field.compare("TimeUS") != 0) setVisible2(true);
-    _plot();
+    if (_visible[1]) {
+        _plot();
+    }
 }
 
 void
@@ -373,8 +383,9 @@ DataAnalyzeController::setScale2(QString scale){
     _scale[1] = scale.left(scale.length()).toFloat();
     _scale[1] = QString::number(_scale[1], 'f', 3).toFloat();
     emit scale2Changed();
-
-    _plot();
+    if (_visible[1]) {
+        _plot();
+    }
 }
 
 void
@@ -383,8 +394,9 @@ DataAnalyzeController::setOffsetX2(QString offset){
 
     _offsetX[1] = (int)offset.left(offset.length()).toFloat();
     emit offsetX2Changed();
-
-    _plot();
+    if (_visible[1]) {
+        _plot();
+    }
 }
 
 void
@@ -394,30 +406,34 @@ DataAnalyzeController::setOffsetY2(QString offset){
     _offsetY[1] = offset.left(offset.length()).toFloat();
     _offsetY[1] = QString::number(_offsetY[1], 'f', 2).toFloat();
     emit offsetY2Changed();
-
-    _plot();
+    if (_visible[1]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setVisible2(bool visible){
     _visible[1] = visible;
     emit visible2Changed();
-
-    _plot();
+    if (_visible[1]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineStyle2(int style){
     _style[1] = style;
-
-    _plot();
+    if (_visible[1]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineColor2(QString color){
     _color[1] = _colorList.indexOf(color);
-
-    _plot();
+    if (_visible[1]) {
+        _plot();
+    }
 }
 
 // Row 3
@@ -435,7 +451,7 @@ DataAnalyzeController::setFieldList3(QString table)
         }
         emit fieldList3Changed();
     }
-    _update_hide_tables(table);
+    _update_hide_tables(table, 2);
 }
 
 void
@@ -452,8 +468,9 @@ DataAnalyzeController::setScale3(QString scale){
     _scale[2] = scale.left(scale.length()).toFloat();
     _scale[2] = QString::number(_scale[2], 'f', 3).toFloat();
     emit scale3Changed();
-
-    _plot();
+    if (_visible[2]) {
+        _plot();
+    }
 }
 
 void
@@ -462,8 +479,9 @@ DataAnalyzeController::setOffsetX3(QString offset){
 
     _offsetX[2] = (int)offset.left(offset.length()).toFloat();
     emit offsetX3Changed();
-
-    _plot();
+    if (_visible[2]) {
+        _plot();
+    }
 }
 
 void
@@ -473,30 +491,34 @@ DataAnalyzeController::setOffsetY3(QString offset){
     _offsetY[2] = offset.left(offset.length()).toFloat();
     _offsetY[2] = QString::number(_offsetY[2], 'f', 2).toFloat();
     emit offsetY3Changed();
-
-    _plot();
+    if (_visible[2]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setVisible3(bool visible){
     _visible[2] = visible;
     emit visible3Changed();
-
-    _plot();
+    if (_visible[2]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineStyle3(int style){
     _style[2] = style;
-
-    _plot();
+    if (_visible[2]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineColor3(QString color){
     _color[2] = _colorList.indexOf(color);
-
-    _plot();
+    if (_visible[2]) {
+        _plot();
+    }
 }
 
 // Row 4
@@ -514,14 +536,16 @@ DataAnalyzeController::setFieldList4(QString table)
         }
         emit fieldList4Changed();
     }
-    _update_hide_tables(table);
+    _update_hide_tables(table, 3);
 }
 
 void
 DataAnalyzeController::setField4(QString field){
     fields[3] = field;
     if(field.compare("TimeUS") != 0) setVisible4(true);
-    _plot();
+    if (_visible[3]) {
+        _plot();
+    }
 }
 
 void
@@ -531,8 +555,9 @@ DataAnalyzeController::setScale4(QString scale){
     _scale[3] = scale.left(scale.length()).toFloat();
     _scale[3] = QString::number(_scale[3], 'f', 3).toFloat();
     emit scale4Changed();
-
-    _plot();
+    if (_visible[3]) {
+        _plot();
+    }
 }
 
 void
@@ -541,8 +566,9 @@ DataAnalyzeController::setOffsetX4(QString offset){
 
     _offsetX[3] = (int)offset.left(offset.length()).toFloat();
     emit offsetX4Changed();
-
-    _plot();
+    if (_visible[3]) {
+        _plot();
+    }
 }
 
 void
@@ -552,30 +578,34 @@ DataAnalyzeController::setOffsetY4(QString offset){
     _offsetY[3] = offset.left(offset.length()).toFloat();
     _offsetY[3] = QString::number(_offsetY[3], 'f', 2).toFloat();
     emit offsetY4Changed();
-
-    _plot();
+    if (_visible[3]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setVisible4(bool visible){
     _visible[3] = visible;
     emit visible4Changed();
-
-    _plot();
+    if (_visible[3]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineStyle4(int style){
     _style[3] = style;
-
-    _plot();
+    if (_visible[3]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineColor4(QString color){
     _color[3] = _colorList.indexOf(color);
-
-    _plot();
+    if (_visible[3]) {
+        _plot();
+    }
 }
 
 // Row 5
@@ -593,14 +623,16 @@ DataAnalyzeController::setFieldList5(QString table)
         }
         emit fieldList5Changed();
     }
-    _update_hide_tables(table);
+    _update_hide_tables(table, 4);
 }
 
 void
 DataAnalyzeController::setField5(QString field){
     fields[4] = field;
     if(field.compare("TimeUS") != 0) setVisible5(true);
-    _plot();
+    if (_visible[4]) {
+        _plot();
+    }
 }
 
 void
@@ -610,8 +642,9 @@ DataAnalyzeController::setScale5(QString scale){
     _scale[4] = scale.left(scale.length()).toFloat();
     _scale[4] = QString::number(_scale[4], 'f', 3).toFloat();
     emit scale5Changed();
-
-    _plot();
+    if (_visible[4]) {
+        _plot();
+    }
 }
 
 void
@@ -620,8 +653,9 @@ DataAnalyzeController::setOffsetX5(QString offset){
 
     _offsetX[4] = (int)offset.left(offset.length()).toFloat();
     emit offsetX5Changed();
-
-    _plot();
+    if (_visible[4]) {
+        _plot();
+    }
 }
 
 void
@@ -631,30 +665,34 @@ DataAnalyzeController::setOffsetY5(QString offset){
     _offsetY[4] = offset.left(offset.length()).toFloat();
     _offsetY[4] = QString::number(_offsetY[4], 'f', 2).toFloat();
     emit offsetY5Changed();
-
-    _plot();
+    if (_visible[4]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setVisible5(bool visible){
     _visible[4] = visible;
     emit visible5Changed();
-
-    _plot();
+    if (_visible[4]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineStyle5(int style){
     _style[4] = style;
-
-    _plot();
+    if (_visible[4]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineColor5(QString color){
     _color[4] = _colorList.indexOf(color);
-
-    _plot();
+    if (_visible[4]) {
+        _plot();
+    }
 }
 
 // Row 6
@@ -672,14 +710,16 @@ DataAnalyzeController::setFieldList6(QString table)
         }
         emit fieldList6Changed();
     }
-    _update_hide_tables(table);
+    _update_hide_tables(table, 5);
 }
 
 void
 DataAnalyzeController::setField6(QString field){
     fields[5] = field;
     if(field.compare("TimeUS") != 0) setVisible6(true);
-    _plot();
+    if (_visible[5]) {
+        _plot();
+    }
 }
 
 void
@@ -689,8 +729,9 @@ DataAnalyzeController::setScale6(QString scale){
     _scale[5] = scale.left(scale.length()).toFloat();
     _scale[5] = QString::number(_scale[5], 'f', 3).toFloat();
     emit scale6Changed();
-
-    _plot();
+    if (_visible[5]) {
+        _plot();
+    }
 }
 
 void
@@ -699,8 +740,9 @@ DataAnalyzeController::setOffsetX6(QString offset){
 
     _offsetX[5] = (int)offset.left(offset.length()).toFloat();
     emit offsetX6Changed();
-
-    _plot();
+    if (_visible[5]) {
+        _plot();
+    }
 }
 
 void
@@ -710,30 +752,34 @@ DataAnalyzeController::setOffsetY6(QString offset){
     _offsetY[5] = offset.left(offset.length()).toFloat();
     _offsetY[5] = QString::number(_offsetY[5], 'f', 2).toFloat();
     emit offsetY6Changed();
-
-    _plot();
+    if (_visible[5]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setVisible6(bool visible){
     _visible[5] = visible;
     emit visible6Changed();
-
-    _plot();
+    if (_visible[5]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineStyle6(int style){
     _style[5] = style;
-
-    _plot();
+    if (_visible[5]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineColor6(QString color){
     _color[5] = _colorList.indexOf(color);
-
-    _plot();
+    if (_visible[5]) {
+        _plot();
+    }
 }
 
 // Row 7
@@ -751,14 +797,16 @@ DataAnalyzeController::setFieldList7(QString table)
         }
         emit fieldList7Changed();
     }
-    _update_hide_tables(table);
+    _update_hide_tables(table, 6);
 }
 
 void
 DataAnalyzeController::setField7(QString field){
     fields[6] = field;
     if(field.compare("TimeUS") != 0) setVisible7(true);
-    _plot();
+    if (_visible[6]) {
+        _plot();
+    }
 }
 
 void
@@ -768,8 +816,9 @@ DataAnalyzeController::setScale7(QString scale){
     _scale[6] = scale.left(scale.length()).toFloat();
     _scale[6] = QString::number(_scale[6], 'f', 3).toFloat();
     emit scale7Changed();
-
-    _plot();
+    if (_visible[6]) {
+        _plot();
+    }
 }
 
 void
@@ -778,8 +827,9 @@ DataAnalyzeController::setOffsetX7(QString offset){
 
     _offsetX[6] = (int)offset.left(offset.length()).toFloat();
     emit offsetX7Changed();
-
-    _plot();
+    if (_visible[6]) {
+        _plot();
+    }
 }
 
 void
@@ -789,30 +839,34 @@ DataAnalyzeController::setOffsetY7(QString offset){
     _offsetY[6] = offset.left(offset.length()).toFloat();
     _offsetY[6] = QString::number(_offsetY[6], 'f', 2).toFloat();
     emit offsetY7Changed();
-
-    _plot();
+    if (_visible[6]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setVisible7(bool visible){
     _visible[6] = visible;
     emit visible7Changed();
-
-    _plot();
+    if (_visible[6]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineStyle7(int style){
     _style[6] = style;
-
-    _plot();
+    if (_visible[6]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineColor7(QString color){
     _color[6] = _colorList.indexOf(color);
-
-    _plot();
+    if (_visible[6]) {
+        _plot();
+    }
 }
 
 // Row 8
@@ -830,14 +884,16 @@ DataAnalyzeController::setFieldList8(QString table)
         }
         emit fieldList8Changed();
     }
-    _update_hide_tables(table);
+    _update_hide_tables(table, 7);
 }
 
 void
 DataAnalyzeController::setField8(QString field){
     fields[7] = field;
     if(field.compare("TimeUS") != 0) setVisible8(true);
-    _plot();
+    if (_visible[7]) {
+        _plot();
+    }
 }
 
 void
@@ -847,8 +903,9 @@ DataAnalyzeController::setScale8(QString scale){
     _scale[7] = scale.left(scale.length()).toFloat();
     _scale[7] = QString::number(_scale[7], 'f', 3).toFloat();
     emit scale8Changed();
-
-    _plot();
+    if (_visible[7]) {
+        _plot();
+    }
 }
 
 void
@@ -857,8 +914,9 @@ DataAnalyzeController::setOffsetX8(QString offset){
 
     _offsetX[7] = (int)offset.left(offset.length()).toFloat();
     emit offsetX8Changed();
-
-    _plot();
+    if (_visible[7]) {
+        _plot();
+    }
 }
 
 void
@@ -868,30 +926,34 @@ DataAnalyzeController::setOffsetY8(QString offset){
     _offsetY[7] = offset.left(offset.length()).toFloat();
     _offsetY[7] = QString::number(_offsetY[7], 'f', 2).toFloat();
     emit offsetY8Changed();
-
-    _plot();
+    if (_visible[7]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setVisible8(bool visible){
     _visible[7] = visible;
     emit visible8Changed();
-
-    _plot();
+    if (_visible[7]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineStyle8(int style){
     _style[7] = style;
-
-    _plot();
+    if (_visible[7]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineColor8(QString color){
     _color[7] = _colorList.indexOf(color);
-
-    _plot();
+    if (_visible[7]) {
+        _plot();
+    }
 }
 
 // Row 9
@@ -909,14 +971,16 @@ DataAnalyzeController::setFieldList9(QString table)
         }
         emit fieldList9Changed();
     }
-    _update_hide_tables(table);
+    _update_hide_tables(table, 8);
 }
 
 void
 DataAnalyzeController::setField9(QString field){
     fields[8] = field;
     if(field.compare("TimeUS") != 0) setVisible9(true);
-    _plot();
+    if (_visible[8]) {
+        _plot();
+    }
 }
 
 void
@@ -926,8 +990,9 @@ DataAnalyzeController::setScale9(QString scale){
     _scale[8] = scale.left(scale.length()).toFloat();
     _scale[8] = QString::number(_scale[8], 'f', 3).toFloat();
     emit scale9Changed();
-
-    _plot();
+    if (_visible[8]) {
+        _plot();
+    }
 }
 
 void
@@ -936,8 +1001,9 @@ DataAnalyzeController::setOffsetX9(QString offset){
 
     _offsetX[8] = (int)offset.left(offset.length()).toFloat();
     emit offsetX9Changed();
-
-    _plot();
+    if (_visible[8]) {
+        _plot();
+    }
 }
 
 void
@@ -947,30 +1013,34 @@ DataAnalyzeController::setOffsetY9(QString offset){
     _offsetY[8] = offset.left(offset.length()).toFloat();
     _offsetY[8] = QString::number(_offsetY[8], 'f', 2).toFloat();
     emit offsetY9Changed();
-
-    _plot();
+    if (_visible[8]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setVisible9(bool visible){
     _visible[8] = visible;
     emit visible9Changed();
-
-    _plot();
+    if (_visible[8]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineStyle9(int style){
     _style[8] = style;
-
-    _plot();
+    if (_visible[8]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineColor9(QString color){
     _color[8] = _colorList.indexOf(color);
-
-    _plot();
+    if (_visible[8]) {
+        _plot();
+    }
 }
 
 // Row 10
@@ -988,14 +1058,16 @@ DataAnalyzeController::setFieldList10(QString table)
         }
         emit fieldList10Changed();
     }
-    _update_hide_tables(table);
+    _update_hide_tables(table, 9);
 }
 
 void
 DataAnalyzeController::setField10(QString field){
     fields[9] = field;
     if(field.compare("TimeUS") != 0) setVisible10(true);
-    _plot();
+    if (_visible[9]) {
+        _plot();
+    }
 }
 
 void
@@ -1005,8 +1077,9 @@ DataAnalyzeController::setScale10(QString scale){
     _scale[9] = scale.left(scale.length()).toFloat();
     _scale[9] = QString::number(_scale[9], 'f', 3).toFloat();
     emit scale10Changed();
-
-    _plot();
+    if (_visible[9]) {
+        _plot();
+    }
 }
 
 void
@@ -1015,8 +1088,9 @@ DataAnalyzeController::setOffsetX10(QString offset){
 
     _offsetX[9] = (int)offset.left(offset.length()).toFloat();
     emit offsetX10Changed();
-
-    _plot();
+    if (_visible[9]) {
+        _plot();
+    }
 }
 
 void
@@ -1026,28 +1100,32 @@ DataAnalyzeController::setOffsetY10(QString offset){
     _offsetY[9] = offset.left(offset.length()).toFloat();
     _offsetY[9] = QString::number(_offsetY[9], 'f', 2).toFloat();
     emit offsetY10Changed();
-
-    _plot();
+    if (_visible[9]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setVisible10(bool visible){
     _visible[9] = visible;
     emit visible10Changed();
-
-    _plot();
+    if (_visible[9]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineStyle10(int style){
     _style[9] = style;
-
-    _plot();
+    if (_visible[9]) {
+        _plot();
+    }
 }
 
 void
 DataAnalyzeController::setLineColor10(QString color){
     _color[9] = _colorList.indexOf(color);
-
-    _plot();
+    if (_visible[9]) {
+        _plot();
+    }
 }
