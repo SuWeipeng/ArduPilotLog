@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/qml">
-		<file alias="AutoResize.qml">src/AutoResize.qml</file>
-		<file alias="DataAnalyze.qml">src/DataAnalyze.qml</file>
+        <file alias="DataAnalyze.qml">src/DataAnalyze.qml</file>
     </qresource>
 </RCC>
