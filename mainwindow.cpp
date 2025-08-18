@@ -50,8 +50,11 @@ MainWindow::MainWindow(QWidget *parent)
     _ui.setupUi(this);
     this->resize(screenWidth/2, screenHeight/2);
     _buildCommonWidgets();
-    _ui.splitter->setStretchFactor(0, 1);
+    _ui.splitter->setStretchFactor(0, 2);
     _ui.splitter->setStretchFactor(1, 8);
+    _ui.progressBar->setVisible(0);
+    _ui.progressBar->setValue(0);
+    _ui.progressBar->setRange(0,9999);
     initTreeWidget();
     _instance = this;
 
@@ -88,6 +91,10 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete _dialog;
+    if(_apldb.isOpen()){
+        _apldb.close();
+    }
+    QFile::remove(DB_FILE);
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)
@@ -191,16 +198,17 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
 void MainWindow::_fileOpenedTrigger()
 {
+    APLDB::connectSQLite(_apldb);
     QTreeWidgetItem* groupItem;
-    int GroupCount     = APLDB::getAPLDB() -> getGroupCount();
+    int GroupCount     = APLDB::getGroupCount(_apldb);
     int ItemCount      = 0;
     int treeGroupCount = 0;
 
     _groupName.clear();
 
     for(int i = 1; i <= GroupCount; i++){
-        if(APLDB::getAPLDB() -> isEmpty(APLDB::getAPLDB() -> getGroupName(i)) == false){
-            _groupName << QString("%1").arg(APLDB::getAPLDB() -> getGroupName(i));
+        if(APLDB::isEmpty(_apldb, APLDB::getGroupName(_apldb, i)) == false){
+            _groupName << QString("%1").arg(APLDB::getGroupName(_apldb, i));
             treeGroupCount++;
         }
     }
@@ -210,10 +218,10 @@ void MainWindow::_fileOpenedTrigger()
     for(int i = 0; i < treeGroupCount; i++){
         QString table_name = _groupName.at(i);
         groupItem = new QTreeWidgetItem(_ui.treeWidget,QStringList(table_name));
-        ItemCount = APLDB::getAPLDB() -> getItemCount(table_name);
+        ItemCount = APLDB::getItemCount(_apldb, table_name);
         for (int j = 1; j <= ItemCount; j++)
         {
-            QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDB::getAPLDB() -> getItemName(table_name, j)));
+            QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDB::getItemName(_apldb, table_name, j)));
             item->setCheckState(0, Qt::Unchecked);
             groupItem->addChild(item);
         }
@@ -246,8 +254,8 @@ void MainWindow::setComboboxList(QString table)
     QString            Item0;
     QString            Item1;
 
-    Item0 = APLDB::getAPLDB()->getItemName(table, 0);
-    Item1 = APLDB::getAPLDB()->getItemName(table, 1);
+    Item0 = APLDB::getItemName(_apldb, table, 0);
+    Item1 = APLDB::getItemName(_apldb, table, 1);
     if(!_comboBoxList.contains(Item0)){
         _comboBoxList<<Item0;
         _ui.comboBox->addItem(Item0);
@@ -582,11 +590,11 @@ MainWindow::plotGraph(QString tables,
     if(visible || from){
         qCDebug(MAIN_WINDOW_LOG) << "from: "<<from<<"target: "<<plot_target;
         customPlot->addGraph();
-        int length = APLDB::getAPLDB() -> getLen(tables, fields);
+        int length = APLDB::getLen(_apldb, tables, fields);
         QVector<double> x(length), y(length);
 
-        getXSuccess = APLDB::getAPLDB() -> getData(tables, MainWindow::getMainWindow()->ui().comboBox->currentText(), length, x, offsetX);
-        getYSuccess = APLDB::getAPLDB() -> getData(tables, fields, length, y, offsetY, scale);
+        getXSuccess = APLDB::getData(_apldb, tables, MainWindow::getMainWindow()->ui().comboBox->currentText(), length, x, offsetX);
+        getYSuccess = APLDB::getData(_apldb, tables, fields, length, y, offsetY, scale);
 
         if(_is_constant){
             QVector<double> constant(length, _constant_value);
@@ -694,10 +702,10 @@ MainWindow::_findField(QString table, QString field)
 {
     if(_is_constant) return true;
 
-    int ItemCount = APLDB::getAPLDB() -> getItemCount(table);
+    int ItemCount = APLDB::getItemCount(_apldb, table);
     for (int j = 1; j <= ItemCount; j++)
     {
-        if(APLDB::getAPLDB() -> getItemName(table, j).compare(field) == 0){
+        if(APLDB::getItemName(_apldb, table, j).compare(field) == 0){
 //            qCDebug(MAIN_WINDOW_LOG) << "find field";
             return true;
         }

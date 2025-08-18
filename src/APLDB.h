@@ -15,6 +15,7 @@ class APLDB : public QObject
 
 public:
     APLDB();
+    ~APLDB();
 
     void createAPLDB();
 
@@ -37,30 +38,31 @@ public:
 
     void commit() { _apldb.commit(); }
 
-    QString getGroupName(int i);
+    void closeConnection();
 
-    QString getItemName(QString table, int i);
+    static QString getGroupName(QSqlDatabase &db, int i);
 
-    int getGroupCount();
+    static QString getItemName(QSqlDatabase &db, QString table, int i);
 
-    int getItemCount(QString table);
+    static int getGroupCount(QSqlDatabase &db);
 
-    int getLen(QString table, QString field);
+    static int getItemCount(QSqlDatabase &db, QString table);
 
-    bool getData(QString table, QString field, int len, QVector<double>& data, double offset = 0, double scale = 1);
+    static int getLen(QSqlDatabase &db, QString table, QString field);
 
-    void getData(QString table, QString field, int index, double& data);
+    static bool getData(QSqlDatabase &db, QString table, QString field, int len, QVector<double>& data, double offset = 0, double scale = 1);
+
+    static void getData(QSqlDatabase &db, QString table, QString field, int index, double& data);
 
     void deleteDataBase();
 
     void reset();
 
-    bool isEmpty(QString table);
+    static bool isEmpty(QSqlDatabase &db, QString table);
 
-    static APLDB* getAPLDB() { return _instance; }
+    static void connectSQLite(QSqlDatabase &db);
 
 private:
-    static APLDB* _instance;
     QSqlDatabase  _apldb;
     quint32       _Number;
 

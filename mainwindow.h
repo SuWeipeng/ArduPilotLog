@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSqlDatabase>
 #include <QMap>
 #include <QStringList>
 #include "ui_mainwindow.h"
@@ -97,6 +98,7 @@ private:
     bool                _plotConf;
     double              _constant_value;
     int                 _action_bold;
+    QSqlDatabase        _apldb;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;
     QMap<QString, QAction*>         _mapName2Action;

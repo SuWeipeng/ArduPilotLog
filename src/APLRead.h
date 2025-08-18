@@ -1,6 +1,8 @@
 #ifndef APLREAD_H
 #define APLREAD_H
 
+#include <QFile>
+#include <QThread>
 #include "LogStructure.h"
 #include "APLLoggingCategory.h"
 
@@ -22,6 +24,32 @@ typedef struct LogFormat
 
 class APLDB;
 
+class APLReadWorker : public QObject
+{
+    Q_OBJECT
+public:
+    explicit APLReadWorker(QObject *parent = nullptr);
+    ~APLReadWorker();
+
+private:
+    APLDB*  _apldb;
+    qint64  _fileSize;
+    void    _decode(QDataStream &in, QFile *file);
+    bool    _checkMessage(QString &name, QString &format, QString &labels) const;
+    void    _decodeData(QString &format, QDataStream &in, QString &value) const;
+    bool    _checkName(QString &name) const;
+    bool    _checkFormat(QString &format) const;
+    bool    _checkLabels(QString &labels) const;
+
+signals:
+    void fileOpened();
+    void send_process(qint64 pos, qint64 size);
+
+public slots:
+    void decodeLogFile(const QString &file_dir);
+    void reset_db();
+};
+
 class APLRead : public QObject
 {
     Q_OBJECT
@@ -37,21 +65,20 @@ public:
 
 signals:
     void fileOpened();
+    void startRunning(const QString &file_dir);
+    void reset_db();
 
 public slots:
     void getFileDir(const QString &file_dir);
+    void getFileOpened();
+    void calc_process(qint64 pos, qint64 size);
 
 private:
-    APLDB *_apldb;
-    bool    _checkMessage(QString &name, QString &format, QString &labels) const;
-    bool    _checkName(QString &name) const;
-    bool    _checkFormat(QString &format) const;
-    bool    _checkLabels(QString &labels) const;
-    void    _decode(QDataStream &in) const;
-    void    _decodeData(QString &format, QDataStream &in, QString &value) const;
-    void    _resetDataBase();
-    void    _resetFMT(int i);
-    QString _file_name;
+    void            _resetDataBase();
+    void            _resetFMT(int i);
+    QString         _file_name;
+    QThread*        _workThread;
+    APLReadWorker*  _worker;
 
     static APLRead*  _instance;
 };

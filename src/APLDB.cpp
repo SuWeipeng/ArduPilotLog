@@ -5,12 +5,19 @@
 
 APL_LOGGING_CATEGORY(APLDB_LOG,        "APLDBLog")
 
-APLDB *APLDB::_instance;
-
 APLDB::APLDB()
     : _Number(0)
 {
-    _instance = this;
+
+}
+
+APLDB::~APLDB()
+{
+    qCDebug(APLDB_LOG) << "APLDB::~APLDB()";
+    if(isOpen()){
+        close();
+    }
+    QFile::remove(DB_FILE);
 }
 
 void APLDB::createAPLDB()
@@ -86,7 +93,7 @@ void APLDB::addToSubTable(QString name, QString values)
     query_insert.prepare(QString("INSERT INTO %1 VALUES(%2)").arg(name).arg(values));
     if(!query_insert.exec()){
         QSqlError queryErr = query_insert.lastError();
-        qCDebug(APLDB_LOG)<<"addToSubTable"<<queryErr.text();
+        //qCDebug(APLDB_LOG)<<"addToSubTable"<<queryErr.text();
     }
 }
 
@@ -193,9 +200,18 @@ void APLDB::getFormat(quint8 &id, QString &name, QString &format)
     format = query.value(2).toString();
 }
 
-QString APLDB::getGroupName(int i)
+void APLDB::closeConnection()
 {
-    QSqlQuery query;
+    QString connection;
+    connection = _apldb.connectionName();
+    _apldb.close();
+    _apldb = QSqlDatabase();
+    _apldb.removeDatabase(connection);
+}
+
+QString APLDB::getGroupName(QSqlDatabase &db, int i)
+{
+    QSqlQuery query(db);
 
     query.exec(QString("SELECT name FROM maintable"));
     for(int n = 0; n < i; n++)
@@ -204,9 +220,9 @@ QString APLDB::getGroupName(int i)
     return  query.value(0).toString();
 }
 
-int APLDB::getGroupCount()
+int APLDB::getGroupCount(QSqlDatabase &db)
 {
-    QSqlQuery query;
+    QSqlQuery query(db);
 
     query.exec(QString("SELECT COUNT(name) FROM maintable"));
     query.next();
@@ -214,9 +230,9 @@ int APLDB::getGroupCount()
     return  query.value(0).toInt();
 }
 
-int APLDB::getItemCount(QString table)
+int APLDB::getItemCount(QSqlDatabase &db, QString table)
 {
-    QSqlQuery query;
+    QSqlQuery query(db);
     query.prepare(QString(" PRAGMA table_info('%1')").arg(table));
     if(query.exec()){
         query.last();
@@ -226,9 +242,9 @@ int APLDB::getItemCount(QString table)
     return 0;
 }
 
-QString APLDB::getItemName(QString table, int i)
+QString APLDB::getItemName(QSqlDatabase &db, QString table, int i)
 {
-    QSqlQuery query;
+    QSqlQuery query(db);
     query.prepare(QString(" PRAGMA table_info('%1')").arg(table));
     if(query.exec()){
         query.next();
@@ -240,9 +256,9 @@ QString APLDB::getItemName(QString table, int i)
     return "";
 }
 
-int APLDB::getLen(QString table, QString field)
+int APLDB::getLen(QSqlDatabase &db, QString table, QString field)
 {
-    QSqlQuery query;
+    QSqlQuery query(db);
     query.prepare(QString("SELECT COUNT(%1) FROM %2").arg(field).arg(table));
 
     if(!query.exec()){
@@ -256,9 +272,9 @@ int APLDB::getLen(QString table, QString field)
     return query.value(0).toInt();
 }
 
-bool APLDB::getData(QString table, QString field, int len, QVector<double>& data, double offset, double scale)
+bool APLDB::getData(QSqlDatabase &db, QString table, QString field, int len, QVector<double>& data, double offset, double scale)
 {
-    QSqlQuery query;
+    QSqlQuery query(db);
 
     query.prepare(QString("SELECT %1 FROM %2").arg(field).arg(table));
 
@@ -275,9 +291,9 @@ bool APLDB::getData(QString table, QString field, int len, QVector<double>& data
     return true;
 }
 
-void APLDB::getData(QString table, QString field, int index, double& data)
+void APLDB::getData(QSqlDatabase &db, QString table, QString field, int index, double& data)
 {
-    QSqlQuery query;
+    QSqlQuery query(db);
 
     query.prepare(QString("SELECT %1 FROM %2").arg(field).arg(table));
 
@@ -304,9 +320,9 @@ void APLDB::reset()
     _Number = 0;
 }
 
-bool APLDB::isEmpty(QString table)
+bool APLDB::isEmpty(QSqlDatabase &db, QString table)
 {
-    QSqlQuery query;
+    QSqlQuery query(db);
 
     query.prepare(QString("SELECT COUNT(*) FROM %1").arg(table));
 
@@ -319,4 +335,11 @@ bool APLDB::isEmpty(QString table)
     if(query.value(0).toInt() == 0) return true;
 
     return false;
+}
+
+void APLDB::connectSQLite(QSqlDatabase &db)
+{
+    db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(DB_FILE);
+    db.open();
 }

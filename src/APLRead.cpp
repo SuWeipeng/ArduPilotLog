@@ -1,4 +1,3 @@
-#include <QFile>
 #include <QDataStream>
 #include <QRegularExpressionValidator>
 #include <QFileInfo>
@@ -17,24 +16,37 @@ APLRead* APLRead::_instance;
 static LFMT FMT[256]; // 256 at least
 
 APLRead::APLRead()
-    : _apldb(new APLDB)
 {
     _instance = this;
     _resetDataBase();
+    _worker       = new APLReadWorker();
+    _workThread   = new QThread(this);
+    _worker->moveToThread(_workThread);
+
+    connect(this, &APLRead::startRunning, _worker, &APLReadWorker::decodeLogFile);
+    connect(this, &APLRead::reset_db, _worker, &APLReadWorker::reset_db);
+    connect(_workThread, &QThread::finished, _worker, &QObject::deleteLater);
+    connect(_worker, &APLReadWorker::send_process, this, &APLRead::calc_process);
+    connect(_worker, &APLReadWorker::fileOpened, this, &APLRead::getFileOpened);
+
+    _workThread->start();
 }
 
 APLRead::~APLRead()
 {
-    delete _apldb;
+    qCDebug(APLREAD_LOG)<< "APLRead::~APLRead()";
+
+    _workThread->quit();
+    _workThread->wait();
+
+    delete _workThread;
 }
 
 void APLRead::_resetDataBase()
 {
     for(int i=0; i<256; i++)
         _resetFMT(i);
-    _apldb->deleteDataBase();
-    _apldb->createAPLDB();
-    _apldb->reset();
+    emit reset_db();
 }
 
 void  APLRead::_resetFMT(int i)
@@ -53,28 +65,25 @@ void APLRead::getFileDir(const QString &file_dir)
     getDatastream(file_dir);
 }
 
-void APLRead::getDatastream(const QString &file_dir)
+void APLRead::getFileOpened()
 {
-    QFile  file;
-
-    file.setFileName(file_dir);
-    if(!file.open(QIODevice::ReadOnly))
-    {
-         qCDebug(APLREAD_LOG)<< "can not open file!";
-         return;
-    }
-
-    QDataStream in(&file);    // read the data serialized from the file
-    _decode(in);
-
-    _apldb->commit();
+    MainWindow::getMainWindow()->ui().progressBar->setVisible(0);
     emit fileOpened();
-    qCDebug(APLREAD_LOG) << "All data have been read";
-
-    file.close();
 }
 
-void APLRead::_decode(QDataStream &in) const
+void APLRead::getDatastream(const QString &file_dir)
+{
+    MainWindow::getMainWindow()->ui().progressBar->setVisible(1);
+    emit startRunning(file_dir);
+}
+
+void APLRead::calc_process(qint64 pos, qint64 size)
+{
+    int process = ((float)pos/size)*10000;
+    MainWindow::getMainWindow()->ui().progressBar->setValue(process);
+}
+
+void APLReadWorker::_decode(QDataStream &in, QFile *file)
 {
     quint8  head_check[3];
     quint8  currentByte;
@@ -83,6 +92,8 @@ void APLRead::_decode(QDataStream &in) const
     while(!in.atEnd())
     {
         in >> currentByte;
+
+        emit send_process(file->pos(), _fileSize);
 
         if(ptr_pos<=3){
             ptr_pos++;
@@ -155,9 +166,10 @@ void APLRead::_decode(QDataStream &in) const
             }
         }
     }
+    emit send_process(file->pos(), _fileSize);
 }
 
-void APLRead::_decodeData(QString &format, QDataStream &in, QString &value) const
+void APLReadWorker::_decodeData(QString &format, QDataStream &in, QString &value) const
 {
     QByteArray formatArray = format.toLatin1();
 
@@ -277,12 +289,12 @@ void APLRead::_decodeData(QString &format, QDataStream &in, QString &value) cons
     value.chop(1);
 
 }
-bool APLRead::_checkMessage(QString &name, QString &format, QString &labels) const
+bool APLReadWorker::_checkMessage(QString &name, QString &format, QString &labels) const
 {
     return _checkName(name) && _checkFormat(format) && _checkLabels(labels);
 }
 
-bool APLRead::_checkName(QString &name) const
+bool APLReadWorker::_checkName(QString &name) const
 {
     QRegularExpression reg("^[A-Z0-9]{1,4}$");
     QRegularExpressionValidator validator(reg,0);
@@ -295,7 +307,7 @@ bool APLRead::_checkName(QString &name) const
     return true;
 }
 
-bool APLRead::_checkFormat(QString &format) const
+bool APLReadWorker::_checkFormat(QString &format) const
 {
     QRegularExpression reg("^[A-Za-z]{1,16}$");
     QRegularExpressionValidator validator(reg,0);
@@ -308,7 +320,7 @@ bool APLRead::_checkFormat(QString &format) const
     return true;
 }
 
-bool APLRead::_checkLabels(QString &labels) const
+bool APLReadWorker::_checkLabels(QString &labels) const
 {
     QRegularExpression reg("^[A-Za-z0-9,]{1,64}$");
     QRegularExpressionValidator validator(reg,0);
@@ -347,4 +359,49 @@ bool APLRead::_checkLabels(QString &labels) const
     }
 
     return true;
+}
+
+APLReadWorker::APLReadWorker(QObject *parent)
+    : QObject(parent)
+    , _apldb(new APLDB)
+    , _fileSize(0)
+{
+
+}
+
+APLReadWorker::~APLReadWorker()
+{
+    delete _apldb;
+}
+
+void APLReadWorker::decodeLogFile(const QString &file_dir)
+{
+    QFile  file;
+
+    file.setFileName(file_dir);
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        qCDebug(APLREAD_LOG)<< "can not open file!";
+        return;
+    }
+
+    _fileSize = file.size();
+
+    QDataStream in(&file);    // read the data serialized from the file
+    _decode(in, &file);
+
+    _apldb->commit();
+    _apldb->closeConnection();
+
+    emit fileOpened();
+    qCDebug(APLREAD_LOG) << "All data have been read";
+
+    file.close();
+}
+
+void APLReadWorker::reset_db()
+{
+    _apldb->deleteDataBase();
+    _apldb->createAPLDB();
+    _apldb->reset();
 }
