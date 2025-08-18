@@ -93,7 +93,6 @@ LinuxBuild {
         libQt6Gui.so.6 \
         libQt6Location.so.6 \
         libQt6Multimedia.so.6 \
-        libQt6MultimediaQuick_p.so.6 \
         libQt6Network.so.6 \
         libQt6OpenGL.so.6 \
         libQt6Positioning.so.6 \
@@ -142,5 +141,4 @@ LinuxBuild {
     # ArduPilotLog start script
     QMAKE_POST_LINK += && $$QMAKE_COPY $$BASEDIR/deploy/ardupilotlog-start.sh $$DESTDIR
     QMAKE_POST_LINK += && $$QMAKE_COPY $$BASEDIR/deploy/ardupilotlog.desktop $$DESTDIR
-    QMAKE_POST_LINK += && $$QMAKE_COPY $$BASEDIR/resources/icons/ardupilotlog.png $$DESTDIR
 }

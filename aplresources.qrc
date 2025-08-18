@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/res">
-        <file>resources/icons/ardupilotlog.ico</file>
+        <file>resources/icons/a10.ico</file>
     </qresource>
 </RCC>

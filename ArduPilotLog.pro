@@ -25,7 +25,8 @@ LinuxBuild {
 }
 
 WindowsBuild {
-    RC_ICONS = resources/icons/ardupilotlog.ico
+    RC_ICONS = resources/icons/a10.ico
+    CONFIG += resources_big
 }
 
 # The following define makes your compiler emit warnings if you use
