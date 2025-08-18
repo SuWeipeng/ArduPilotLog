@@ -25,7 +25,7 @@ LinuxBuild {
 }
 
 WindowsBuild {
-    RC_ICONS = resources/icons/a10.ico
+    RC_ICONS = resources/icons/a05.ico
     CONFIG += resources_big
 }
 

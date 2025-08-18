@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="aplresources.qrc">
-    <normaloff>:/res/resources/icons/a10.ico</normaloff>:/res/resources/icons/a10.ico</iconset>
+    <normaloff>:/res/resources/icons/a05.ico</normaloff>:/res/resources/icons/a05.ico</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
