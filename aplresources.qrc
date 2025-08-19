@@ -1,5 +1,33 @@
 <RCC>
     <qresource prefix="/res">
-        <file>resources/icons/a05.ico</file>
+	    <file>resources/icons/a01.ico</file>
+        <file>resources/icons/a02.ico</file>
+		<file>resources/icons/a03.ico</file>
+		<file>resources/icons/a04.ico</file>
+		<file>resources/icons/a05.ico</file>
+        <file>resources/icons/a06.ico</file>
+		<file>resources/icons/a07.ico</file>
+		<file>resources/icons/a08.ico</file>
+		<file>resources/icons/a09.ico</file>
+		<file>resources/icons/a10.ico</file>
+		<file>resources/icons/a11.ico</file>
+		<file>resources/icons/a12.ico</file>
+		<file>resources/icons/a13.ico</file>
+		<file>resources/icons/a14.ico</file>
+		<file>resources/icons/a15.ico</file>
+		<file>resources/icons/a16.ico</file>
+		<file>resources/icons/a17.ico</file>
+		<file>resources/icons/a18.ico</file>
+		<file>resources/icons/a19.ico</file>
+		<file>resources/icons/a20.ico</file>
+		<file>resources/icons/a21.ico</file>
+		<file>resources/icons/a22.ico</file>
+		<file>resources/icons/a23.ico</file>
+		<file>resources/icons/a24.ico</file>
+		<file>resources/icons/a25.ico</file>
+		<file>resources/icons/a26.ico</file>
+		<file>resources/icons/a27.ico</file>
+		<file>resources/icons/a28.ico</file>
+		<file>resources/icons/a29.ico</file>
     </qresource>
 </RCC>
