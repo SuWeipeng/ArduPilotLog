@@ -6,6 +6,9 @@
 #include <QThread>
 #include <QFile>
 #include "APLLoggingCategory.h"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 
 Q_DECLARE_LOGGING_CATEGORY(DIALOG_LOG)
 
@@ -14,7 +17,7 @@ class QFileDialog;
 
 class SaveAsWorker : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
     explicit SaveAsWorker(QObject *parent = nullptr);
     ~SaveAsWorker();
@@ -48,12 +51,17 @@ public slots:
 signals:
     void saveSuccess();
     void saveAsStart(const QString &dbdir);
+    void settingsLoaded(const QJsonObject &settings);
 
 private:
+    void loadSettings();
+
     APLRead     * _aplRead;
     QFileDialog * _qfiledialog;
     QThread     * _workThread;
     SaveAsWorker* _worker;
+    QString       _opendir;
+    bool          _table_split = false;
 };
 
 #endif // DIALOG_H

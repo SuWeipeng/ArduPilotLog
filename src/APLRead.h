@@ -3,6 +3,8 @@
 
 #include <QFile>
 #include <QThread>
+#include <QBuffer>
+#include <QHash>
 #include "LogStructure.h"
 #include "APLLoggingCategory.h"
 
@@ -22,7 +24,7 @@ typedef struct LogFormat
     }
 }LFMT;
 
-class APLDB;
+class APLDataCache;
 
 class APLReadWorker : public QObject
 {
@@ -32,11 +34,13 @@ public:
     ~APLReadWorker();
 
 private:
-    APLDB*  _apldb;
+    APLDataCache* _dataCache;
     qint64  _fileSize;
-    void    _decode(QDataStream &in, QFile *file);
+    mutable QHash<QString, int> _formatLengthCache;
+    void    _decode(const uchar* p_data, qint64 data_size);
     bool    _checkMessage(QString &name, QString &format, QString &labels) const;
-    void    _decodeData(QString &format, QDataStream &in, QString &value) const;
+    void    _decodeData(QString &format, const uchar *ptr, QString &value) const;
+    int     _getMessageLength(const QString &format) const;
     bool    _checkName(QString &name) const;
     bool    _checkFormat(QString &format) const;
     bool    _checkLabels(QString &labels) const;
@@ -48,7 +52,6 @@ signals:
 
 public slots:
     void decodeLogFile(const QString &file_dir);
-    void reset_db();
 };
 
 class APLRead : public QObject
@@ -68,7 +71,6 @@ public:
 signals:
     void fileOpened();
     void startRunning(const QString &file_dir);
-    void reset_db();
 
 public slots:
     void getFileDir(const QString &file_dir);

@@ -3,9 +3,9 @@
 
 #include <QObject>
 #include <QSqlDatabase>
+#include <QVariant>
+#include <QVector>
 #include "APLLoggingCategory.h"
-
-#define DB_FILE "APLDB.db"
 
 Q_DECLARE_LOGGING_CATEGORY(APLDB_LOG)
 
@@ -17,7 +17,7 @@ public:
     APLDB();
     ~APLDB();
 
-    void createAPLDB();
+    void createAPLDB(const QString &dbPath);
 
     //true: id already exist
     bool checkMainTable(quint8 id);
@@ -28,11 +28,11 @@ public:
                         QString format,
                         QString labels);
 
-    void addToSubTableBuf(QString name, QString values);
+    void addToSubTable(QString name, QString values);
+
+    void addToSubTableBuf(QString name, QVector<QVariant> values);
 
     void buf2DB();
-
-    void addToSubTable(QString name, QString values);
 
     void getFormat(quint8 &id, QString &name, QString &format);
 
@@ -68,19 +68,17 @@ public:
 
     static void copy_table(QSqlDatabase &db, QString new_name, QString i, int i_value, QString fields, QString origin_name);
 
-    void deleteDataBase();
+    void deleteDataBase(const QString &dbdir);
 
     void reset();
 
     static bool isEmpty(QSqlDatabase &db, QString table);
 
-    static void connectSQLite(QSqlDatabase &db);
-
 private:
     QSqlDatabase  _apldb;
     quint32       _Number;
     QStringList   _name;
-    QStringList   _values;
+    QList<QVector<QVariant>>   _values;
     QStringList   _maintable_item;
     QStringList   _maintable_ids;
     QStringList   _maintable_names;

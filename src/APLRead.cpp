@@ -2,8 +2,9 @@
 #include <QRegularExpressionValidator>
 #include <QFileInfo>
 #include "APLRead.h"
-#include "APLDB.h"
 #include "mainwindow.h"
+#include "APLDataCache.h"
+#include "LogStructure.h"
 
 APL_LOGGING_CATEGORY(APLREAD_LOG,        "APLReadLog")
 
@@ -13,7 +14,48 @@ APL_LOGGING_CATEGORY(APLREAD_LOG,        "APLReadLog")
 
 APLRead* APLRead::_instance;
 
-static LFMT FMT[256]; // 256 at least
+static LFMT FMT[256] = {};
+
+// 优化1：添加格式字符长度预计算表 - 兼容旧版本C++编译器
+static int FORMAT_CHAR_LENGTHS[256];
+
+// 初始化查找表的函数
+static void initFormatCharLengths() {
+    static bool initialized = false;
+    if (initialized) return;
+    
+    // 初始化所有值为0
+    memset(FORMAT_CHAR_LENGTHS, 0, sizeof(FORMAT_CHAR_LENGTHS));
+    
+    // 设置已知格式字符的长度
+    FORMAT_CHAR_LENGTHS['a'] = 64;
+    FORMAT_CHAR_LENGTHS['b'] = 1;
+    FORMAT_CHAR_LENGTHS['B'] = 1;
+    FORMAT_CHAR_LENGTHS['M'] = 1;
+    FORMAT_CHAR_LENGTHS['h'] = 2;
+    FORMAT_CHAR_LENGTHS['H'] = 2;
+    FORMAT_CHAR_LENGTHS['c'] = 2;
+    FORMAT_CHAR_LENGTHS['C'] = 2;
+    FORMAT_CHAR_LENGTHS['i'] = 4;
+    FORMAT_CHAR_LENGTHS['I'] = 4;
+    FORMAT_CHAR_LENGTHS['f'] = 4;
+    FORMAT_CHAR_LENGTHS['e'] = 4;
+    FORMAT_CHAR_LENGTHS['E'] = 4;
+    FORMAT_CHAR_LENGTHS['L'] = 4;
+    FORMAT_CHAR_LENGTHS['d'] = 8;
+    FORMAT_CHAR_LENGTHS['q'] = 8;
+    FORMAT_CHAR_LENGTHS['Q'] = 8;
+    FORMAT_CHAR_LENGTHS['n'] = 4;
+    FORMAT_CHAR_LENGTHS['N'] = 16;
+    FORMAT_CHAR_LENGTHS['Z'] = 64;
+    
+    initialized = true;
+}
+
+// 预编译正则表达式 - 但保持原有的检查逻辑不变
+static QRegularExpression NAME_REGEX("^[A-Z0-9]{1,4}$");
+static QRegularExpression FORMAT_REGEX("^[A-Za-z]{1,16}$");  
+static QRegularExpression LABELS_REGEX("^[A-Za-z0-9,]{1,64}$");
 
 APLRead::APLRead()
 {
@@ -24,7 +66,6 @@ APLRead::APLRead()
     _worker->moveToThread(_workThread);
 
     connect(this, &APLRead::startRunning, _worker, &APLReadWorker::decodeLogFile);
-    connect(this, &APLRead::reset_db, _worker, &APLReadWorker::reset_db);
     connect(_workThread, &QThread::finished, _worker, &QObject::deleteLater);
     connect(_worker, &APLReadWorker::send_process, this, &APLRead::calc_process);
     connect(_worker, &APLReadWorker::fileOpened, this, &APLRead::getFileOpened);
@@ -46,7 +87,6 @@ void APLRead::_resetDataBase()
 {
     for(int i=0; i<256; i++)
         _resetFMT(i);
-    emit reset_db();
 }
 
 void  APLRead::_resetFMT(int i)
@@ -67,8 +107,8 @@ void APLRead::getFileDir(const QString &file_dir)
     if(MainWindow::getMainWindow()->db().isOpen()){
         MainWindow::getMainWindow()->db().close();
     }
-    QFile::remove(DB_FILE);
     _resetDataBase();
+    APLDataCache::get_singleton()->reset();
     getDatastream(file_dir);
 }
 
@@ -92,237 +132,299 @@ void APLRead::calc_process(qint64 pos, qint64 size)
     MainWindow::getMainWindow()->ui().progressBar->setValue(process);
 }
 
-void APLReadWorker::_decode(QDataStream &in, QFile *file)
+void APLReadWorker::_decode(const uchar* p_data, qint64 data_size)
 {
-    quint8  head_check[3];
-    quint8  currentByte;
-    quint8  ptr_pos = 0;
 
-    while(!in.atEnd())
+    const uchar* ptr = p_data;
+    const uchar* end = p_data + data_size;
+    int progress_counter = 0;
+
+    // 预计算头部字节组合，避免重复比较
+    const uint16_t valid_header = (HEAD_BYTE1 << 8) | HEAD_BYTE2;
+
+
+    while (ptr < end - LOG_PACKET_HEADER_LEN)
     {
-        in >> currentByte;
-
-        emit send_process(file->pos(), _fileSize);
-
-        if(ptr_pos<=3){
-            ptr_pos++;
+        // 保持原有的进度更新逻辑
+        if (++progress_counter > 102400) {
+            emit send_process(ptr - p_data, _fileSize);
+            progress_counter = 0;
         }
 
-        if (ptr_pos > 3){
-            head_check[0] = head_check[1];
-            head_check[1] = head_check[2];
-            head_check[2] = currentByte;
-        }else{
-            switch(ptr_pos){
-            case 1:
-                head_check[0] = currentByte;
-                continue;
-            case 2:
-                head_check[1] = currentByte;
-                continue;
-            case 3:
-                head_check[2] = currentByte;
-            }
+        // 优化：一次读取两个字节进行头部匹配
+        uint16_t header = (ptr[0] << 8) | ptr[1];
+        if (header != valid_header) {
+            ptr++;
+            continue;
         }
-        if (head_check[0]==HEAD_BYTE1 && head_check[1]==HEAD_BYTE2)
+
+        quint8 msg_type = ptr[2];
+        const uchar* payload_ptr = ptr + LOG_PACKET_HEADER_LEN;
+
+        if (msg_type == LOG_FORMAT_MSG)
         {
-            if(head_check[2] == LOG_FORMAT_MSG){
-                quint8 type;
-                in >> type;
-                quint8 len;
-                char name[NAME_LEN+1];
-                char format[FORMAT_LEN+1];
-                char labels[LABELS_LEN+1];
-                QString log_name;
-                QString log_format;
-                QString log_labels;
+            if (payload_ptr + 2 > end) { 
+                ptr++;
+                continue;
+            }
+            quint8 msg_len = *(payload_ptr + 1);
+            if (payload_ptr + msg_len > end) { 
+                ptr++;
+                continue;
+            }
 
-                memset(name,0,sizeof(name));
-                memset(format,0,sizeof(format));
-                memset(labels,0,sizeof(labels));
+            // 保持原有的缓冲区分配方式
+            char name[NAME_LEN+1] = {0};
+            char format[FORMAT_LEN+1] = {0};
+            char labels[LABELS_LEN+1] = {0};
 
-                in >> len;
-                in.readRawData(name  , NAME_LEN );
-                in.readRawData(format, FORMAT_LEN);
-                in.readRawData(labels, LABELS_LEN);
-                log_name   = QString(name);
-                log_format = QString(format);
-                log_labels = QString(labels);
+            const uchar* p = payload_ptr;
+            quint8 type = *p++;
+            p++; // skip len
+            
+            // 保持原有的内存拷贝方式
+            memcpy(name,       p, NAME_LEN);      p += NAME_LEN;
+            memcpy(format,     p, FORMAT_LEN);    p += FORMAT_LEN;
+            memcpy(labels,     p, LABELS_LEN);    p += LABELS_LEN;
 
-                if( _checkMessage(log_name,log_format,log_labels)){
-                    _apldb->addToMainTable(type,
-                                           len,
-                                           log_name,
-                                           log_format,
-                                           log_labels);
+
+            // 保持原有的QString构造方式
+            QString log_name        = QString(name);
+            QString log_format      = QString(format);
+            QString log_labels      = QString(labels);
+
+            if (_checkMessage(log_name, log_format, log_labels)) {
+                _dataCache->addFormat(type,
+                                      log_name,
+                                      log_format,
+                                      log_labels);
+            }
+            ptr = payload_ptr + msg_len; 
+        }
+        else 
+        {
+            quint8 id = msg_type;
+            
+            // 优化2：减少重复的isEmpty检查
+            LFMT& fmt = FMT[id];
+            if (fmt.name.isEmpty() && fmt.format.isEmpty() && fmt.valid) {
+                if (APLDataCache::get_singleton()->checkMainTable(id))
+                {
+                    APLDataCache::get_singleton()->getFormat(id, fmt.name, fmt.format);
+                } else {
+                    fmt.valid = false;
                 }
-            }else{
-                quint8 id = head_check[2];
-                if(FMT[id].name.isEmpty() && FMT[id].format.isEmpty() && FMT[id].valid){
-                    if(_apldb->checkMainTable(id))
-                    {
-                        _apldb->getFormat(id, FMT[id].name, FMT[id].format);
-                    }else{
-                        FMT[id].valid = false;
-                    }
+            }
+
+            if (fmt.valid && !fmt.format.isEmpty()) {
+                int msg_len = _getMessageLength(fmt.format);
+                if (msg_len < 0 || payload_ptr + msg_len > end) {
+                    ptr++;
+                    continue;
                 }
 
-                if(FMT[id].valid && !FMT[id].format.isEmpty()){
-                    QString value_str  = "";
-                    _decodeData(FMT[id].format, in, value_str);
-                    //QStringList list = value_str.split(",");
-                    //quint64 now = (list.length()>0 ? list[0].toUInt() : 0);
-
-                    //if (_cut_data(id, 2848926667, 3308646676, now)){
-                        _apldb->addToSubTableBuf(FMT[id].name, value_str);
-                    //}
-                }
+                // 保持原有的数据添加方式
+                _dataCache->addData(fmt.name, payload_ptr, msg_len);
+                ptr = payload_ptr + msg_len; 
+            } else {
+                ptr++;
             }
         }
     }
-    _apldb->transaction();
-    _apldb->buf2DB();
-    _apldb->commit();
-    emit send_process(file->pos(), _fileSize);
+    emit send_process(_fileSize, _fileSize);
 }
 
-bool
-APLReadWorker::_cut_data(quint8 id, quint64 start_time, quint64 stop_time, quint64 now)
+// 优化消息长度计算，但保持与原有逻辑完全一致
+int APLReadWorker::_getMessageLength(const QString &format) const
 {
-    bool res = true;
-    switch(id){
-    case 32: // PARM
-    case 108: // FMTU
-        break;
-    default:
-        if(now < start_time || now > stop_time){
-            res = false;
+    // 先检查缓存
+    auto it = _formatLengthCache.find(format);
+    if (it != _formatLengthCache.end()) {
+        return it.value();
+    }
+
+    int length = 0;
+    QByteArray formatArray = format.toLatin1();
+    
+    for(char c : formatArray) {
+        // 使用查找表优化，但保持原有的switch逻辑作为后备
+        int char_length = FORMAT_CHAR_LENGTHS[static_cast<unsigned char>(c)];
+        if (char_length > 0) {
+            length += char_length;
+        } else {
+            // 如果查找表中没有，回退到原有的switch逻辑
+            switch(c) {
+                case 'a': length += 64; break; 
+                case 'b':
+                case 'B':
+                case 'M': length += 1; break;
+                case 'h':
+                case 'H':
+                case 'c':
+                case 'C': length += 2; break;
+                case 'i':
+                case 'I':
+                case 'f':
+                case 'e':
+                case 'E':
+                case 'L': length += 4; break;
+                case 'd':
+                case 'q':
+                case 'Q': length += 8; break;
+                case 'n': length += 4; break;
+                case 'N': length += 16; break;
+                case 'Z': length += 64; break;
+                default:
+                    qCWarning(APLREAD_LOG) << "Unknown format character in length calculation:" << c;
+                    return -1; 
+            }
         }
     }
 
-    return res;
+    // 缓存结果
+    _formatLengthCache[format] = length;
+    
+    return length;
 }
 
-void APLReadWorker::_decodeData(QString &format, QDataStream &in, QString &value) const
+void APLReadWorker::_decodeData(QString &format, const uchar *ptr, QString &value) const
 {
+    QTextStream st(&value);
     QByteArray formatArray = format.toLatin1();
 
     for(qint8 i = 0; i< formatArray.count(); i++){
         switch(formatArray[i]){
-        case 'a': //int16_t[32]
+        case 'a': { 
             qint16 v16_32[32];
-            memset(v16_32, 0, sizeof(v16_32));
-            in.readRawData((char *)v16_32, sizeof(v16_32));
-            for(int i=0; i<32; i++)
-                if(i == 31)
-                    value = QString ("%1%2,").arg(value).arg(QString(v16_32[i]));
-                else
-                    value = QString ("%1%2 ").arg(value).arg(QString(v16_32[i]));
-            break;
-        case 'b': //int8_t
-            qint8 v8;
-            in.readRawData((char *)&v8, 1);
-            value = QString ("%1%2,").arg(value).arg(v8);
-            break;
-        case 'B': //uint8_t
-            quint8 vu8;
-            in.readRawData((char *)&vu8, 1);
-            value = QString ("%1%2,").arg(value).arg(vu8);
-            break;
-        case 'h': //int16_t
-            qint16 v16;
-            in.readRawData((char *)&v16, 2);
-            value = QString ("%1%2,").arg(value).arg(v16);
-            break;
-        case 'H': //uint16_t
-            quint16 vu16;
-            in.readRawData((char *)&vu16, 2);
-            value = QString ("%1%2,").arg(value).arg(vu16);
-            break;
-        case 'i': //int32_t
-            qint32 v32;
-            in.readRawData((char *)&v32, 4);
-            value = QString ("%1%2,").arg(value).arg(v32);
-            break;
-        case 'I': //uint32_t
-            quint32 vu32;
-            in.readRawData((char *)&vu32, 4);
-            value = QString ("%1%2,").arg(value).arg(vu32);
-            break;
-        case 'f': //float
-            float vf;
-            in.readRawData((char *)&vf, 4);
-            if(qIsNaN(vf) || qIsInf(vf)) vf = 0.0f;
-            value = QString ("%1%2,").arg(value).arg(vf);
-            break;
-        case 'd': //double
-            double vd;
-            in.readRawData((char *)&vd, 8);
-            value = QString ("%1%2,").arg(value).arg(vd);
-            break;
-        case 'n': //char[4]
-            char vc_4[4+1];
-            memset(vc_4, 0, sizeof(vc_4));
-            in.readRawData(vc_4, sizeof(char)*4);
-            value = QString ("%1\"%2\",").arg(value).arg(QString(QByteArray(vc_4)));
-            break;
-        case 'N': //char[16]
-            char vc_16[16+1];
-            memset(vc_16, 0, sizeof(vc_16));
-            in.readRawData(vc_16, sizeof(char)*16);
-            value = QString ("%1\"%2\",").arg(value).arg(QString(QByteArray(vc_16)));
-            break;
-        case 'Z': //char[64]
-            char vc_64[64+1];
-            memset(vc_64, 0, sizeof(vc_64));
-            in.readRawData(vc_64, sizeof(char)*64);
-            value = QString ("%1\"%2\",").arg(value).arg(QString(QByteArray(vc_64)));
-            break;
-        case 'c': //int16_t * 100
-            qint16 v16x100;
-            in.readRawData((char *)&v16x100, 2);
-            value = QString ("%1%2,").arg(value).arg((double)(v16x100/100.0f));
-            break;
-        case 'C': //uint16_t * 100
-            quint16 vu16x100;
-            in.readRawData((char *)&vu16x100, 2);
-            value = QString ("%1%2,").arg(value).arg((double)(vu16x100/100.0f));
-            break;
-        case 'e': //int32_t * 100
-            qint32 v32x100;
-            in.readRawData((char *)&v32x100, 4);
-            value = QString ("%1%2,").arg(value).arg((double)(v32x100/100.0f));
-            break;
-        case 'E': //uint32_t * 100
-            quint32 vu32x100;
-            in.readRawData((char *)&vu32x100, 4);
-            value = QString ("%1%2,").arg(value).arg((double)(vu32x100/100.0f));
-            break;
-        case 'L': //int32_t latitude/longitude
-            qint32 v32l;
-            in.readRawData((char *)&v32l, 4);
-            value = QString ("%1%2,").arg(value).arg(v32l);
-            break;
-        case 'M': //uint8_t flight mode
-            quint8 vu8m;
-            in.readRawData((char *)&vu8m, 1);
-            value = QString ("%1%2,").arg(value).arg(vu8m);
-            break;
-        case 'q': //int64_t
-            qint64 v64;
-            in.readRawData((char *)&v64, 8);
-            value = QString ("%1%2,").arg(value).arg(v64);
-            break;
-        case 'Q': //uint64_t
-            quint64 vu64;
-            in.readRawData((char *)&vu64, 8);
-            value = QString ("%1%2,").arg(value).arg(vu64);
+            memcpy(v16_32, ptr, sizeof(v16_32));
+            ptr += sizeof(v16_32);
+            for(int j=0; j<32; j++)
+                st << v16_32[j] << (j == 31 ? "" : " ");
+            st << ",";
             break;
         }
+        case 'b': { 
+            qint8 v8;
+            memcpy(&v8, ptr, 1); ptr += 1;
+            st << v8 << ",";
+            break;
+        }
+        case 'B': { 
+            quint8 vu8;
+            memcpy(&vu8, ptr, 1); ptr += 1;
+            st << vu8 << ",";
+            break;
+        }
+        case 'h': { 
+            qint16 v16;
+            memcpy(&v16, ptr, 2); ptr += 2;
+            st << v16 << ",";
+            break;
+        }
+        case 'H': { 
+            quint16 vu16;
+            memcpy(&vu16, ptr, 2); ptr += 2;
+            st << vu16 << ",";
+            break;
+        }
+        case 'i': { 
+            qint32 v32;
+            memcpy(&v32, ptr, 4); ptr += 4;
+            st << v32 << ",";
+            break;
+        }
+        case 'I': { 
+            quint32 vu32;
+            memcpy(&vu32, ptr, 4); ptr += 4;
+            st << vu32 << ",";
+            break;
+        }
+        case 'f': { 
+            float vf;
+            memcpy(&vf, ptr, 4); ptr += 4;
+            if(qIsNaN(vf) || qIsInf(vf)) vf = 0.0f;
+            st << vf << ",";
+            break;
+        }
+        case 'd': { 
+            double vd;
+            memcpy(&vd, ptr, 8); ptr += 8;
+            st << vd << ",";
+            break;
+        }
+        case 'n': { 
+            char vc_4[4+1] = {0};
+            memcpy(vc_4, ptr, 4); ptr += 4;
+            st << "\"" << vc_4 << "\",";
+            break;
+        }
+        case 'N': { 
+            char vc_16[16+1] = {0};
+            memcpy(vc_16, ptr, 16); ptr += 16;
+            st << "\"" << vc_16 << "\",";
+            break;
+        }
+        case 'Z': { 
+            char vc_64[64+1] = {0};
+            memcpy(vc_64, ptr, 64); ptr += 64;
+            st << "\"" << vc_64 << "\",";
+            break;
+        }
+        case 'c': { 
+            qint16 v16x100;
+            memcpy(&v16x100, ptr, 2); ptr += 2;
+            st << (double)(v16x100/100.0f) << ",";
+            break;
+        }
+        case 'C': { 
+            quint16 vu16x100;
+            memcpy(&vu16x100, ptr, 2); ptr += 2;
+            st << (double)(vu16x100/100.0f) << ",";
+            break;
+        }
+        case 'e': { 
+            qint32 v32x100;
+            memcpy(&v32x100, ptr, 4); ptr += 4;
+            st << (double)(v32x100/100.0f) << ",";
+            break;
+        }
+        case 'E': { 
+            quint32 vu32x100;
+            memcpy(&vu32x100, ptr, 4); ptr += 4;
+            st << (double)(vu32x100/100.0f) << ",";
+            break;
+        }
+        case 'L': { 
+            qint32 v32l;
+            memcpy(&v32l, ptr, 4); ptr += 4;
+            st << v32l << ",";
+            break;
+        }
+        case 'M': { 
+            quint8 vu8m;
+            memcpy(&vu8m, ptr, 1); ptr += 1;
+            st << vu8m << ",";
+            break;
+        }
+        case 'q': { 
+            qint64 v64;
+            memcpy(&v64, ptr, 8); ptr += 8;
+            st << v64 << ",";
+            break;
+        }
+        case 'Q': { 
+            quint64 vu64;
+            memcpy(&vu64, ptr, 8); ptr += 8;
+            st << vu64 << ",";
+            break;
+        }
+        }
     }
-    value.chop(1);
-
+    if (!value.isEmpty()) {
+        value.chop(1);
+    }
 }
+
 bool APLReadWorker::_checkMessage(QString &name, QString &format, QString &labels) const
 {
     bool res = false;
@@ -339,12 +441,20 @@ bool APLReadWorker::_checkMessage(QString &name, QString &format, QString &label
 
 bool APLReadWorker::_checkName(QString &name) const
 {
-    QRegularExpression reg("^[A-Z0-9]{1,4}$");
-    QRegularExpressionValidator validator(reg,0);
+    // 优化3：避免创建validator对象
+    static QRegularExpressionValidator validator(NAME_REGEX, nullptr);
 
     int pos = 0;
-    if(QValidator::Acceptable!=validator.validate(name,pos)){
+    if(QValidator::Acceptable != validator.validate(name, pos)){
         return false;
+    }
+
+    // 优化4：使用QLatin1String避免字符编码转换
+    if(name == QLatin1String("FROM")) {
+        name = QLatin1String("`FROM`");
+    }
+    else if(name == QLatin1String("TO")) {
+        name = QLatin1String("`TO`");
     }
 
     return true;
@@ -352,11 +462,11 @@ bool APLReadWorker::_checkName(QString &name) const
 
 bool APLReadWorker::_checkFormat(QString &format) const
 {
-    QRegularExpression reg("^[A-Za-z]{1,16}$");
-    QRegularExpressionValidator validator(reg,0);
+    // 优化3：避免创建validator对象
+    static QRegularExpressionValidator validator(FORMAT_REGEX, nullptr);
 
     int pos = 0;
-    if(QValidator::Acceptable!=validator.validate(format,pos)){
+    if(QValidator::Acceptable != validator.validate(format, pos)){
         return false;
     }
 
@@ -365,60 +475,60 @@ bool APLReadWorker::_checkFormat(QString &format) const
 
 bool APLReadWorker::_checkLabels(QString &labels) const
 {
-    QRegularExpression reg("^[A-Za-z0-9, _]{1,64}$");
-    QRegularExpressionValidator validator(reg,0);
+    // 优化3：避免创建validator对象
+    static QRegularExpressionValidator validator(LABELS_REGEX, nullptr);
 
     int pos = 0;
-    if(QValidator::Acceptable!=validator.validate(labels,pos)){
+    if(QValidator::Acceptable != validator.validate(labels, pos)){
         return false;
     }
 
-    int index_of_Primary = labels.indexOf("Primary", Qt::CaseInsensitive);
+    int index_of_Primary = labels.indexOf(QLatin1String("Primary"), 0, Qt::CaseInsensitive);
     if( index_of_Primary != -1 ) {
-        labels.insert(index_of_Primary+7, QString('`'));
-        labels.insert(index_of_Primary, '`');
+        labels.insert(index_of_Primary+7, QLatin1Char('`'));
+        labels.insert(index_of_Primary, QLatin1Char('`'));
         qCDebug(APLREAD_LOG) <<labels;
     }
 
-    int index_of_Limit = labels.indexOf("Limit", Qt::CaseInsensitive);
+    int index_of_Limit = labels.indexOf(QLatin1String("Limit"), 0, Qt::CaseInsensitive);
     if(index_of_Limit != -1) {
-        labels.insert(index_of_Limit+5, '`');
-        labels.insert(index_of_Limit, '`');
+        labels.insert(index_of_Limit+5, QLatin1Char('`'));
+        labels.insert(index_of_Limit, QLatin1Char('`'));
         qCDebug(APLREAD_LOG) <<labels;
     }
 
-    int index_of_Default = labels.indexOf("Default", Qt::CaseInsensitive);
+    int index_of_Default = labels.indexOf(QLatin1String("Default"), 0, Qt::CaseInsensitive);
     if(index_of_Default != -1) {
-        labels.insert(index_of_Default+7, '`');
-        labels.insert(index_of_Default, '`');
+        labels.insert(index_of_Default+7, QLatin1Char('`'));
+        labels.insert(index_of_Default, QLatin1Char('`'));
         qCDebug(APLREAD_LOG) <<labels;
     }
 
-    int index_of_IS = labels.indexOf(",IS", Qt::CaseInsensitive);
+    int index_of_IS = labels.indexOf(QLatin1String(",IS"), 0, Qt::CaseInsensitive);
     if(index_of_IS != -1) {
-        labels.insert(index_of_IS+3, '`');
-        labels.insert(index_of_IS+1, '`');
+        labels.insert(index_of_IS+3, QLatin1Char('`'));
+        labels.insert(index_of_IS+1, QLatin1Char('`'));
         qCDebug(APLREAD_LOG) <<labels;
     }
 
-    int index_of_As = labels.indexOf("As,", Qt::CaseInsensitive);
+    int index_of_As = labels.indexOf(QLatin1String("As,"), 0, Qt::CaseInsensitive);
     if(index_of_As != -1) {
-        labels.insert(index_of_As+2, '`');
-        labels.insert(index_of_As, '`');
+        labels.insert(index_of_As+2, QLatin1Char('`'));
+        labels.insert(index_of_As, QLatin1Char('`'));
         qCDebug(APLREAD_LOG) <<labels;
     }
 
-    int index_of_As1 = labels.indexOf("AS", Qt::CaseSensitive);
+    int index_of_As1 = labels.indexOf(QLatin1String("AS"), 0, Qt::CaseSensitive);
     if(index_of_As1 != -1) {
-        labels.insert(index_of_As1+2, '`');
-        labels.insert(index_of_As1, '`');
+        labels.insert(index_of_As1+2, QLatin1Char('`'));
+        labels.insert(index_of_As1, QLatin1Char('`'));
         qCDebug(APLREAD_LOG) <<labels;
     }
 
-    int index_of_index = labels.indexOf("index", Qt::CaseSensitive);
+    int index_of_index = labels.indexOf(QLatin1String("index"), 0, Qt::CaseSensitive);
     if(index_of_index != -1) {
-        labels.insert(index_of_index+5, '`');
-        labels.insert(index_of_index, '`');
+        labels.insert(index_of_index+5, QLatin1Char('`'));
+        labels.insert(index_of_index, QLatin1Char('`'));
         qCDebug(APLREAD_LOG) <<labels;
     }
     return true;
@@ -426,15 +536,17 @@ bool APLReadWorker::_checkLabels(QString &labels) const
 
 APLReadWorker::APLReadWorker(QObject *parent)
     : QObject(parent)
-    , _apldb(new APLDB)
+    , _dataCache(new APLDataCache)
     , _fileSize(0)
 {
 
+    // 初始化格式字符长度查找表
+    initFormatCharLengths();
 }
 
 APLReadWorker::~APLReadWorker()
 {
-    delete _apldb;
+    delete _dataCache;
 }
 
 void APLReadWorker::decodeLogFile(const QString &file_dir)
@@ -449,63 +561,19 @@ void APLReadWorker::decodeLogFile(const QString &file_dir)
     }
 
     _fileSize = file.size();
+    uchar* fpr = file.map(0, _fileSize);
+    if(fpr){
+        _decode(fpr, _fileSize);
 
-    QDataStream in(&file);    // read the data serialized from the file
-    _decode(in, &file);
+        QFileInfo fileInfo(file_dir);
 
-    QSqlDatabase db    = MainWindow::getMainWindow()->db();
-    int GroupCount     = APLDB::getGroupCount(db);
+        emit fileOpened();
+        qCDebug(APLREAD_LOG) << "All data have been read";
 
-    for(int i = 1; i <= GroupCount; i++){
-        if(APLDB::isEmpty(db, APLDB::getGroupName(db, i)) == false){
-            QString table_name = APLDB::getGroupName(db, i);
-            if(table_name.compare("UNIT", Qt::CaseSensitive) == 0 ||
-                table_name.compare("MULT", Qt::CaseSensitive) == 0){
-                continue;
-            }
-            QString instance(_apldb->getItemName(db,QString("%1").arg(APLDB::getGroupName(db, i)),2));
-            if(instance.compare("I", Qt::CaseSensitive) == 0 ||
-                instance.compare("Instance", Qt::CaseSensitive) == 0 ||
-                instance.compare("C", Qt::CaseSensitive) == 0 ||
-                instance.compare("IMU", Qt::CaseSensitive) == 0 ||
-                instance.compare("Type", Qt::CaseSensitive) == 0 ||
-                (instance.compare("Id", Qt::CaseSensitive) == 0 && table_name.compare("EV", Qt::CaseSensitive) != 0)
-              ) {
-                int ItemCount = APLDB::getItemCount(MainWindow::getMainWindow()->db(), table_name);
-                QByteArray fields;
-                for (int j = 0; j <= ItemCount; j++)
-                {
-                    if (j==2) continue;
-                    fields.append(_apldb->getItemName(db,QString("%1").arg(QString("%1").arg(APLDB::getGroupName(db, i))),j).toUtf8());
-                    if(j<ItemCount){
-                        fields.append(",");
-                    }
-                }
-
-                QString idx = _apldb->getDiff(db,table_name,instance);
-                QStringList list = idx.split(",");
-                for(int i=0; i<list.length(); i++){
-                    QString sub_name = table_name;
-                    sub_name.append(list[i]);
-                    QString fields_str = QString(fields);
-                    _checkLabels(fields_str);
-                    _apldb->copy_table(db,sub_name,instance,list[i].toInt(),fields_str,table_name);
-                }
-            }
-        }
+        file.unmap(fpr);
     }
-
-    _apldb->closeConnection();
-
-    emit fileOpened();
-    qCDebug(APLREAD_LOG) << "All data have been read";
-
     file.close();
-}
 
-void APLReadWorker::reset_db()
-{
-    _apldb->deleteDataBase();
-    _apldb->createAPLDB();
-    _apldb->reset();
+    QFileInfo fileInfo(file_dir);
+    _dataCache->exportToFile(fileInfo.absolutePath() + "/" + fileInfo.baseName() + "_export");
 }

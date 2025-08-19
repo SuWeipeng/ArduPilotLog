@@ -22,20 +22,19 @@ APLDB::~APLDB()
     if(isOpen()){
         close();
     }
-    QFile::remove(DB_FILE);
 }
 
-void APLDB::createAPLDB()
+void APLDB::createAPLDB(const QString &dbPath)
 {
     _apldb = QSqlDatabase::addDatabase("QSQLITE");
-    _apldb.setDatabaseName(DB_FILE);
+    _apldb.setDatabaseName(dbPath);
 
     if(!_apldb.open()){
         qCDebug(APLDB_LOG) << _apldb.lastError();
         qCDebug(APLDB_LOG) << _apldb.drivers();
     }else{
         QSqlQuery query;
-        bool success = query.exec("CREATE TABLE maintable(id INT8 PRIMARY KEY, len INT8, name VARCHAR, format VARCHAR, labels VARCHAR)");
+        bool success = query.exec("CREATE TABLE maintable(LineNo INTEGER PRIMARY KEY AUTOINCREMENT, id INT8, len INT8, name VARCHAR UNIQUE, format VARCHAR, labels VARCHAR, units VARCHAR, multipliers VARCHAR)");
         if(success){
           qCDebug(APLDB_LOG) << "create maintable success";
         }else{
@@ -61,8 +60,17 @@ void APLDB::addToMainTable(quint8 type,
                            QString format,
                            QString labels)
 {
-    _maintable_item.append(QString("INSERT INTO maintable VALUES(%1,%2,\"%3\",\"%4\",\"%5\")")
-                               .arg(type).arg(len).arg(name,format,labels));
+    if (_maintable_names.contains(name)) {
+        return;
+    }
+
+    _maintable_item.append(QString("INSERT INTO maintable(id, len, name, format, labels) VALUES(%1,%2,\"%3\",\"%4\",\"%5\")")
+                               .arg(type)
+                               .arg(len)
+                               .arg(name)
+                               .arg(format)
+                               .arg(labels));
+
     _maintable_ids.append(QString("%1").arg(type));
     _maintable_names.append(name);
     _maintable_formats.append(format);
@@ -77,14 +85,14 @@ void APLDB::addToSubTable(QString name, QString values)
     QSqlQuery query_insert;
 
     values = QString("%1,%2").arg(++_Number).arg(values);
-    query_insert.prepare(QString("INSERT INTO %1 VALUES(%2)").arg(name).arg(values));
+    query_insert.prepare(QString("INSERT INTO %1 VALUES(%2)").arg(name, values));
     if(!query_insert.exec()){
         QSqlError queryErr = query_insert.lastError();
-        //qCDebug(APLDB_LOG)<<"addToSubTable"<<queryErr.text();
+        qCDebug(APLDB_LOG)<<"addToSubTable"<<queryErr.text();
     }
 }
 
-void APLDB::addToSubTableBuf(QString name, QString values)
+void APLDB::addToSubTableBuf(QString name, QVector<QVariant> values)
 {
     _name.append(name);
     _values.append(values);
@@ -93,7 +101,8 @@ void APLDB::addToSubTableBuf(QString name, QString values)
 void APLDB::buf2DB()
 {
     QSqlQuery query_insert;
-    for(quint64 i = 0; i<_maintable_item.length(); i++){
+    // Process maintable items
+    for(qsizetype i = 0; i<_maintable_item.length(); i++){
         if(!query_insert.exec(_maintable_item[i])){
             QSqlError queryErr = query_insert.lastError();
             qCDebug(APLDB_LOG)<<"buf2DB()"<<queryErr.text();
@@ -104,12 +113,47 @@ void APLDB::buf2DB()
     _maintable_ids.clear();
     _maintable_item.clear();
 
-    for(quint64 i = 0; i<_name.length(); i++) {
-        QString values = QString("%1,%2").arg(++_Number).arg(_values[i]);
-        if(!query_insert.exec(QString("INSERT INTO %1 VALUES(%2)").arg(_name[i], values))){
-            QSqlError queryErr = query_insert.lastError();
-        }
+    // Process subtable data using parameterized queries
+    QMap<QString, QList<QVector<QVariant>>> grouped_data;
+    for(qsizetype i = 0; i < _name.length(); ++i) {
+        grouped_data[_name[i]].append(_values[i]);
     }
+
+    for (auto it = grouped_data.constBegin(); it != grouped_data.constEnd(); ++it) {
+        const QString &tableName = it.key();
+        const QList<QVector<QVariant>> &rows = it.value();
+
+        if (rows.isEmpty()) continue;
+
+        QString placeholders = "?";
+        for (int j = 0; j < rows.first().size(); ++j) {
+            placeholders += ", ?";
+        }
+
+        QString insert_sql = QString("INSERT INTO \"%1\" VALUES(%2)").arg(tableName, placeholders);
+        query_insert.prepare(insert_sql);
+
+        _apldb.transaction();
+
+        // 关键修改：为每个子表使用独立的行号计数器
+        qint64 lineCounter = 0;
+
+        for (const QVector<QVariant> &row_values : rows) {
+            // 使用局部的、针对当前表的 lineCounter，而不是全局的 _Number
+            query_insert.bindValue(0, ++lineCounter);
+            for (int j = 0; j < row_values.size(); ++j) {
+                query_insert.bindValue(j + 1, row_values[j]);
+            }
+            if(!query_insert.exec()){
+                QSqlError queryErr = query_insert.lastError();
+                qCDebug(APLDB_LOG)<<"buf2DB() - subtable"<<queryErr.text();
+                _apldb.rollback();
+                break;
+            }
+        }
+        _apldb.commit();
+    }
+
     _name.clear();
     _values.clear();
 }
@@ -121,11 +165,11 @@ bool APLDB::_createSubTable(QString &name, QString &format, QString &field) cons
     bool      success     = false;
 
     _createTableField(format, field, table_field);
-    table_field = QString("%1,%2").arg("LineNo INTEGER PRIMARY KEY").arg(table_field);
-    success = query_create.exec(QString("CREATE TABLE IF NOT EXISTS %1(%2)").arg(name).arg(table_field));
+    table_field = QString("%1,%2").arg("LineNo INTEGER PRIMARY KEY", table_field);
+    success = query_create.exec(QString("CREATE TABLE IF NOT EXISTS \"%1\"(%2)").arg(name, table_field));
 
     if(!success){
-        qCDebug(APLDB_LOG) << QString("CREATE TABLE IF NOT EXISTS %1(%2)").arg(name).arg(table_field);
+        qCDebug(APLDB_LOG) << QString("CREATE TABLE IF NOT EXISTS \"%1\"(%2) FAILED: ").arg(name, table_field) << query_create.lastError().text();
     }
 
     return success;
@@ -134,73 +178,75 @@ bool APLDB::_createSubTable(QString &name, QString &format, QString &field) cons
 void APLDB::_createTableField(QString &format, QString &field, QString &table_field) const
 {
     QByteArray formatArray = format.toLatin1();
+    QStringList fieldList = field.split(',');
 
-    if(formatArray.count() != field.count(',')+1){
+    if(formatArray.count() != fieldList.count()){
         qCDebug(APLDB_LOG)<<"format and labels don't match";
         return;
     }
 
     for(qint8 i = 0; i< formatArray.count(); i++){
+        QString fieldName = QString("\"%1\"").arg(fieldList[i]);
         switch(formatArray[i]){
-        case 'a': //int16_t[32]
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'a':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
-        case 'b': //int8_t
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'b':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
-        case 'B': //uint8_t
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'B':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
-        case 'h': //int16_t
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'h':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
-        case 'H': //uint16_t
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'H':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
-        case 'i': //int32_t
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'i':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
-        case 'I': //uint32_t
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'I':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
-        case 'f': //float
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("DOUBLE");
+        case 'f':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
             break;
-        case 'd': //double
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("DOUBLE");
+        case 'd':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
             break;
-        case 'n': //char[4]
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("VARCHAR");
+        case 'n':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "VARCHAR");
             break;
-        case 'N': //char[16]
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("VARCHAR");
+        case 'N':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "VARCHAR");
             break;
-        case 'Z': //char[64]
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("VARCHAR");
+        case 'Z':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "VARCHAR");
             break;
-        case 'c': //int16_t * 100
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("DOUBLE");
+        case 'c':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
             break;
-        case 'C': //uint16_t * 100
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("DOUBLE");
+        case 'C':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
             break;
-        case 'e': //int32_t * 100
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("DOUBLE");
+        case 'e':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
             break;
-        case 'E': //uint32_t * 100
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("DOUBLE");
+        case 'E':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
             break;
-        case 'L': //int32_t latitude/longitude
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'L':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
-        case 'M': //uint8_t flight mode
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'M':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
-        case 'q': //int64_t
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'q':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
-        case 'Q': //uint64_t
-            table_field = QString ("%1 %2 %3,").arg(table_field).arg(field.section(',', i, i)).arg("INTEGER");
+        case 'Q':
+            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
             break;
         }
     }
@@ -210,8 +256,10 @@ void APLDB::_createTableField(QString &format, QString &field, QString &table_fi
 void APLDB::getFormat(quint8 &id, QString &name, QString &format)
 {
     int idx = _maintable_ids.indexOf(QString("%1").arg(id));
-    name = _maintable_names[idx];
-    format = _maintable_formats[idx];
+    if (idx != -1) {
+        name = _maintable_names[idx];
+        format = _maintable_formats[idx];
+    }
 }
 
 void APLDB::closeConnection()
@@ -220,7 +268,7 @@ void APLDB::closeConnection()
     connection = _apldb.connectionName();
     _apldb.close();
     _apldb = QSqlDatabase();
-    _apldb.removeDatabase(connection);
+    QSqlDatabase::removeDatabase(connection);
 }
 
 QString APLDB::getGroupName(QSqlDatabase &db, int i)
@@ -268,10 +316,14 @@ int APLDB::getTableNum(QSqlDatabase &db)
 int APLDB::getItemCount(QSqlDatabase &db, QString table)
 {
     QSqlQuery query(db);
-    query.prepare(QString(" PRAGMA table_info('%1')").arg(table));
+
+    query.prepare(QString("PRAGMA table_info(\"%1\")").arg(table));
     if(query.exec()){
-        query.last();
-        return query.value(0).toInt();
+        int count = 0;
+        while(query.next()) {
+            count++;
+        }
+        return count;
     }
 
     return 0;
@@ -280,11 +332,12 @@ int APLDB::getItemCount(QSqlDatabase &db, QString table)
 QString APLDB::getItemName(QSqlDatabase &db, QString table, int i)
 {
     QSqlQuery query(db);
-    query.prepare(QString(" PRAGMA table_info('%1')").arg(table));
+
+    query.prepare(QString("PRAGMA table_info(\"%1\")").arg(table));
     if(query.exec()){
-        query.next();
-        for(int n = 0; n < i; n++)
-            query.next();
+        for(int n = 0; n <= i; n++) {
+            if (!query.next()) return "";
+        }
         return query.value(1).toString();
     }
 
@@ -296,7 +349,7 @@ QString APLDB::getDiff(QSqlDatabase &db, QString table, QString field)
     QSqlQuery query(db);
     QByteArray ret;
 
-    query.prepare(QString("SELECT DISTINCT %1 FROM %2").arg(field,table));
+    query.prepare(QString("SELECT DISTINCT \"%1\" FROM \"%2\"").arg(field,table));
     if(query.exec()){
         while(query.next()){
             ret.append(query.value(0).toString().toUtf8());
@@ -304,7 +357,10 @@ QString APLDB::getDiff(QSqlDatabase &db, QString table, QString field)
         }
 
         QString ret_str = QString(ret);
-        return ret_str.left(ret_str.length() - 1);
+        if (!ret_str.isEmpty()) {
+            ret_str.chop(1);
+        }
+        return ret_str;
     }
 
     return "";
@@ -313,9 +369,11 @@ QString APLDB::getDiff(QSqlDatabase &db, QString table, QString field)
 int APLDB::getLen(QSqlDatabase &db, QString table, QString field)
 {
     QSqlQuery query(db);
-    query.prepare(QString("SELECT COUNT(%1) FROM %2").arg(field).arg(table));
+
+    query.prepare(QString("SELECT COUNT(\"%1\") FROM \"%2\"").arg(field).arg(table));
 
     if(!query.exec()){
+        qCDebug(APLDB_LOG)<<"getLen(QSqlDatabase &db, QString table, QString field)";
         QSqlError queryErr = query.lastError();
         qCDebug(APLDB_LOG)<<queryErr.text();
         return 0;
@@ -330,7 +388,7 @@ bool APLDB::getData(QSqlDatabase &db, QString table, QString field, int len, QVe
 {
     QSqlQuery query(db);
 
-    query.prepare(QString("SELECT %1 FROM %2").arg(field).arg(table));
+    query.prepare(QString("SELECT \"%1\" FROM \"%2\"").arg(field).arg(table));
 
     if(!query.exec()){
         QSqlError queryErr = query.lastError();
@@ -349,35 +407,37 @@ void APLDB::getData(QSqlDatabase &db, QString table, QString field, int index, d
 {
     QSqlQuery query(db);
 
-    query.prepare(QString("SELECT %1 FROM %2").arg(field).arg(table));
+    query.prepare(QString("SELECT \"%1\" FROM \"%2\"").arg(field).arg(table));
 
     if(!query.exec()){
         QSqlError queryErr = query.lastError();
         qCDebug(APLDB_LOG)<<queryErr.text();
     }
 
-    query.seek(index);
-
-    data = query.value(0).toDouble();
+    if(query.seek(index)){
+        data = query.value(0).toDouble();
+    }
 }
 
 void APLDB::copy_table(QSqlDatabase &db, QString new_name, QString i, int i_value, QString fields, QString origin_name)
 {
     QSqlQuery query(db);
 
-    query.prepare(QString("CREATE TABLE %1 AS SELECT %2 FROM %3 WHERE %4=%5").arg(new_name).arg(fields).arg(origin_name).arg(i).arg(i_value));
+    query.prepare(QString("CREATE TABLE \"%1\" AS SELECT %2 FROM \"%3\" WHERE \"%4\"=%5").arg(new_name).arg(fields).arg(origin_name).arg(i).arg(i_value));
 
     if(!query.exec()){
         QSqlError queryErr = query.lastError();
     }
 }
 
-void APLDB::deleteDataBase()
+void APLDB::deleteDataBase(const QString &dbdir)
 {
     if(isOpen()){
         close();
     }
-    QFile::remove(DB_FILE);
+    if (QFile::exists(dbdir)) {
+        QFile::remove(dbdir);
+    }
 }
 
 void APLDB::reset()
@@ -395,7 +455,7 @@ bool APLDB::isEmpty(QSqlDatabase &db, QString table)
 {
     QSqlQuery query(db);
 
-    query.prepare(QString("SELECT COUNT(*) FROM %1").arg(table));
+    query.prepare(QString("SELECT COUNT(*) FROM \"%1\"").arg(table));
 
     if(!query.exec()){
         QSqlError queryErr = query.lastError();
@@ -406,11 +466,4 @@ bool APLDB::isEmpty(QSqlDatabase &db, QString table)
     if(query.value(0).toInt() == 0) return true;
 
     return false;
-}
-
-void APLDB::connectSQLite(QSqlDatabase &db)
-{
-    db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(DB_FILE);
-    db.open();
 }

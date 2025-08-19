@@ -8,7 +8,7 @@
 #include "ui_mainwindow.h"
 #include "src/APLRead.h"
 #include "src/APLReadConf.h"
-#include "src/APLDB.h"
+#include "src/APLDataCache.h"
 #include "src/DataAnalyze.h"
 #include "src/DataAnalyzeController.h"
 
@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
-    const QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     int screenWidth=screenGeometry.width();
     int screenHeight=screenGeometry.height();
     _ui.setupUi(this);
@@ -92,10 +92,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete _dialog;
-    if(_apldb.isOpen()){
-        _apldb.close();
-    }
-    QFile::remove(DB_FILE);
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)
@@ -109,6 +105,13 @@ void MainWindow::closeEvent(QCloseEvent * event)
         }
     }
     QWidget::closeEvent(event);
+}
+
+void MainWindow::reset_combobox()
+{
+    _comboBoxListINIT = true;
+    _comboBoxList.clear();
+    _ui.comboBox->clear();
 }
 
 void MainWindow::_buildCommonWidgets(void)
@@ -199,36 +202,31 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
 void MainWindow::_fileOpenedTrigger()
 {
-    APLDB::connectSQLite(_apldb);
     QTreeWidgetItem* groupItem;
-    int GroupCount     = APLDB::getTableNum(_apldb);
+    int GroupCount     = APLDataCache::get_singleton()->getTableNum();
     int ItemCount      = 0;
     int treeGroupCount = 0;
 
     _groupName.clear();
 
-    for(int i = 1; i <= GroupCount; i++){
-        if(APLDB::getTableName(_apldb, i).compare("maintable")==0){
-            continue;
-        }
-        if(APLDB::isEmpty(_apldb, APLDB::getTableName(_apldb, i)) == false){
-            _groupName << QString("%1").arg(APLDB::getTableName(_apldb, i));
-            treeGroupCount++;
-        }
+    for(int i = 0; i < GroupCount; i++){
+        _groupName << QString("%1").arg(APLDataCache::get_singleton()->getTableName(i));
+        treeGroupCount++;
     }
 
     for(int i = 0; i < treeGroupCount; i++){
         QString table_name = _groupName.at(i);
         groupItem = new QTreeWidgetItem(_ui.treeWidget,QStringList(table_name));
-        ItemCount = APLDB::getItemCount(_apldb, table_name);
-        for (int j = 1; j <= ItemCount; j++)
+        ItemCount = APLDataCache::get_singleton()->getItemCount(table_name);
+        for (int j = 0; j < ItemCount; j++)
         {
-            QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDB::getItemName(_apldb, table_name, j)));
+            QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDataCache::get_singleton()->getItemName(table_name, j)));
             item->setCheckState(0, Qt::Unchecked);
             groupItem->addChild(item);
         }
     }
 
+    reset_combobox();
     requestTableList();
 
     QMap<QString, QStringList> data;
@@ -254,21 +252,16 @@ void MainWindow::requestTableList()
 void MainWindow::setComboboxList(QString table)
 {
     QString            Item0;
-    QString            Item1;
 
-    Item0 = APLDB::getItemName(_apldb, table, 0);
-    Item1 = APLDB::getItemName(_apldb, table, 1);
+    Item0 = APLDataCache::get_singleton()->getItemName(table, 0);
+
     if(!_comboBoxList.contains(Item0)){
         _comboBoxList<<Item0;
         _ui.comboBox->addItem(Item0);
     }
-    if(!_comboBoxList.contains(Item1)){
-        _comboBoxList<<Item1;
-        _ui.comboBox->addItem(Item1);
-    }
     if(_comboBoxListINIT){
         _comboBoxListINIT = false;
-        _ui.comboBox->setCurrentIndex(1);
+        _ui.comboBox->setCurrentIndex(0);
     }
 }
 
@@ -309,7 +302,7 @@ void MainWindow::_removeGraph(QTreeWidgetItem *item, int column)
     _table = parent->text(column);
     _field = parent->child(index)->text(column);
 
-    QString remove_target = QString("%1.%2").arg(_table).arg(_field);
+    QString remove_target = QString("%1.%2").arg(_table, _field);
 
     QStringList alreadyPloted;
     if(_alreadyPloted.contains(remove_target)){
@@ -578,7 +571,7 @@ MainWindow::plotGraph(QString tables,
 
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
-    QString plot_target = QString("%1.%2").arg(tables).arg(fields);
+    QString plot_target = QString("%1.%2").arg(tables, fields);
 
     if(_is_constant){
         plot_target = QString("const: %1").arg(_constant_value);
@@ -592,11 +585,11 @@ MainWindow::plotGraph(QString tables,
     if(visible || from){
         qCDebug(MAIN_WINDOW_LOG) << "from: "<<from<<"target: "<<plot_target;
         customPlot->addGraph();
-        int length = APLDB::getLen(_apldb, tables, fields);
+        int length = APLDataCache::get_singleton()->getLen(tables, fields);
         QVector<double> x(length), y(length);
 
-        getXSuccess = APLDB::getData(_apldb, tables, MainWindow::getMainWindow()->ui().comboBox->currentText(), length, x, offsetX);
-        getYSuccess = APLDB::getData(_apldb, tables, fields, length, y, offsetY, scale);
+        getXSuccess = APLDataCache::get_singleton()->getData(tables, MainWindow::getMainWindow()->ui().comboBox->currentText(), length, x, offsetX);
+        getYSuccess = APLDataCache::get_singleton()->getData(tables, fields, length, y, offsetY, scale);
 
         if(_is_constant){
             QVector<double> constant(length, _constant_value);
@@ -704,10 +697,10 @@ MainWindow::_findField(QString table, QString field)
 {
     if(_is_constant) return true;
 
-    int ItemCount = APLDB::getItemCount(_apldb, table);
+    int ItemCount = APLDataCache::get_singleton()->getItemCount(table);
     for (int j = 1; j <= ItemCount; j++)
     {
-        if(APLDB::getItemName(_apldb, table, j).compare(field) == 0){
+        if(APLDataCache::get_singleton()->getItemName(table, j).compare(field) == 0){
 //            qCDebug(MAIN_WINDOW_LOG) << "find field";
             return true;
         }

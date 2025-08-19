@@ -48,6 +48,7 @@ void DialogLoad::showFile()
                 qCDebug(DialogLoad_LOG) << "opendir.txt read error!";
             } else {
                 QTextStream pos(&confdir);
+                pos.setEncoding(QStringConverter::Utf8);
                 confdir_loc = pos.readLine();
                 qCDebug(DialogLoad_LOG) << confdir_loc;
             }

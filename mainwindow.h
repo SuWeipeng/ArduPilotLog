@@ -2,9 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QSqlDatabase>
 #include <QMap>
 #include <QStringList>
+#include <QSqlDatabase>
 #include "ui_mainwindow.h"
 
 #include "APLLoggingCategory.h"
@@ -32,6 +32,7 @@ public:
     QSqlDatabase&      db()                       { return _apldb; }
     void        requestTableList();
     void        closeEvent(QCloseEvent * event);
+    void        reset_combobox();
 
     void initTreeWidget();
     bool isTopItem(QTreeWidgetItem* item);

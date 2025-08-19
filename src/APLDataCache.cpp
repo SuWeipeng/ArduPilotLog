@@ -1,0 +1,397 @@
+#include "APLDataCache.h"
+#include <QJsonDocument>
+#include <QFile>
+#include <QDir>
+#include <QTextStream>
+
+APLDataCache* APLDataCache::_singleton;
+
+APLDataCache::APLDataCache(QObject *parent) : QObject(parent)
+{
+    _singleton = this;
+    reset();
+}
+
+void APLDataCache::reset()
+{
+    _store.clear();
+    _binary_store.clear();
+    _metadata = QJsonObject();
+    _maintable_ids.clear();
+    _maintable_names.clear();
+    _maintable_formats.clear();
+}
+
+void APLDataCache::setTableSplit(bool enabled)
+{
+    _table_split = enabled;
+}
+
+void APLDataCache::setSaveCSV(bool enabled)
+{
+    _save_csv = enabled;
+}
+
+void APLDataCache::addFormat(quint8 type, const QString &name, const QString &format, const QString &labels)
+{
+    if (_store.contains(name)) {
+        return; // Already registered
+    }
+
+    _maintable_ids.append(QString("%1").arg(type));
+    _maintable_names.append(name);
+    _maintable_formats.append(format);
+
+    // Store for in-memory access
+    MessageData newData;
+    newData.type = type;
+    newData.format = format;
+    newData.headers = labels.split(',');
+    newData.columns.resize(newData.headers.size());
+    newData.labels = labels;
+    _store[name] = newData;
+
+    // Store for JSON export
+    QJsonObject formatObj;
+    formatObj["format"] = format;
+    formatObj["labels"] = labels;
+    _metadata[name] = formatObj;
+}
+
+// This is the new function that accepts binary data and performs instance splitting.
+void APLDataCache::addData(const QString &name, const uchar *payload, int payload_len)
+{
+    if (!_store.contains(name)) {
+        return; // Cannot add data without a format definition
+    }
+
+    bool is_instantiable = false;
+    QString instance_id_str;
+
+    // --- Start of Instance Splitting Logic ---
+    // 仅当 _table_split 为 true 时，才执行实例拆分逻辑
+    if (_table_split) {
+        const MessageData &messageData = _store[name];
+        if (messageData.headers.size() > 1) {
+            const QString &instance_header = messageData.headers[1];
+            if ((instance_header.compare("I", Qt::CaseSensitive) == 0 ||
+                instance_header.compare("Instance", Qt::CaseSensitive) == 0 ||
+                instance_header.compare("C", Qt::CaseSensitive) == 0 ||
+                instance_header.compare("IMU", Qt::CaseSensitive) == 0 ||
+                instance_header.compare("Type", Qt::CaseSensitive) == 0 ||
+                instance_header.compare("Id", Qt::CaseSensitive) == 0) &&
+                name.compare("EV", Qt::CaseSensitive) != 0 &&
+                name.compare("MULT", Qt::CaseSensitive) != 0 &&
+                name.compare("UNIT", Qt::CaseSensitive) != 0)
+            {
+                is_instantiable = true;
+            }
+        }
+
+        if (is_instantiable) {
+            // Get format and type directly from the cached MessageData
+            QString format = messageData.format;
+
+            if (format.length() > 1) {
+                // Calculate offset to the instance field (the second field)
+                int offset = 0;
+                switch(format[0].toLatin1()) {
+                    case 'a': offset = 64; break;
+                    case 'b': case 'B': case 'M': offset = 1; break;
+                    case 'h': case 'H': case 'c': case 'C': offset = 2; break;
+                    case 'i': case 'I': case 'f': case 'e': case 'E': case 'L': offset = 4; break;
+                    case 'd': case 'q': case 'Q': offset = 8; break;
+                    case 'n': offset = 4; break;
+                    case 'N': offset = 16; break;
+                    case 'Z': offset = 64; break;
+                }
+
+                // Parse the instance ID from the binary payload
+                if (offset > 0 && payload_len > offset) {
+                    const uchar* instance_ptr = payload + offset;
+                    qint64 instance_val = 0;
+                    switch(format[1].toLatin1()) {
+                        case 'b': { qint8 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
+                        case 'B': { quint8 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
+                        case 'h': { qint16 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
+                        case 'H': { quint16 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
+                        case 'i': { qint32 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
+                        case 'I': { quint32 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
+                        case 'M': { quint8 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
+                        // Non-integer types are not considered valid instance IDs
+                        default: is_instantiable = false; break;
+                    }
+                    if (is_instantiable) {
+                        instance_id_str = QString::number(instance_val);
+                    }
+                }
+            }
+        }
+
+        // If it's an instantiable message, create the sub-table if it doesn't exist
+        if (is_instantiable && !instance_id_str.isEmpty()) {
+            QString new_table_name = name + instance_id_str;
+            if (!_store.contains(new_table_name)) {
+                QJsonObject js_obj = _metadata.value(name).toObject();
+                addFormat(messageData.type, // Use cached type
+                        new_table_name,
+                        js_obj.value("format").toString(),
+                        js_obj.value("labels").toString()
+                        );
+            }
+            // Add data to the instance-specific table
+            _binary_store[new_table_name].append(QByteArray(reinterpret_cast<const char*>(payload), payload_len));
+        }
+    }
+    // --- End of Instance Splitting Logic ---
+
+    // Always add the data to the main table as well
+    _binary_store[name].append(QByteArray(reinterpret_cast<const char*>(payload), payload_len));
+}
+
+QVector<double> APLDataCache::getColumn(const QString &messageName, const QString &columnName)
+{
+    if (!_store.contains(messageName)) {
+        return QVector<double>();
+    }
+
+    const MessageData &messageData = _store[messageName];
+    int columnIndex = messageData.headers.indexOf(columnName);
+
+    if (columnIndex == -1) {
+        return QVector<double>();
+    }
+
+    return messageData.columns[columnIndex];
+}
+
+void APLDataCache::exportToFile(const QString &outputDir)
+{
+    if (!_save_csv) return;
+    
+    QDir dir;
+    if (!dir.exists(outputDir)) {
+        dir.mkpath(outputDir);
+    }
+
+    // Export data to CSV files
+    for (auto it = _binary_store.constBegin(); it != _binary_store.constEnd(); ++it) {
+        const QString &tableName = it.key();
+        const QList<QByteArray> &rows = it.value();
+
+        if (!_store.contains(tableName)) continue;
+
+        QFile file(QDir(outputDir).filePath(tableName + ".csv"));
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) continue;
+
+        QTextStream stream(&file);
+        stream << _store[tableName].headers.join(',') << "\n";
+
+        int idx = _maintable_names.indexOf(tableName);
+        if (idx == -1) continue;
+        QString format = _maintable_formats[idx];
+
+        for (const QByteArray &row : rows) {
+            QStringList rowValues;
+            const uchar *ptr = reinterpret_cast<const uchar *>(row.constData());
+
+            for (QChar formatChar : format) {
+                switch(formatChar.toLatin1()) {
+                    case 'b': { qint8 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'B': { quint8 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'h': { qint16 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'H': { quint16 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'i': { qint32 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'I': { quint32 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'f': { float v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'd': { double v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'c': { qint16 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v / 100.0); break; }
+                    case 'C': { quint16 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v / 100.0); break; }
+                    case 'e': { qint32 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v / 100.0); break; }
+                    case 'E': { quint32 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v / 100.0); break; }
+                    case 'L': { qint32 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'M': { quint8 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'q': { qint64 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'Q': { quint64 v; memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v); rowValues << QString::number(v); break; }
+                    case 'n': { char v[5] = {0}; memcpy(v, ptr, 4); ptr += 4; rowValues << v; break; }
+                    case 'N': { char v[17] = {0}; memcpy(v, ptr, 16); ptr += 16; rowValues << v; break; }
+                    case 'Z': { char v[65] = {0}; memcpy(v, ptr, 64); ptr += 64; rowValues << v; break; }
+                    case 'a': { ptr += 64; rowValues << "(array)"; break; } // Placeholder for array
+                }
+            }
+            stream << rowValues.join(',') << "\n";
+        }
+        file.close();
+    }
+
+    // Export metadata to json file
+    QFile jsonFile(QDir(outputDir).filePath("metadata.json"));
+    if (jsonFile.open(QIODevice::WriteOnly)) {
+        jsonFile.write(QJsonDocument(_metadata).toJson());
+        jsonFile.close();
+    }
+}
+
+int APLDataCache::getTableNum()
+{
+    return _store.size();
+}
+
+int APLDataCache::getGroupCount()
+{
+    return _store.size();
+}
+
+QString APLDataCache::getGroupName(int i)
+{
+    return _store.keys()[i];
+}
+
+QString APLDataCache::getTableName(int i)
+{
+    return _store.keys()[i];
+}
+
+QString APLDataCache::getItemName(QString table, int i)
+{
+    return _store[table].headers[i];
+}
+
+int APLDataCache::getItemCount(QString table)
+{
+    return _store[table].headers.size();
+}
+
+bool APLDataCache::getData(QString table, QString field, int len, QVector<double>& data, double offset, double scale)
+{
+    if (!_binary_store.contains(table) || !_store.contains(table)) {
+        return false;
+    }
+
+    const MessageData &messageData = _store[table];
+    const QList<QByteArray> &binary_rows = _binary_store[table];
+
+    int field_idx = messageData.headers.indexOf(field);
+    if (field_idx == -1) {
+        return false;
+    }
+
+    int idx = _maintable_names.indexOf(table);
+    if (idx == -1) {
+        return false;
+    }
+    QString format = _maintable_formats[idx];
+
+    // Calculate the byte offset of the desired field within a binary row
+    int field_offset = 0;
+    bool found_field = false;
+    for (int i = 0; i < format.length(); ++i) {
+        if (i == field_idx) {
+            found_field = true;
+            break;
+        }
+        switch(format[i].toLatin1()) {
+            case 'a': field_offset += 64; break;
+            case 'b': case 'B': case 'M': field_offset += 1; break;
+            case 'h': case 'H': case 'c': case 'C': field_offset += 2; break;
+            case 'i': case 'I': case 'f': case 'e': case 'E': case 'L': field_offset += 4; break;
+            case 'd': case 'q': case 'Q': field_offset += 8; break;
+            case 'n': field_offset += 4; break;
+            case 'N': field_offset += 16; break;
+            case 'Z': field_offset += 64; break;
+            default: return false; // Unknown format char
+        }
+    }
+
+    if (!found_field) {
+        return false;
+    }
+
+    data.resize(len);
+
+    // Now, iterate through the binary rows and parse just the required field
+    for (int i = 0; i < len; ++i) {
+        const uchar* row_ptr = reinterpret_cast<const uchar*>(binary_rows[i].constData()) + field_offset;
+        double val = 0.0;
+
+        switch(format[field_idx].toLatin1()) {
+            case 'b': { qint8 v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'B': { quint8 v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'h': { qint16 v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'H': { quint16 v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'i': { qint32 v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'I': { quint32 v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'f': { float v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'd': { double v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'c': { qint16 v; memcpy(&v, row_ptr, sizeof(v)); val = v / 100.0; break; }
+            case 'C': { quint16 v; memcpy(&v, row_ptr, sizeof(v)); val = v / 100.0; break; }
+            case 'e': { qint32 v; memcpy(&v, row_ptr, sizeof(v)); val = v / 100.0; break; }
+            case 'E': { quint32 v; memcpy(&v, row_ptr, sizeof(v)); val = v / 100.0; break; }
+            case 'L': { qint32 v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'M': { quint8 v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'q': { qint64 v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            case 'Q': { quint64 v; memcpy(&v, row_ptr, sizeof(v)); val = v; break; }
+            // 'a', 'n', 'N', 'Z' are not convertible to a single double
+            default: val = 0.0; break;
+        }
+        data[i] = (val + offset) * scale;
+    }
+
+    return true;
+}
+
+int APLDataCache::getLen(QString table, QString field)
+{
+    return _binary_store.value(table).size();
+}
+
+void APLDataCache::getFormat(quint8 &id, QString &name, QString &format)
+{
+    int idx = _maintable_ids.indexOf(QString("%1").arg(id));
+    name = _maintable_names[idx];
+    format = _maintable_formats[idx];
+}
+
+bool APLDataCache::checkMainTable(quint8 id)
+{
+    bool ret = false;
+    if(_maintable_ids.contains(QString("%1").arg(id))){
+        ret = true;
+    }
+
+    return ret;
+}
+
+QVector<QVariant> APLDataCache::parseBinaryData(const QByteArray& data, const QString& format) const
+{
+    QVector<QVariant> result;
+    const uchar *ptr = reinterpret_cast<const uchar*>(data.constData());
+    int current_offset = 0;
+
+    for (QChar formatChar : format) {
+        switch(formatChar.toLatin1()) {
+            case 'b': { qint8 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'B': { quint8 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'h': { qint16 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'H': { quint16 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'i': { qint32 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'I': { quint32 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'f': { float v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'd': { double v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'c': { qint16 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v / 100.0); current_offset += sizeof(v); break; }
+            case 'C': { quint16 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v / 100.0); current_offset += sizeof(v); break; }
+            case 'e': { qint32 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v / 100.0); current_offset += sizeof(v); break; }
+            case 'E': { quint32 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v / 100.0); current_offset += sizeof(v); break; }
+            case 'L': { qint32 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'M': { quint8 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'q': { qint64 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'Q': { quint64 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
+            case 'n': { char str[5] = {0}; memcpy(str, ptr + current_offset, 4); result.append(QString(str)); current_offset += 4; break; }
+            case 'N': { char str[17] = {0}; memcpy(str, ptr + current_offset, 16); result.append(QString(str)); current_offset += 16; break; }
+            case 'Z': { char str[65] = {0}; memcpy(str, ptr + current_offset, 64); result.append(QString(str)); current_offset += 64; break; }
+            case 'a': { current_offset += 64; result.append(QVariant()); break; } // Placeholder for array, append empty QVariant
+            default: result.append(QVariant()); break; // Unknown format char, append empty QVariant
+        }
+    }
+    return result;
+}

@@ -54,6 +54,7 @@ SOURCES += \
     qcustomplot.cpp \
     src/DataAnalyzeController.cpp \
     src/APLQmlWidgetHolder.cpp \
+    src/APLDataCache.cpp \
 
 HEADERS += \
         mainwindow.h \
@@ -69,6 +70,7 @@ HEADERS += \
     src/DataAnalyzeController.h \
     src/DataAnalyze.h \
     src/APLQmlWidgetHolder.h \
+    src/APLDataCache.h \
 
 FORMS += \
         mainwindow.ui \
