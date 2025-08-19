@@ -60,7 +60,14 @@ void  APLRead::_resetFMT(int i)
 void APLRead::getFileDir(const QString &file_dir)
 {
     _file_name = QFileInfo(file_dir).fileName();
+    _file_path = QFileInfo(file_dir).absolutePath();
     MainWindow::getMainWindow()->setWindowTitle(QString("ArduPilotLog ").append(file_dir));
+    MainWindow::getMainWindow()->ui().progressBar->setValue(0);
+    MainWindow::getMainWindow()->ui().progressBar->setVisible(0);
+    if(MainWindow::getMainWindow()->db().isOpen()){
+        MainWindow::getMainWindow()->db().close();
+    }
+    QFile::remove(DB_FILE);
     _resetDataBase();
     getDatastream(file_dir);
 }
@@ -73,8 +80,10 @@ void APLRead::getFileOpened()
 
 void APLRead::getDatastream(const QString &file_dir)
 {
-    MainWindow::getMainWindow()->ui().progressBar->setVisible(1);
-    emit startRunning(file_dir);
+    if(!file_dir.isEmpty()){
+        MainWindow::getMainWindow()->ui().progressBar->setVisible(1);
+        emit startRunning(file_dir);
+    }
 }
 
 void APLRead::calc_process(qint64 pos, qint64 size)
@@ -161,12 +170,37 @@ void APLReadWorker::_decode(QDataStream &in, QFile *file)
                 if(FMT[id].valid && !FMT[id].format.isEmpty()){
                     QString value_str  = "";
                     _decodeData(FMT[id].format, in, value_str);
-                    _apldb->addToSubTable(FMT[id].name, value_str);
+                    //QStringList list = value_str.split(",");
+                    //quint64 now = (list.length()>0 ? list[0].toUInt() : 0);
+
+                    //if (_cut_data(id, 2848926667, 3308646676, now)){
+                        _apldb->addToSubTableBuf(FMT[id].name, value_str);
+                    //}
                 }
             }
         }
     }
+    _apldb->transaction();
+    _apldb->buf2DB();
+    _apldb->commit();
     emit send_process(file->pos(), _fileSize);
+}
+
+bool
+APLReadWorker::_cut_data(quint8 id, quint64 start_time, quint64 stop_time, quint64 now)
+{
+    bool res = true;
+    switch(id){
+    case 32: // PARM
+    case 108: // FMTU
+        break;
+    default:
+        if(now < start_time || now > stop_time){
+            res = false;
+        }
+    }
+
+    return res;
 }
 
 void APLReadWorker::_decodeData(QString &format, QDataStream &in, QString &value) const
@@ -291,7 +325,16 @@ void APLReadWorker::_decodeData(QString &format, QDataStream &in, QString &value
 }
 bool APLReadWorker::_checkMessage(QString &name, QString &format, QString &labels) const
 {
-    return _checkName(name) && _checkFormat(format) && _checkLabels(labels);
+    bool res = false;
+    bool res1, res2, res3;
+    res1 = _checkName(name);
+    res2 = _checkFormat(format);
+    res3 = _checkLabels(labels);
+    res = res1 && res2 && res3;
+    if(!res){
+        qCDebug(APLREAD_LOG) << name << format << labels;
+    }
+    return res;
 }
 
 bool APLReadWorker::_checkName(QString &name) const
@@ -322,7 +365,7 @@ bool APLReadWorker::_checkFormat(QString &format) const
 
 bool APLReadWorker::_checkLabels(QString &labels) const
 {
-    QRegularExpression reg("^[A-Za-z0-9,]{1,64}$");
+    QRegularExpression reg("^[A-Za-z0-9, _]{1,64}$");
     QRegularExpressionValidator validator(reg,0);
 
     int pos = 0;
@@ -332,32 +375,52 @@ bool APLReadWorker::_checkLabels(QString &labels) const
 
     int index_of_Primary = labels.indexOf("Primary", Qt::CaseInsensitive);
     if( index_of_Primary != -1 ) {
-        labels.insert(index_of_Primary+7, QString('\''));
-        labels.insert(index_of_Primary, '\'');
+        labels.insert(index_of_Primary+7, QString('`'));
+        labels.insert(index_of_Primary, '`');
         qCDebug(APLREAD_LOG) <<labels;
     }
 
     int index_of_Limit = labels.indexOf("Limit", Qt::CaseInsensitive);
     if(index_of_Limit != -1) {
-        labels.insert(index_of_Limit+5, '\'');
-        labels.insert(index_of_Limit, '\'');
+        labels.insert(index_of_Limit+5, '`');
+        labels.insert(index_of_Limit, '`');
+        qCDebug(APLREAD_LOG) <<labels;
+    }
+
+    int index_of_Default = labels.indexOf("Default", Qt::CaseInsensitive);
+    if(index_of_Default != -1) {
+        labels.insert(index_of_Default+7, '`');
+        labels.insert(index_of_Default, '`');
         qCDebug(APLREAD_LOG) <<labels;
     }
 
     int index_of_IS = labels.indexOf(",IS", Qt::CaseInsensitive);
     if(index_of_IS != -1) {
-        labels.insert(index_of_IS+3, '\'');
-        labels.insert(index_of_IS+1, '\'');
+        labels.insert(index_of_IS+3, '`');
+        labels.insert(index_of_IS+1, '`');
         qCDebug(APLREAD_LOG) <<labels;
     }
 
     int index_of_As = labels.indexOf("As,", Qt::CaseInsensitive);
     if(index_of_As != -1) {
-        labels.insert(index_of_As+2, '\'');
-        labels.insert(index_of_As, '\'');
+        labels.insert(index_of_As+2, '`');
+        labels.insert(index_of_As, '`');
         qCDebug(APLREAD_LOG) <<labels;
     }
 
+    int index_of_As1 = labels.indexOf("AS", Qt::CaseSensitive);
+    if(index_of_As1 != -1) {
+        labels.insert(index_of_As1+2, '`');
+        labels.insert(index_of_As1, '`');
+        qCDebug(APLREAD_LOG) <<labels;
+    }
+
+    int index_of_index = labels.indexOf("index", Qt::CaseSensitive);
+    if(index_of_index != -1) {
+        labels.insert(index_of_index+5, '`');
+        labels.insert(index_of_index, '`');
+        qCDebug(APLREAD_LOG) <<labels;
+    }
     return true;
 }
 
@@ -390,7 +453,48 @@ void APLReadWorker::decodeLogFile(const QString &file_dir)
     QDataStream in(&file);    // read the data serialized from the file
     _decode(in, &file);
 
-    _apldb->commit();
+    QSqlDatabase db    = MainWindow::getMainWindow()->db();
+    int GroupCount     = APLDB::getGroupCount(db);
+
+    for(int i = 1; i <= GroupCount; i++){
+        if(APLDB::isEmpty(db, APLDB::getGroupName(db, i)) == false){
+            QString table_name = APLDB::getGroupName(db, i);
+            if(table_name.compare("UNIT", Qt::CaseSensitive) == 0 ||
+                table_name.compare("MULT", Qt::CaseSensitive) == 0){
+                continue;
+            }
+            QString instance(_apldb->getItemName(db,QString("%1").arg(APLDB::getGroupName(db, i)),2));
+            if(instance.compare("I", Qt::CaseSensitive) == 0 ||
+                instance.compare("Instance", Qt::CaseSensitive) == 0 ||
+                instance.compare("C", Qt::CaseSensitive) == 0 ||
+                instance.compare("IMU", Qt::CaseSensitive) == 0 ||
+                instance.compare("Type", Qt::CaseSensitive) == 0 ||
+                (instance.compare("Id", Qt::CaseSensitive) == 0 && table_name.compare("EV", Qt::CaseSensitive) != 0)
+              ) {
+                int ItemCount = APLDB::getItemCount(MainWindow::getMainWindow()->db(), table_name);
+                QByteArray fields;
+                for (int j = 0; j <= ItemCount; j++)
+                {
+                    if (j==2) continue;
+                    fields.append(_apldb->getItemName(db,QString("%1").arg(QString("%1").arg(APLDB::getGroupName(db, i))),j).toUtf8());
+                    if(j<ItemCount){
+                        fields.append(",");
+                    }
+                }
+
+                QString idx = _apldb->getDiff(db,table_name,instance);
+                QStringList list = idx.split(",");
+                for(int i=0; i<list.length(); i++){
+                    QString sub_name = table_name;
+                    sub_name.append(list[i]);
+                    QString fields_str = QString(fields);
+                    _checkLabels(fields_str);
+                    _apldb->copy_table(db,sub_name,instance,list[i].toInt(),fields_str,table_name);
+                }
+            }
+        }
+    }
+
     _apldb->closeConnection();
 
     emit fileOpened();

@@ -29,6 +29,7 @@ public:
     static void        set_X_axis_changed(bool b) { _X_axis_changed = b; }
     static MainWindow* getMainWindow()            { return _instance; }
     Ui::MainWindow&    ui()                       { return _ui; }
+    QSqlDatabase&      db()                       { return _apldb; }
     void        requestTableList();
     void        closeEvent(QCloseEvent * event);
 
@@ -48,8 +49,8 @@ public slots:
     void plotGraph(QString tables,
                    QString fields,
                    int     offsetX,
-                   float   offsetY,
-                   float   scale,
+                   double  offsetY,
+                   double  scale,
                    int     linestyle,
                    int     color,
                    bool    visible,

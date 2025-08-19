@@ -358,14 +358,14 @@ signals:
 
     void clear_alreadyPloted    ();
     void plotGraph              (QString tables,
-                   QString fields,
-                   int     offsetX,
-                   float   offsetY,
-                   float   scale,
-                   int     linestyle,
-                   int     color,
-                   bool    visible,
-                   bool    from);             // false:DataAnalyzeController,true:Other
+                                 QString fields,
+                                 int     offsetX,
+                                 double  offsetY,
+                                 double  scale,
+                                 int     linestyle,
+                                 int     color,
+                                 bool    visible,
+                                 bool    from);             // false:DataAnalyzeController,true:Other
     void clearGraph             ();
 
 private slots:

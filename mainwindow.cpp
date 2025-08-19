@@ -86,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_dialog_load->getAPLReadConf(),  &APLReadConf::fileOpened, this, &MainWindow::_confOpenedTrigger);
     connect(_dialog,  &Dialog::saveSuccess, this, &MainWindow::_saveSuccessMessage);
     connect(this,  &MainWindow::treeWidgetAddItem, this, &MainWindow::setComboboxList);
+    emit(_ui.actionOpenArduPilotLog->triggered());
 }
 
 MainWindow::~MainWindow()
@@ -200,20 +201,21 @@ void MainWindow::_fileOpenedTrigger()
 {
     APLDB::connectSQLite(_apldb);
     QTreeWidgetItem* groupItem;
-    int GroupCount     = APLDB::getGroupCount(_apldb);
+    int GroupCount     = APLDB::getTableNum(_apldb);
     int ItemCount      = 0;
     int treeGroupCount = 0;
 
     _groupName.clear();
 
     for(int i = 1; i <= GroupCount; i++){
-        if(APLDB::isEmpty(_apldb, APLDB::getGroupName(_apldb, i)) == false){
-            _groupName << QString("%1").arg(APLDB::getGroupName(_apldb, i));
+        if(APLDB::getTableName(_apldb, i).compare("maintable")==0){
+            continue;
+        }
+        if(APLDB::isEmpty(_apldb, APLDB::getTableName(_apldb, i)) == false){
+            _groupName << QString("%1").arg(APLDB::getTableName(_apldb, i));
             treeGroupCount++;
         }
     }
-
-    _groupName.sort();
 
     for(int i = 0; i < treeGroupCount; i++){
         QString table_name = _groupName.at(i);
@@ -555,8 +557,8 @@ void
 MainWindow::plotGraph(QString tables,
                       QString fields,
                       int     offsetX,
-                      float   offsetY,
-                      float   scale,
+                      double  offsetY,
+                      double  scale,
                       int     linestyle,
                       int     color,
                       bool    visible,

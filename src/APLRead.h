@@ -40,6 +40,7 @@ private:
     bool    _checkName(QString &name) const;
     bool    _checkFormat(QString &format) const;
     bool    _checkLabels(QString &labels) const;
+    bool    _cut_data(quint8 id, quint64 start_time, quint64 stop_time, quint64 now);
 
 signals:
     void fileOpened();
@@ -60,6 +61,7 @@ public:
 
     void    getDatastream(const QString &file_dir);
     QString getFileName(void) { return _file_name; }
+    QString getFilePath(void) { return _file_path; }
 
     static APLRead* getAPLRead() { return _instance; }
 
@@ -77,6 +79,7 @@ private:
     void            _resetDataBase();
     void            _resetFMT(int i);
     QString         _file_name;
+    QString         _file_path;
     QThread*        _workThread;
     APLReadWorker*  _worker;
 

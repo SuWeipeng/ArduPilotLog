@@ -28,6 +28,10 @@ public:
                         QString format,
                         QString labels);
 
+    void addToSubTableBuf(QString name, QString values);
+
+    void buf2DB();
+
     void addToSubTable(QString name, QString values);
 
     void getFormat(quint8 &id, QString &name, QString &format);
@@ -38,13 +42,21 @@ public:
 
     void commit() { _apldb.commit(); }
 
+    void transaction() { _apldb.transaction(); }
+
     void closeConnection();
 
     static QString getGroupName(QSqlDatabase &db, int i);
 
+    static QString getTableName(QSqlDatabase &db, int i);
+
     static QString getItemName(QSqlDatabase &db, QString table, int i);
 
+    static QString getDiff(QSqlDatabase &db, QString table, QString field);
+
     static int getGroupCount(QSqlDatabase &db);
+
+    static int getTableNum(QSqlDatabase &db);
 
     static int getItemCount(QSqlDatabase &db, QString table);
 
@@ -53,6 +65,8 @@ public:
     static bool getData(QSqlDatabase &db, QString table, QString field, int len, QVector<double>& data, double offset = 0, double scale = 1);
 
     static void getData(QSqlDatabase &db, QString table, QString field, int index, double& data);
+
+    static void copy_table(QSqlDatabase &db, QString new_name, QString i, int i_value, QString fields, QString origin_name);
 
     void deleteDataBase();
 
@@ -65,6 +79,12 @@ public:
 private:
     QSqlDatabase  _apldb;
     quint32       _Number;
+    QStringList   _name;
+    QStringList   _values;
+    QStringList   _maintable_item;
+    QStringList   _maintable_ids;
+    QStringList   _maintable_names;
+    QStringList   _maintable_formats;
 
     //true: create sub-table success
     bool _createSubTable(QString &name, QString &format, QString &field) const;

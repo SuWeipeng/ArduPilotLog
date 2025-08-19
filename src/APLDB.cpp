@@ -8,7 +8,12 @@ APL_LOGGING_CATEGORY(APLDB_LOG,        "APLDBLog")
 APLDB::APLDB()
     : _Number(0)
 {
-
+    _name.clear();
+    _values.clear();
+    _maintable_names.clear();
+    _maintable_formats.clear();
+    _maintable_ids.clear();
+    _maintable_item.clear();
 }
 
 APLDB::~APLDB()
@@ -30,7 +35,6 @@ void APLDB::createAPLDB()
         qCDebug(APLDB_LOG) << _apldb.drivers();
     }else{
         QSqlQuery query;
-        _apldb.transaction();
         bool success = query.exec("CREATE TABLE maintable(id INT8 PRIMARY KEY, len INT8, name VARCHAR, format VARCHAR, labels VARCHAR)");
         if(success){
           qCDebug(APLDB_LOG) << "create maintable success";
@@ -43,20 +47,12 @@ void APLDB::createAPLDB()
 //true: id already exist
 bool APLDB::checkMainTable(quint8 id)
 {
-    QSqlQuery query;
-
-    if(!_apldb.isOpen()){
-        qCDebug(APLDB_LOG) << QString(DB_FILE) << " is closed";
-        return false;
+    bool ret = false;
+    if(_maintable_ids.contains(QString("%1").arg(id))){
+        ret = true;
     }
 
-    query.exec(QString("SELECT id FROM maintable WHERE id LIKE %1").arg(id));
-    if(!query.next()){
-        //qCDebug(APLDB_LOG) << QString("type: %1 don't exist").arg(id);
-        return false;
-    }
-
-    return true;
+    return ret;
 }
 
 void APLDB::addToMainTable(quint8 type,
@@ -65,24 +61,15 @@ void APLDB::addToMainTable(quint8 type,
                            QString format,
                            QString labels)
 {
-    QSqlQuery query_insert;
-    QSqlQuery query_check;
+    _maintable_item.append(QString("INSERT INTO maintable VALUES(%1,%2,\"%3\",\"%4\",\"%5\")")
+                               .arg(type).arg(len).arg(name,format,labels));
+    _maintable_ids.append(QString("%1").arg(type));
+    _maintable_names.append(name);
+    _maintable_formats.append(format);
 
-    query_insert.exec(QString("INSERT INTO maintable VALUES(%1,%2,\"%3\",\"%4\",\"%5\")")
-                      .arg(type).arg(len).arg(name,format,labels));
-
-    query_check.exec(QString("SELECT COUNT(*) FROM SQLITE_MASTER WHERE TYPE='table' AND name='%1'").arg(name));
-
-    query_check.next();
-
-    if(query_check.value(0).toInt()==0){
-        if(!_createSubTable(name, format, labels)){
-            qCDebug(APLDB_LOG) << name << "Sub table create fail";
-        }
-    }else{
-        qCDebug(APLDB_LOG) << "Sub table already exist";
+    if(!_createSubTable(name, format, labels)){
+        qCDebug(APLDB_LOG) << name << "Sub table create fail";
     }
-
 }
 
 void APLDB::addToSubTable(QString name, QString values)
@@ -97,6 +84,36 @@ void APLDB::addToSubTable(QString name, QString values)
     }
 }
 
+void APLDB::addToSubTableBuf(QString name, QString values)
+{
+    _name.append(name);
+    _values.append(values);
+}
+
+void APLDB::buf2DB()
+{
+    QSqlQuery query_insert;
+    for(quint64 i = 0; i<_maintable_item.length(); i++){
+        if(!query_insert.exec(_maintable_item[i])){
+            QSqlError queryErr = query_insert.lastError();
+            qCDebug(APLDB_LOG)<<"buf2DB()"<<queryErr.text();
+        }
+    }
+    _maintable_names.clear();
+    _maintable_formats.clear();
+    _maintable_ids.clear();
+    _maintable_item.clear();
+
+    for(quint64 i = 0; i<_name.length(); i++) {
+        QString values = QString("%1,%2").arg(++_Number).arg(_values[i]);
+        if(!query_insert.exec(QString("INSERT INTO %1 VALUES(%2)").arg(_name[i], values))){
+            QSqlError queryErr = query_insert.lastError();
+        }
+    }
+    _name.clear();
+    _values.clear();
+}
+
 bool APLDB::_createSubTable(QString &name, QString &format, QString &field) const
 {
     QSqlQuery query_create;
@@ -105,10 +122,10 @@ bool APLDB::_createSubTable(QString &name, QString &format, QString &field) cons
 
     _createTableField(format, field, table_field);
     table_field = QString("%1,%2").arg("LineNo INTEGER PRIMARY KEY").arg(table_field);
-    success = query_create.exec(QString("CREATE TABLE %1(%2)").arg(name).arg(table_field));
+    success = query_create.exec(QString("CREATE TABLE IF NOT EXISTS %1(%2)").arg(name).arg(table_field));
 
     if(!success){
-        qCDebug(APLDB_LOG) << QString("CREATE TABLE %1(%2)").arg(name).arg(table_field);
+        qCDebug(APLDB_LOG) << QString("CREATE TABLE IF NOT EXISTS %1(%2)").arg(name).arg(table_field);
     }
 
     return success;
@@ -192,12 +209,9 @@ void APLDB::_createTableField(QString &format, QString &field, QString &table_fi
 
 void APLDB::getFormat(quint8 &id, QString &name, QString &format)
 {
-    QSqlQuery query;
-
-    query.exec(QString("SELECT id,name,format FROM maintable WHERE id = %1").arg(id));
-    query.next();
-    name   = query.value(1).toString();
-    format = query.value(2).toString();
+    int idx = _maintable_ids.indexOf(QString("%1").arg(id));
+    name = _maintable_names[idx];
+    format = _maintable_formats[idx];
 }
 
 void APLDB::closeConnection()
@@ -220,11 +234,32 @@ QString APLDB::getGroupName(QSqlDatabase &db, int i)
     return  query.value(0).toString();
 }
 
+QString APLDB::getTableName(QSqlDatabase &db, int i)
+{
+    QSqlQuery query(db);
+
+    query.exec(QString("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"));
+    for(int n = 0; n < i; n++)
+        query.next();
+
+    return  query.value(0).toString();
+}
+
 int APLDB::getGroupCount(QSqlDatabase &db)
 {
     QSqlQuery query(db);
 
     query.exec(QString("SELECT COUNT(name) FROM maintable"));
+    query.next();
+
+    return  query.value(0).toInt();
+}
+
+int APLDB::getTableNum(QSqlDatabase &db)
+{
+    QSqlQuery query(db);
+
+    query.exec(QString("SELECT COUNT(*) FROM sqlite_master WHERE type='table'"));
     query.next();
 
     return  query.value(0).toInt();
@@ -251,6 +286,25 @@ QString APLDB::getItemName(QSqlDatabase &db, QString table, int i)
         for(int n = 0; n < i; n++)
             query.next();
         return query.value(1).toString();
+    }
+
+    return "";
+}
+
+QString APLDB::getDiff(QSqlDatabase &db, QString table, QString field)
+{
+    QSqlQuery query(db);
+    QByteArray ret;
+
+    query.prepare(QString("SELECT DISTINCT %1 FROM %2").arg(field,table));
+    if(query.exec()){
+        while(query.next()){
+            ret.append(query.value(0).toString().toUtf8());
+            ret.append(",");
+        }
+
+        QString ret_str = QString(ret);
+        return ret_str.left(ret_str.length() - 1);
     }
 
     return "";
@@ -286,7 +340,7 @@ bool APLDB::getData(QSqlDatabase &db, QString table, QString field, int len, QVe
 
     for(int i=0; i<len; i++){
         query.next();
-        data[i] = query.value(0).toDouble() * scale + offset;
+        data[i] = (query.value(0).toDouble() + offset) * scale;
     }
     return true;
 }
@@ -307,6 +361,17 @@ void APLDB::getData(QSqlDatabase &db, QString table, QString field, int index, d
     data = query.value(0).toDouble();
 }
 
+void APLDB::copy_table(QSqlDatabase &db, QString new_name, QString i, int i_value, QString fields, QString origin_name)
+{
+    QSqlQuery query(db);
+
+    query.prepare(QString("CREATE TABLE %1 AS SELECT %2 FROM %3 WHERE %4=%5").arg(new_name).arg(fields).arg(origin_name).arg(i).arg(i_value));
+
+    if(!query.exec()){
+        QSqlError queryErr = query.lastError();
+    }
+}
+
 void APLDB::deleteDataBase()
 {
     if(isOpen()){
@@ -318,6 +383,12 @@ void APLDB::deleteDataBase()
 void APLDB::reset()
 {
     _Number = 0;
+    _name.clear();
+    _values.clear();
+    _maintable_names.clear();
+    _maintable_formats.clear();
+    _maintable_ids.clear();
+    _maintable_item.clear();
 }
 
 bool APLDB::isEmpty(QSqlDatabase &db, QString table)

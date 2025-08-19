@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QLineEdit>
+#include <QDir>
 #include "APLLoggingCategory.h"
 
 Q_DECLARE_LOGGING_CATEGORY(DialogLoad_LOG)
@@ -19,6 +20,7 @@ public:
     ~DialogLoad();
 
     APLReadConf* getAPLReadConf() const { return _aplReadConf; }
+    bool isDirExist(QString fullPath);
 
 public slots:
     void showFile();
