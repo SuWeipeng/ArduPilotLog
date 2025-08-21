@@ -44,7 +44,6 @@ private:
     bool    _checkName(QString &name) const;
     bool    _checkFormat(QString &format) const;
     bool    _checkLabels(QString &labels) const;
-    bool    _cut_data(quint8 id, quint64 start_time, quint64 stop_time, quint64 now);
 
 signals:
     void fileOpened();

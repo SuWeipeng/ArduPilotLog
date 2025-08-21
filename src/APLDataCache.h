@@ -9,6 +9,8 @@
 #include <QJsonObject>
 #include "APLLoggingCategory.h"
 
+Q_DECLARE_LOGGING_CATEGORY(APLDATACACHE_LOG)
+
 // 存储一种消息（如 "ATT"）的所有列数据
 struct MessageData
 {
@@ -58,6 +60,8 @@ public:
 
     void setTableSplit(bool enabled);
     void setSaveCSV(bool enabled);
+    void setTrimFrom(quint64 v);
+    void setTrimTo(quint64 v);
 
 private:
     static APLDataCache* _singleton;
@@ -70,6 +74,10 @@ private:
     QStringList                _maintable_formats;
     bool                       _table_split = false;
     bool                       _save_csv = false;
+    quint64                    _trim_from = 0;
+    quint64                    _trim_to = 0;
+
+    bool    _cut_data(quint8 id, quint64 start_time, quint64 stop_time, quint64 now);
 };
 
 #endif // APLDATACACHE_H

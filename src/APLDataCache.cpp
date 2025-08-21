@@ -4,6 +4,8 @@
 #include <QDir>
 #include <QTextStream>
 
+APL_LOGGING_CATEGORY(APLDATACACHE_LOG,        "APLDataCacheLog")
+
 APLDataCache* APLDataCache::_singleton;
 
 APLDataCache::APLDataCache(QObject *parent) : QObject(parent)
@@ -30,6 +32,16 @@ void APLDataCache::setTableSplit(bool enabled)
 void APLDataCache::setSaveCSV(bool enabled)
 {
     _save_csv = enabled;
+}
+
+void APLDataCache::setTrimFrom(quint64 v)
+{
+    _trim_from = v;
+}
+
+void APLDataCache::setTrimTo(quint64 v)
+{
+    _trim_to = v;
 }
 
 void APLDataCache::addFormat(quint8 type, const QString &name, const QString &format, const QString &labels)
@@ -145,8 +157,13 @@ void APLDataCache::addData(const QString &name, const uchar *payload, int payloa
     }
     // --- End of Instance Splitting Logic ---
 
-    // Always add the data to the main table as well
-    _binary_store[name].append(QByteArray(reinterpret_cast<const char*>(payload), payload_len));
+    if (_trim_from < _trim_to) {
+        if (_cut_data(static_cast<quint8>(*(payload - 1)), _trim_from, _trim_to, *reinterpret_cast<const quint64*>(payload))){
+            _binary_store[name].append(QByteArray(reinterpret_cast<const char*>(payload), payload_len));
+        }
+    } else {
+        _binary_store[name].append(QByteArray(reinterpret_cast<const char*>(payload), payload_len));
+    }
 }
 
 QVector<double> APLDataCache::getColumn(const QString &messageName, const QString &columnName)
@@ -394,4 +411,21 @@ QVector<QVariant> APLDataCache::parseBinaryData(const QByteArray& data, const QS
         }
     }
     return result;
+}
+
+bool
+APLDataCache::_cut_data(quint8 id, quint64 start_time, quint64 stop_time, quint64 now)
+{
+    bool res = true;
+    switch(id){
+    case 32: // PARM
+    case 108: // FMTU
+        break;
+    default:
+        if(now < start_time || now > stop_time){
+            res = false;
+        }
+    }
+
+    return res;
 }

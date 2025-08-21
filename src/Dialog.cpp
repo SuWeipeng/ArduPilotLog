@@ -172,6 +172,8 @@ void Dialog::loadSettings()
         if (cache) {
             cache->setTableSplit(_table_split);
             cache->setSaveCSV(jsonObj["save_csv"].toBool());
+            cache->setTrimFrom(jsonObj["trim_from"].toInteger());
+            cache->setTrimTo(jsonObj["trim_to"].toInteger());
         }
     }
 
