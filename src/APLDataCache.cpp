@@ -45,7 +45,7 @@ void APLDataCache::setTrimTo(quint64 v)
     _trim_to = v;
 }
 
-void APLDataCache::addFormat(quint8 type, const QString &name, const QString &format, const QString &labels, qint8 i)
+void APLDataCache::addFormat(const quint8 &type, const QString &name, const QString &format, const QString &labels, const qint8 &i)
 {
     // --- Start of Instance Splitting Logic ---
     // 仅当 _table_split 为 true 时，才执行实例拆分逻辑
@@ -120,7 +120,7 @@ void APLDataCache::addFormat(quint8 type, const QString &name, const QString &fo
 }
 
 // This is the new function that accepts binary data and performs instance splitting.
-void APLDataCache::addData(const QString &name, const QString &new_name, const uchar *payload, const qint8 &i, int payload_len)
+void APLDataCache::addData(const QString &name, const QString &new_name, const uchar *payload, const qint8 &i, const int &payload_len)
 {
     if (!_store.contains(name) && !_instantiable_store.contains(name)) {
         return; // Cannot add data without a format definition
