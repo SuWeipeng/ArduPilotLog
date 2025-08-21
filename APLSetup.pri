@@ -118,7 +118,6 @@ LinuxBuild {
 
     # QT_INSTALL_PLUGINS
     QT_PLUGIN_LIST = \
-        bearer \
         geoservices \
         iconengines \
         imageformats \
