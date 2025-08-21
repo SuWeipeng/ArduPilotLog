@@ -224,7 +224,7 @@ void APLReadWorker::_decode(const uchar* p_data, qint64 data_size)
                 }
 
                 // 保持原有的数据添加方式
-                _dataCache->addData(fmt.name, payload_ptr, msg_len);
+                _dataCache->addData(fmt.name, fmt.name+QString::number(static_cast<quint8>(*(payload_ptr + 8))), payload_ptr, static_cast<quint8>(*(payload_ptr + 8)), msg_len);
                 ptr = payload_ptr + msg_len; 
             } else {
                 ptr++;

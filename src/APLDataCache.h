@@ -32,10 +32,10 @@ public:
     explicit APLDataCache(QObject *parent = nullptr);
 
     // 添加一个新的消息格式定义
-    void addFormat(quint8 type, const QString &name, const QString &format, const QString &labels);
+    void addFormat(quint8 type, const QString &name, const QString &format, const QString &labels, qint8 i=-1);
 
     // 添加一行解码后的数据（字符串形式）
-    void addData(const QString &name, const uchar *payload, int payload_len);
+    void addData(const QString &name, const QString &new_name, const uchar *payload, const qint8 &i, int payload_len);
 
     // 获取绘图所需的数据列
     QVector<double> getColumn(const QString &messageName, const QString &columnName);
@@ -67,6 +67,7 @@ private:
     static APLDataCache* _singleton;
 
     QMap<QString, MessageData> _store;     // 内存存储核心
+    QMap<QString, MessageData> _instantiable_store;
     QMap<QString, QList<QByteArray>> _binary_store; // 新增的二进制数据仓库
     QJsonObject                _metadata;  // 用于生成 metadata.json
     QStringList                _maintable_ids;

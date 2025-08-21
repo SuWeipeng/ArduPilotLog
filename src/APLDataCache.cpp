@@ -17,6 +17,7 @@ APLDataCache::APLDataCache(QObject *parent) : QObject(parent)
 void APLDataCache::reset()
 {
     _store.clear();
+    _instantiable_store.clear();
     _binary_store.clear();
     _metadata = QJsonObject();
     _maintable_ids.clear();
@@ -44,8 +45,56 @@ void APLDataCache::setTrimTo(quint64 v)
     _trim_to = v;
 }
 
-void APLDataCache::addFormat(quint8 type, const QString &name, const QString &format, const QString &labels)
+void APLDataCache::addFormat(quint8 type, const QString &name, const QString &format, const QString &labels, qint8 i)
 {
+    // --- Start of Instance Splitting Logic ---
+    // 仅当 _table_split 为 true 时，才执行实例拆分逻辑
+    if (_table_split && i == -1) {
+        if (_instantiable_store.contains(name)) {
+            return; // Already registered
+        }
+        QStringList headers = labels.split(',');
+        if (headers.size() > 1) {
+            const QString &instance_header = headers[1];
+            if ((instance_header.compare("I", Qt::CaseSensitive) == 0 ||
+                 instance_header.compare("Instance", Qt::CaseSensitive) == 0 ||
+                 instance_header.compare("C", Qt::CaseSensitive) == 0 ||
+                 instance_header.compare("IMU", Qt::CaseSensitive) == 0 ||
+                 instance_header.compare("Type", Qt::CaseSensitive) == 0 ||
+                 instance_header.compare("Id", Qt::CaseSensitive) == 0) &&
+                name.compare("EV", Qt::CaseSensitive) != 0 &&
+                name.compare("MULT", Qt::CaseSensitive) != 0 &&
+                name.compare("UNIT", Qt::CaseSensitive) != 0)
+            {
+                if (_instantiable_store.contains(name)) {
+                    return; // Already registered
+                }
+
+                _maintable_ids.append(QString("%1").arg(type));
+                _maintable_names.append(name);
+                _maintable_formats.append(format);
+
+                // Store for in-memory access
+                MessageData newData;
+                newData.type = type;
+                newData.format = format;
+                newData.headers = labels.split(',');
+                newData.columns.resize(newData.headers.size());
+                newData.labels = labels;
+                _instantiable_store[name] = newData;
+
+                // Store for JSON export
+                QJsonObject formatObj;
+                formatObj["format"] = format;
+                formatObj["labels"] = labels;
+                _metadata[name] = formatObj;
+
+                return;
+            }
+        }
+    }
+    // --- End of Instance Splitting Logic ---
+
     if (_store.contains(name)) {
         return; // Already registered
     }
@@ -71,89 +120,35 @@ void APLDataCache::addFormat(quint8 type, const QString &name, const QString &fo
 }
 
 // This is the new function that accepts binary data and performs instance splitting.
-void APLDataCache::addData(const QString &name, const uchar *payload, int payload_len)
+void APLDataCache::addData(const QString &name, const QString &new_name, const uchar *payload, const qint8 &i, int payload_len)
 {
-    if (!_store.contains(name)) {
+    if (!_store.contains(name) && !_instantiable_store.contains(name)) {
         return; // Cannot add data without a format definition
     }
 
-    bool is_instantiable = false;
-    QString instance_id_str;
-
     // --- Start of Instance Splitting Logic ---
     // 仅当 _table_split 为 true 时，才执行实例拆分逻辑
-    if (_table_split) {
-        const MessageData &messageData = _store[name];
-        if (messageData.headers.size() > 1) {
-            const QString &instance_header = messageData.headers[1];
-            if ((instance_header.compare("I", Qt::CaseSensitive) == 0 ||
-                instance_header.compare("Instance", Qt::CaseSensitive) == 0 ||
-                instance_header.compare("C", Qt::CaseSensitive) == 0 ||
-                instance_header.compare("IMU", Qt::CaseSensitive) == 0 ||
-                instance_header.compare("Type", Qt::CaseSensitive) == 0 ||
-                instance_header.compare("Id", Qt::CaseSensitive) == 0) &&
-                name.compare("EV", Qt::CaseSensitive) != 0 &&
-                name.compare("MULT", Qt::CaseSensitive) != 0 &&
-                name.compare("UNIT", Qt::CaseSensitive) != 0)
-            {
-                is_instantiable = true;
-            }
+    if (_table_split && _instantiable_store.contains(name)) {
+        const MessageData &messageData = _instantiable_store[name];
+        const QString &new_table_name = new_name;
+        if (!_store.contains(new_table_name)) {
+            QJsonObject js_obj = _metadata.value(name).toObject();
+            addFormat(messageData.type, // Use cached type
+                    new_table_name,
+                    js_obj.value("format").toString(),
+                    js_obj.value("labels").toString(),
+                    i
+                    );
         }
-
-        if (is_instantiable) {
-            // Get format and type directly from the cached MessageData
-            QString format = messageData.format;
-
-            if (format.length() > 1) {
-                // Calculate offset to the instance field (the second field)
-                int offset = 0;
-                switch(format[0].toLatin1()) {
-                    case 'a': offset = 64; break;
-                    case 'b': case 'B': case 'M': offset = 1; break;
-                    case 'h': case 'H': case 'c': case 'C': offset = 2; break;
-                    case 'i': case 'I': case 'f': case 'e': case 'E': case 'L': offset = 4; break;
-                    case 'd': case 'q': case 'Q': offset = 8; break;
-                    case 'n': offset = 4; break;
-                    case 'N': offset = 16; break;
-                    case 'Z': offset = 64; break;
-                }
-
-                // Parse the instance ID from the binary payload
-                if (offset > 0 && payload_len > offset) {
-                    const uchar* instance_ptr = payload + offset;
-                    qint64 instance_val = 0;
-                    switch(format[1].toLatin1()) {
-                        case 'b': { qint8 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
-                        case 'B': { quint8 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
-                        case 'h': { qint16 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
-                        case 'H': { quint16 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
-                        case 'i': { qint32 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
-                        case 'I': { quint32 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
-                        case 'M': { quint8 v; memcpy(&v, instance_ptr, sizeof(v)); instance_val = v; break; }
-                        // Non-integer types are not considered valid instance IDs
-                        default: is_instantiable = false; break;
-                    }
-                    if (is_instantiable) {
-                        instance_id_str = QString::number(instance_val);
-                    }
-                }
+        // Add data to the instance-specific table
+        if (_trim_from < _trim_to) {
+            if (_cut_data(static_cast<quint8>(*(payload - 1)), _trim_from, _trim_to, *reinterpret_cast<const quint64*>(payload))){
+                _binary_store[new_table_name].append(QByteArray(reinterpret_cast<const char*>(payload), payload_len));
             }
-        }
-
-        // If it's an instantiable message, create the sub-table if it doesn't exist
-        if (is_instantiable && !instance_id_str.isEmpty()) {
-            QString new_table_name = name + instance_id_str;
-            if (!_store.contains(new_table_name)) {
-                QJsonObject js_obj = _metadata.value(name).toObject();
-                addFormat(messageData.type, // Use cached type
-                        new_table_name,
-                        js_obj.value("format").toString(),
-                        js_obj.value("labels").toString()
-                        );
-            }
-            // Add data to the instance-specific table
+        } else {
             _binary_store[new_table_name].append(QByteArray(reinterpret_cast<const char*>(payload), payload_len));
         }
+        return;
     }
     // --- End of Instance Splitting Logic ---
 
