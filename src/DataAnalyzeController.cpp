@@ -328,9 +328,7 @@ void
 DataAnalyzeController::setVisible1(bool visible){
     _visible[0] = visible;
     emit visible1Changed();
-    if (_visible[0]) {
-        _plot();
-    }
+    _plot();
 }
 
 void
@@ -415,9 +413,7 @@ void
 DataAnalyzeController::setVisible2(bool visible){
     _visible[1] = visible;
     emit visible2Changed();
-    if (_visible[1]) {
-        _plot();
-    }
+    _plot();
 }
 
 void
@@ -500,9 +496,7 @@ void
 DataAnalyzeController::setVisible3(bool visible){
     _visible[2] = visible;
     emit visible3Changed();
-    if (_visible[2]) {
-        _plot();
-    }
+    _plot();
 }
 
 void
@@ -587,9 +581,7 @@ void
 DataAnalyzeController::setVisible4(bool visible){
     _visible[3] = visible;
     emit visible4Changed();
-    if (_visible[3]) {
-        _plot();
-    }
+    _plot();
 }
 
 void
@@ -674,9 +666,7 @@ void
 DataAnalyzeController::setVisible5(bool visible){
     _visible[4] = visible;
     emit visible5Changed();
-    if (_visible[4]) {
-        _plot();
-    }
+    _plot();
 }
 
 void
@@ -761,9 +751,7 @@ void
 DataAnalyzeController::setVisible6(bool visible){
     _visible[5] = visible;
     emit visible6Changed();
-    if (_visible[5]) {
-        _plot();
-    }
+    _plot();
 }
 
 void
@@ -848,9 +836,7 @@ void
 DataAnalyzeController::setVisible7(bool visible){
     _visible[6] = visible;
     emit visible7Changed();
-    if (_visible[6]) {
-        _plot();
-    }
+    _plot();
 }
 
 void
@@ -935,9 +921,7 @@ void
 DataAnalyzeController::setVisible8(bool visible){
     _visible[7] = visible;
     emit visible8Changed();
-    if (_visible[7]) {
-        _plot();
-    }
+    _plot();
 }
 
 void
@@ -1022,9 +1006,7 @@ void
 DataAnalyzeController::setVisible9(bool visible){
     _visible[8] = visible;
     emit visible9Changed();
-    if (_visible[8]) {
-        _plot();
-    }
+    _plot();
 }
 
 void
@@ -1109,9 +1091,7 @@ void
 DataAnalyzeController::setVisible10(bool visible){
     _visible[9] = visible;
     emit visible10Changed();
-    if (_visible[9]) {
-        _plot();
-    }
+    _plot();
 }
 
 void
