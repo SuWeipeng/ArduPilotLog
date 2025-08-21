@@ -4,7 +4,4 @@ export LD_LIBRARY_PATH="${HERE}/usr/lib/x86_64-linux-gnu":"${HERE}/Qt/libs":$LD_
 export QML2_IMPORT_PATH="${HERE}/Qt/qml"
 export QT_PLUGIN_PATH="${HERE}/Qt/plugins"
 
-# hack until icon issue with AppImage is resolved
-mkdir -p ~/.icons && cp ${HERE}/ardupilotlog.png ~/.icons
-
 "${HERE}/ArduPilotLog" "$@"
