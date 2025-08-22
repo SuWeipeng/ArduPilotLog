@@ -5,6 +5,9 @@
 #include <QTreeWidgetItem>
 #include <QRandomGenerator>
 #include <QSharedPointer>
+#include <QMenu>
+#include <QWidgetAction>
+#include <QCheckBox>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "src/APLRead.h"
@@ -22,7 +25,7 @@ bool        MainWindow::_X_axis_changed;
 MainWindow* MainWindow::_instance;
 
 static const char *rgDockWidgetNames[] = {
-    "DATA Analyze"
+    "Data Analyze"
 };
 
 enum DockWidgetTypes {
@@ -33,6 +36,9 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , _dialog(new Dialog)
     , _dialog_load(new DialogLoad)
+    , _mTracerLine(nullptr)
+    , _mTracerText(nullptr)
+    , _mIsTracerEnabled(false)
     , _table("")
     , _field("")
     , _conf_plot(false)
@@ -56,6 +62,52 @@ MainWindow::MainWindow(QWidget *parent)
     _ui.progressBar->setRange(0,9999);
     initTreeWidget();
     _instance = this;
+
+    QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
+
+    // ==================== 跟踪器初始化 - 开始 ====================
+
+    // 1. 创建竖线 mTracerLine
+    _mTracerLine = new QCPItemStraightLine(customPlot);
+    _mTracerLine->setPen(QPen(Qt::red, 1, Qt::DashLine)); // 设置画笔为红色虚线
+    _mTracerLine->setVisible(false); // 初始时不可见
+
+    // 2. 创建文本标签 mTracerText
+    _mTracerText = new QCPItemText(customPlot);
+    _mTracerText->setLayer("overlay"); // 放置在最上层
+    _mTracerText->setPen(QPen(Qt::black));
+    _mTracerText->setBrush(QColor(240, 240, 240, 200)); // 半透明背景
+    _mTracerText->setPadding(QMargins(5, 5, 5, 5));
+    _mTracerText->setVisible(false); // 初始时不可见
+
+    // 设置文本位置：锚定在图表区域的顶部中心
+    _mTracerText->position->setType(QCPItemPosition::ptAxisRectRatio);
+    _mTracerText->position->setCoords(0.5, 0.05); // x=0.5 (中心), y=0.05 (靠近顶部)
+    _mTracerText->setTextAlignment(Qt::AlignTop | Qt::AlignHCenter);
+    _mTracerText->setFont(QFont(font().family(), 10));
+
+    // 3. 连接 mouseMove 信号到我们的槽函数
+    connect(customPlot, &QCustomPlot::mouseMove, this, &MainWindow::_onMouseMove);
+
+    // ==================== 跟踪器初始化 - 结束 ====================
+
+    // ==================== 创建带复选框的菜单项 - 开始 ====================
+
+    // 1. 创建一个 QCheckBox
+    QCheckBox *showTracerCheckBox = new QCheckBox("Show TimeUS", this);
+    showTracerCheckBox->setStyleSheet("QCheckBox { padding-left: 20px; }");
+
+    // 2. 创建一个 QWidgetAction，它将作为 QCheckBox 的容器
+    QWidgetAction *tracerAction = new QWidgetAction(this);
+    tracerAction->setDefaultWidget(showTracerCheckBox);
+
+    // 3. 将这个 action 添加到 "Tools" 菜单
+    _ui.menuTools->addAction(tracerAction);
+
+    // 4. 连接 QCheckBox 的 toggled 信号到我们创建的槽
+    connect(showTracerCheckBox, &QCheckBox::toggled, this, &MainWindow::_onTracerToggled);
+
+    // ==================== 创建带复选框的菜单项 - 结束 ====================
 
     for(int i=0; i<10; i++){
         shapes[i] << QCPScatterStyle::ssCircle;
@@ -90,6 +142,7 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete _dialog;
+    delete _dialog_load;
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)
@@ -359,31 +412,32 @@ void MainWindow::on_customPlot_customContextMenuRequested()
 {
     QFont ft;
     QMenu *menu=new QMenu(_ui.customPlot);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
 
     // Clear graph
-    QAction* pClearGraph = new QAction(tr("Clear"), this);
+    QAction* pClearGraph = new QAction(tr("Clear"), menu);
     connect(pClearGraph, &QAction::triggered, this, &MainWindow::clearGraph);
     menu->addAction(pClearGraph);
     // Reset graph
-    QAction* pResetGraph = new QAction(tr("Reset graph"), this);
+    QAction* pResetGraph = new QAction(tr("Reset graph"), menu);
     ft.setBold((_action_bold & 0x1) != 0);
     pResetGraph->setFont(ft);
     connect(pResetGraph, &QAction::triggered, this, &MainWindow::_resetGraph);
     menu->addAction(pResetGraph);
     // Zoom X
-    QAction* pZoomX = new QAction(tr("zoom X"), this);
+    QAction* pZoomX = new QAction(tr("zoom X"), menu);
     ft.setBold((_action_bold & 0x2) != 0);
     pZoomX->setFont(ft);
     connect(pZoomX, &QAction::triggered, this, &MainWindow::_zoomX);
     menu->addAction(pZoomX);
     // Zoom Y
-    QAction* pZoomY = new QAction(tr("zoom Y"), this);
+    QAction* pZoomY = new QAction(tr("zoom Y"), menu);
     ft.setBold((_action_bold & 0x4) != 0);
     pZoomY->setFont(ft);
     connect(pZoomY, &QAction::triggered, this, &MainWindow::_zoomY);
     menu->addAction(pZoomY);
     // Zoom All
-    QAction* pZoomAll = new QAction(tr("Zoom All"), this);
+    QAction* pZoomAll = new QAction(tr("Zoom All"), menu);
     ft.setBold((_action_bold & 0x8) != 0);
     pZoomAll->setFont(ft);
     connect(pZoomAll, &QAction::triggered, this, &MainWindow::_zoomAll);
@@ -689,6 +743,62 @@ void MainWindow::_confOpenedTrigger()
     clear_alreadyPloted();
 
     plotConf(_conf);
+}
+
+void MainWindow::_onMouseMove(QMouseEvent *event)
+{
+    if (!_mIsTracerEnabled) {
+        return;
+    }
+
+    QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
+
+    // 检查鼠标是否在图表区域内
+    if (customPlot->axisRect()->rect().contains(event->pos()))
+    {
+        // 1. 将鼠标的像素位置转换为 x 轴的坐标值 (单位：秒)
+        double x_coord = customPlot->xAxis->pixelToCoord(event->pos().x());
+
+        // 2. 更新竖线的位置
+        _mTracerLine->point1->setCoords(x_coord, customPlot->yAxis->range().lower);
+        _mTracerLine->point2->setCoords(x_coord, customPlot->yAxis->range().upper);
+        _mTracerLine->setVisible(true);
+
+        // 3. 将秒转换为微秒用于显示
+        double x_us = x_coord * 1000000.0;
+
+        // 4. 更新文本标签的内容和可见性
+        _mTracerText->setText(QString::number(x_us, 'f', 0) + " us");
+        _mTracerText->setVisible(true);
+
+        // 5. 重新绘制图表以显示更新
+        customPlot->replot();
+    }
+    else
+    {
+        // 如果鼠标移出图表区域，则隐藏跟踪器
+        if (_mTracerLine->visible() || _mTracerText->visible())
+        {
+            _mTracerLine->setVisible(false);
+            _mTracerText->setVisible(false);
+            customPlot->replot();
+        }
+    }
+}
+
+void MainWindow::_onTracerToggled(bool checked)
+{
+    // 1. 更新我们的状态标志
+    _mIsTracerEnabled = checked;
+
+    // 2. 如果是取消勾选 (checked 为 false)，则立即隐藏跟踪器
+    if (!checked) {
+        if (_mTracerLine && _mTracerText) {
+            _mTracerLine->setVisible(false);
+            _mTracerText->setVisible(false);
+            _ui.customPlot->replot();
+        }
+    }
 }
 
 void

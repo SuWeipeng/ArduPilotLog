@@ -15,6 +15,8 @@
 
 Q_DECLARE_LOGGING_CATEGORY(MAIN_WINDOW_LOG)
 
+class QCheckBox;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -68,6 +70,8 @@ private slots:
     void on_customPlot_customContextMenuRequested();
     void _saveSuccessMessage();
     void _confOpenedTrigger();
+    void _onMouseMove(QMouseEvent *event);
+    void _onTracerToggled(bool checked);
 
 signals:
     void treeWidgetAddItem(QString name);
@@ -78,6 +82,9 @@ private:
     Ui::MainWindow      _ui;
     Dialog*             _dialog;
     DialogLoad*         _dialog_load;
+    QCPItemStraightLine* _mTracerLine;
+    QCPItemText*        _mTracerText;
+    bool                _mIsTracerEnabled;
     static bool         _customPlot_hold_on;
     static bool         _X_axis_changed;
     static MainWindow*  _instance;
