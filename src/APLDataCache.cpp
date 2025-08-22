@@ -180,10 +180,15 @@ QVector<double> APLDataCache::getColumn(const QString &messageName, const QStrin
 void APLDataCache::exportToFile(const QString &outputDir)
 {
     if (!_save_csv) return;
+
+    QString export_dir(outputDir);
+    if (_trim_from < _trim_to) {
+        export_dir.append("-trim");
+    }
     
     QDir dir;
-    if (!dir.exists(outputDir)) {
-        dir.mkpath(outputDir);
+    if (!dir.exists(export_dir)) {
+        dir.mkpath(export_dir);
     }
 
     // Export data to CSV files
@@ -193,7 +198,7 @@ void APLDataCache::exportToFile(const QString &outputDir)
 
         if (!_store.contains(tableName)) continue;
 
-        QFile file(QDir(outputDir).filePath(tableName + ".csv"));
+        QFile file(QDir(export_dir).filePath(tableName + ".csv"));
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) continue;
 
         QTextStream stream(&file);
@@ -237,7 +242,7 @@ void APLDataCache::exportToFile(const QString &outputDir)
     }
 
     // Export metadata to json file
-    QFile jsonFile(QDir(outputDir).filePath("metadata.json"));
+    QFile jsonFile(QDir(export_dir).filePath("metadata.json"));
     if (jsonFile.open(QIODevice::WriteOnly)) {
         jsonFile.write(QJsonDocument(_metadata).toJson());
         jsonFile.close();
