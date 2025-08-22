@@ -62,6 +62,8 @@ private:
     SaveAsWorker* _worker;
     QString       _opendir;
     bool          _table_split = false;
+    quint64       _trim_from = 0;
+    quint64       _trim_to = 0;
 };
 
 #endif // DIALOG_H

@@ -168,12 +168,14 @@ void Dialog::loadSettings()
     if (jsonObj.contains("table_split") && jsonObj["table_split"].isBool()) {
         _table_split = jsonObj["table_split"].toBool();
         qCDebug(DIALOG_LOG) << "table_split from settings.json:" << _table_split;
+        _trim_from = jsonObj["trim_from"].toInteger();
+        _trim_to   = jsonObj["trim_to"].toInteger();
         APLDataCache* cache = APLDataCache::get_singleton();
         if (cache) {
             cache->setTableSplit(_table_split);
             cache->setSaveCSV(jsonObj["save_csv"].toBool());
-            cache->setTrimFrom(jsonObj["trim_from"].toInteger());
-            cache->setTrimTo(jsonObj["trim_to"].toInteger());
+            cache->setTrimFrom(_trim_from);
+            cache->setTrimTo(_trim_to);
         }
     }
 
@@ -201,9 +203,13 @@ void Dialog::showFile()
 
 void Dialog::saveFile()
 {
+    QString suffix = ".db";
+    if (_trim_from < _trim_to) {
+        suffix = "_trim.db";
+    }
     QString dbdir = _qfiledialog->getSaveFileName(this
                                                   ,"Save as DB file"
-                                                  ,QString("%1/%2").arg(_aplRead->getFilePath(), _aplRead->getFileName().section('.',0,0)+".db")
+                                                  ,QString("%1/%2").arg(_aplRead->getFilePath(), _aplRead->getFileName().section('.',0,0)+suffix)
                                                   ,"DB files(*.db)");
 
     if (!dbdir.isNull())
