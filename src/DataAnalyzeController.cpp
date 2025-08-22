@@ -93,7 +93,6 @@ void DataAnalyzeController::init()
 
 void DataAnalyzeController::_setTableList(QString table)
 {
-    MainWindow::getMainWindow()->setComboboxList(table);
     if (!_tableList.contains(table)){
         _tableList<<table;
     }

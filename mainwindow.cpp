@@ -4,6 +4,7 @@
 #include <QScreen>
 #include <QTreeWidgetItem>
 #include <QRandomGenerator>
+#include <QSharedPointer>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "src/APLRead.h"
@@ -17,7 +18,6 @@ APL_LOGGING_CATEGORY(MAIN_WINDOW_LOG,        "MainWindowLog")
 #define ARRAY_SIZE(ARRAY) (sizeof(ARRAY) / sizeof(ARRAY[0]))
 
 bool        MainWindow::_customPlot_hold_on;
-int         MainWindow::_comboBoxIndex;
 bool        MainWindow::_X_axis_changed;
 MainWindow* MainWindow::_instance;
 
@@ -35,7 +35,6 @@ MainWindow::MainWindow(QWidget *parent)
     , _dialog_load(new DialogLoad)
     , _table("")
     , _field("")
-    , _comboBoxListINIT(true)
     , _conf_plot(false)
     , _is_constant(false)
     , _replot(false)
@@ -85,7 +84,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
     connect(_dialog_load->getAPLReadConf(),  &APLReadConf::fileOpened, this, &MainWindow::_confOpenedTrigger);
     connect(_dialog,  &Dialog::saveSuccess, this, &MainWindow::_saveSuccessMessage);
-    connect(this,  &MainWindow::treeWidgetAddItem, this, &MainWindow::setComboboxList);
     emit(_ui.actionOpenArduPilotLog->triggered());
 }
 
@@ -105,13 +103,6 @@ void MainWindow::closeEvent(QCloseEvent * event)
         }
     }
     QWidget::closeEvent(event);
-}
-
-void MainWindow::reset_combobox()
-{
-    _comboBoxListINIT = true;
-    _comboBoxList.clear();
-    _ui.comboBox->clear();
 }
 
 void MainWindow::_buildCommonWidgets(void)
@@ -226,7 +217,6 @@ void MainWindow::_fileOpenedTrigger()
         }
     }
 
-    reset_combobox();
     requestTableList();
 
     QMap<QString, QStringList> data;
@@ -246,22 +236,6 @@ void MainWindow::requestTableList()
 {
     for(int i=0; i<_ui.treeWidget->topLevelItemCount(); i++){
         emit treeWidgetAddItem(_ui.treeWidget->topLevelItem(i)->text(0));
-    }
-}
-
-void MainWindow::setComboboxList(QString table)
-{
-    QString            Item0;
-
-    Item0 = APLDataCache::get_singleton()->getItemName(table, 0);
-
-    if(!_comboBoxList.contains(Item0)){
-        _comboBoxList<<Item0;
-        _ui.comboBox->addItem(Item0);
-    }
-    if(_comboBoxListINIT){
-        _comboBoxListINIT = false;
-        _ui.comboBox->setCurrentIndex(0);
     }
 }
 
@@ -417,40 +391,6 @@ void MainWindow::on_customPlot_customContextMenuRequested()
     menu->exec(QCursor::pos());
 }
 
-void MainWindow::on_comboBox_currentIndexChanged(int index)
-{
-    Q_UNUSED(index);
-    if(MainWindow::getMainWindow()->ui().comboBox->currentText().compare("") == 0) return;
-    _X_axis_changed = true;
-    _comboBoxIndex  = _ui.comboBox->currentIndex();
-    _ui.customPlot->legend->setVisible(false);
-    _ui.customPlot->clearGraphs();
-    _ui.customPlot->xAxis->setLabel(MainWindow::getMainWindow()->ui().comboBox->currentText());
-    _ui.customPlot->replot();
-
-    QStringList alreadyPloted = _alreadyPloted;
-    clear_alreadyPloted();
-
-    if(!_replot) return;
-
-    for(int i=0; i<alreadyPloted.length(); i++){
-        QStringList list = alreadyPloted.at(i).split(".");
-        _table = list[0];
-        _field = list[1];
-        plotGraph(_table,
-                  _field,
-                  0,
-                  0,
-                  1,
-                  0,
-                  0,
-                  0,
-                  true);
-    }
-
-    _ui.customPlot->replot();
-}
-
 void MainWindow::_saveSuccessMessage(){
     QMessageBox::information(this,tr("Information"),tr("Save success"));
 }
@@ -586,9 +526,9 @@ MainWindow::plotGraph(QString tables,
         qCDebug(MAIN_WINDOW_LOG) << "from: "<<from<<"target: "<<plot_target;
         customPlot->addGraph();
         int length = APLDataCache::get_singleton()->getLen(tables, fields);
-        QVector<double> x(length), y(length);
+        QVector<double> x_us(length), y(length);
 
-        getXSuccess = APLDataCache::get_singleton()->getData(tables, MainWindow::getMainWindow()->ui().comboBox->currentText(), length, x, offsetX);
+        getXSuccess = APLDataCache::get_singleton()->getData(tables, QString("TimeUS"), length, x_us, offsetX);
         getYSuccess = APLDataCache::get_singleton()->getData(tables, fields, length, y, offsetY, scale);
 
         if(_is_constant){
@@ -598,7 +538,11 @@ MainWindow::plotGraph(QString tables,
         }
 
         if(getXSuccess && getYSuccess){
-            customPlot->graph()->setData(x, y);
+            QVector<double> x_seconds(length);
+            for (int i = 0; i < length; ++i) {
+                x_seconds[i] = x_us[i] / 1000000.0;
+            }
+            customPlot->graph()->setData(x_seconds, y);
         } else {
             if(!getXSuccess)
                 qCDebug(MAIN_WINDOW_LOG) << "getData X Error";
@@ -613,9 +557,34 @@ MainWindow::plotGraph(QString tables,
 
         _lineStyle(linestyle, color, from);
 
-        customPlot->xAxis->setLabel(MainWindow::getMainWindow()->ui().comboBox->currentText());
-        customPlot->yAxis->setLabel("y");
+        // === 修改开始: 动态时间刻度格式化 ===
+
+        // 1. 确保 x 轴的 Ticker 是 QCPAxisTickerTime 类型
+        //    我们每次都创建一个新的，以确保类型正确
+        QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
+        customPlot->xAxis->setTicker(timeTicker);
+
+        // 2. 重新计算所有坐标轴的范围
         customPlot->rescaleAxes();
+
+        // 3. 获取 x 轴范围并决定时间格式
+        QCPRange xRange = customPlot->xAxis->range();
+        double durationInSeconds = xRange.upper - xRange.lower;
+        const double secondsInHour = 3600.0;
+
+        if (durationInSeconds < secondsInHour) {
+            // 如果总时长小于1小时，使用 "分钟:秒" 格式
+            timeTicker->setTimeFormat("%m:%s.%z");
+            customPlot->xAxis->setLabel("Time (Min:S.MS)");
+        } else {
+            // 如果总时长大于等于1小时，使用 "小时:分钟:秒" 格式
+            timeTicker->setTimeFormat("%h:%m:%s.%z");
+            customPlot->xAxis->setLabel("Time (H:Min:S.MS)");
+        }
+
+        customPlot->yAxis->setLabel("y");
+
+        // === 修改结束 ===
 
         customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     }
@@ -821,7 +790,7 @@ MainWindow::plotConf(QStringList conf)
                 if(command.compare("const")==0 || command.compare("")==0){
                     QStringList list = command_str.split(QRegularExpression("[:\\s]"));
                     table = list[1];
-                    field = MainWindow::getMainWindow()->ui().comboBox->currentText();
+                    field = QString("TimeUS");
                     QString constant_value  = list[2];
                     QString style_color = list[3];
                     QStringList style_color_list = style_color.split(".");

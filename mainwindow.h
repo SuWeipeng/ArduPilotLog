@@ -23,8 +23,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    static bool        get_customPlot_hold_on()   { return _customPlot_hold_on; }
-    static int         get_comboBoxIndex()        { return _comboBoxIndex; }
     static bool        get_X_axis_changed()       { return _X_axis_changed; }
     static void        set_X_axis_changed(bool b) { _X_axis_changed = b; }
     static MainWindow* getMainWindow()            { return _instance; }
@@ -32,7 +30,6 @@ public:
     QSqlDatabase&      db()                       { return _apldb; }
     void        requestTableList();
     void        closeEvent(QCloseEvent * event);
-    void        reset_combobox();
 
     void initTreeWidget();
     bool isTopItem(QTreeWidgetItem* item);
@@ -46,7 +43,6 @@ public:
 public slots:
     void resizeEvent(QResizeEvent* event);
     void itemChangedSlot(QTreeWidgetItem* item, int column);
-    void setComboboxList(QString table);
     void plotGraph(QString tables,
                    QString fields,
                    int     offsetX,
@@ -70,7 +66,6 @@ private slots:
     void _zoomY();
     void _zoomAll();
     void on_customPlot_customContextMenuRequested();
-    void on_comboBox_currentIndexChanged(int index);
     void _saveSuccessMessage();
     void _confOpenedTrigger();
 
@@ -84,16 +79,13 @@ private:
     Dialog*             _dialog;
     DialogLoad*         _dialog_load;
     static bool         _customPlot_hold_on;
-    static int          _comboBoxIndex;
     static bool         _X_axis_changed;
     static MainWindow*  _instance;
     QString             _table;
     QString             _field;
-    QStringList         _comboBoxList;
     QStringList         _alreadyPloted;
     QStringList         _groupName;
     QStringList         _conf;
-    bool                _comboBoxListINIT;
     bool                _conf_plot;
     bool                _is_constant;
     bool                _replot;
