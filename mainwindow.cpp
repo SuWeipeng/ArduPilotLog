@@ -96,19 +96,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ==================== 创建带复选框的菜单项 - 开始 ====================
 
-    // 1. 创建一个 QCheckBox
-    QCheckBox *showTracerCheckBox = new QCheckBox("Show TimeUS", this);
-    showTracerCheckBox->setStyleSheet("QCheckBox { padding-left: 20px; }");
+    // 1. 创建一个可勾选的 QAction
+    QAction *tracerAction = new QAction("Show TimeUS", this);
+    tracerAction->setCheckable(true);
+    tracerAction->setChecked(false);
 
-    // 2. 创建一个 QWidgetAction，它将作为 QCheckBox 的容器
-    QWidgetAction *tracerAction = new QWidgetAction(this);
-    tracerAction->setDefaultWidget(showTracerCheckBox);
-
-    // 3. 将这个 action 添加到 "Tools" 菜单
+    // 2将这个 action 添加到 "Tools" 菜单
     _ui.menuTools->addAction(tracerAction);
 
-    // 4. 连接 QCheckBox 的 toggled 信号到我们创建的槽
-    connect(showTracerCheckBox, &QCheckBox::toggled, this, &MainWindow::_onTracerToggled);
+    // 3. 连接 QCheckBox 的 toggled 信号到我们创建的槽
+    connect(tracerAction, &QAction::toggled, this, &MainWindow::_onTracerToggled);
 
     // ==================== 创建带复选框的菜单项 - 结束 ====================
 
