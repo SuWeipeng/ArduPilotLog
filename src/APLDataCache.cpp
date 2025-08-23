@@ -189,6 +189,9 @@ void APLDataCache::addData(const QString &name, const QString &new_name, const u
             if (_cut_data(static_cast<quint8>(*(payload - 1)), _trim_from, _trim_to, *reinterpret_cast<const quint64*>(payload))){
                 _binary_store[new_table_name].append(QByteArray(reinterpret_cast<const char*>(payload), payload_len));
             }
+            if (*reinterpret_cast<const quint64*>(payload) > _trim_to) {
+                trim_complete = true;
+            }
         } else {
             _binary_store[new_table_name].append(QByteArray(reinterpret_cast<const char*>(payload), payload_len));
         }

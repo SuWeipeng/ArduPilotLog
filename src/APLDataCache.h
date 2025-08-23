@@ -66,6 +66,8 @@ public:
     void setFilterInclude(const QStringList& v);
     void setFilterExclude(const QStringList& v);
 
+    bool trim_complete = false;
+
 private:
     static APLDataCache* _singleton;
 
