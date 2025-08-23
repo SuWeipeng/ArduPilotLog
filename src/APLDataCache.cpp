@@ -60,6 +60,11 @@ void APLDataCache::setFilterExclude(const QStringList& v)
     _filter_exclude = v;
 }
 
+void APLDataCache::setFilterFile(const QString& v)
+{
+    _filter_file = v;
+}
+
 void APLDataCache::addFormat(const quint8 &type, const QString &name, const QString &format, const QString &labels, const qint8 &i)
 {
     // --- Start of Instance Splitting Logic ---
@@ -141,21 +146,13 @@ void APLDataCache::addData(const QString &name, const QString &new_name, const u
         return; // Cannot add data without a format definition
     }
 
-    if (_table_split == false) {
-        if (_filter_mode == 0) {
-            if (_filter_include.contains(name) == false) {
-                return;
-            }
-        } else if (_filter_mode == 1) {
-            if (_filter_exclude.contains(name) == true) {
-                return;
-            }
+    if (_filter_mode == 0) {
+        if (_filter_include.contains(name) == false && _store.contains(name)) {
+            return;
         }
-    } else {
-        if (_filter_mode == 1) {
-            if (_filter_exclude.contains(name) == true) {
-                return;
-            }
+    } else if (_filter_mode == 1) {
+        if (_filter_exclude.contains(name) == true) {
+            return;
         }
     }
 
@@ -229,8 +226,16 @@ void APLDataCache::exportToFile(const QString &outputDir)
     if (!_save_csv) return;
 
     QString export_dir(outputDir);
+
+    if(_filter_file.length()>0) {
+        export_dir.append("_");
+        export_dir.append(_filter_file.section('.',0,0));
+        export_dir.append("-");
+        export_dir.append(QString("%1").arg(_filter_mode));
+    }
+
     if (_trim_from < _trim_to) {
-        export_dir.append("-trim");
+        export_dir.append("_trim");
     }
     
     QDir dir;

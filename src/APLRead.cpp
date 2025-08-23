@@ -580,5 +580,5 @@ void APLReadWorker::decodeLogFile(const QString &file_dir)
     file.close();
 
     QFileInfo fileInfo(file_dir);
-    _dataCache->exportToFile(fileInfo.absolutePath() + "/" + fileInfo.baseName() + "_export");
+    _dataCache->exportToFile(fileInfo.absolutePath() + "/" + fileInfo.baseName() + "_csv");
 }

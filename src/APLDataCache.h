@@ -65,6 +65,7 @@ public:
     void setFilterMode(const qint8& v);
     void setFilterInclude(const QStringList& v);
     void setFilterExclude(const QStringList& v);
+    void setFilterFile(const QString& v);
 
     bool trim_complete = false;
 
@@ -85,6 +86,7 @@ private:
     qint8                      _filter_mode = -1;
     QStringList                _filter_include;
     QStringList                _filter_exclude;
+    QString                    _filter_file;
 
     bool    _cut_data(quint8 id, quint64 start_time, quint64 stop_time, quint64 now);
 };

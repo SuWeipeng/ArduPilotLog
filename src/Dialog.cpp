@@ -319,6 +319,7 @@ void Dialog::loadSettings()
                     cache->setFilterMode(_filter_mode);
                     cache->setFilterInclude(_filter_include);
                     cache->setFilterExclude(_filter_exclude);
+                    cache->setFilterFile(_filter_file);
                 }
             }
 
@@ -327,6 +328,10 @@ void Dialog::loadSettings()
             }
         }
     } else {
+        APLDataCache* cache = APLDataCache::get_singleton();
+        if (cache) {
+            cache->setFilterMode(-1);
+        }
         qCDebug(DIALOG_LOG) << "filter_file is not configured.";
     }
     // --- End of Filter Function Logic ---
@@ -355,13 +360,20 @@ void Dialog::showFile()
 
 void Dialog::saveFile()
 {
+    QString file_name = _aplRead->getFileName().section('.',0,0);
     QString suffix = ".db";
-    if (_trim_from < _trim_to) {
-        suffix = "_trim.db";
+    if(_filter_file.length()>0) {
+        file_name.append("_");
+        file_name.append(_filter_file.section('.',0,0));
+        file_name.append(QString("-%1").arg(_filter_mode));
     }
+    if (_trim_from < _trim_to) {
+        file_name.append("_trim");
+    }
+    file_name.append(suffix);
     QString dbdir = _qfiledialog->getSaveFileName(this
                                                   ,"Save as DB file"
-                                                  ,QString("%1/%2").arg(_aplRead->getFilePath(), _aplRead->getFileName().section('.',0,0)+suffix)
+                                                  ,QString("%1/%2").arg(_aplRead->getFilePath(), file_name)
                                                   ,"DB files(*.db)");
 
     if (!dbdir.isNull())
