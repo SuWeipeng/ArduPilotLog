@@ -57,6 +57,7 @@ public slots:
     void clear_alreadyPloted() { _alreadyPloted.clear(); }
     void clearGraph();
     void clearGraphNotTree();
+    void clearFixedMarkers();
     void plotConf(QStringList conf);
 
 private slots:
@@ -71,6 +72,7 @@ private slots:
     void _saveSuccessMessage();
     void _confOpenedTrigger();
     void _onMouseMove(QMouseEvent *event);
+    void _onMousePress(QMouseEvent *event);
     void _onTracerToggled(bool checked);
 
 signals:
@@ -85,6 +87,8 @@ private:
     QCPItemStraightLine* _mTracerLine;
     QCPItemText*        _mTracerText;
     bool                _mIsTracerEnabled;
+    QList<QCPItemStraightLine*> _mFixedLines;
+    QList<QCPItemText*> _mFixedTexts;
     static bool         _customPlot_hold_on;
     static bool         _X_axis_changed;
     static MainWindow*  _instance;

@@ -71,6 +71,8 @@ MainWindow::MainWindow(QWidget *parent)
     _mTracerLine = new QCPItemStraightLine(customPlot);
     _mTracerLine->setPen(QPen(Qt::red, 1, Qt::DashLine)); // 设置画笔为红色虚线
     _mTracerLine->setVisible(false); // 初始时不可见
+    _mFixedLines.clear();
+    _mFixedTexts.clear();
 
     // 2. 创建文本标签 mTracerText
     _mTracerText = new QCPItemText(customPlot);
@@ -88,6 +90,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // 3. 连接 mouseMove 信号到我们的槽函数
     connect(customPlot, &QCustomPlot::mouseMove, this, &MainWindow::_onMouseMove);
+    connect(customPlot, &QCustomPlot::mousePress, this, &MainWindow::_onMousePress);
 
     // ==================== 跟踪器初始化 - 结束 ====================
 
@@ -367,6 +370,7 @@ void MainWindow::_removeGraph(QTreeWidgetItem *item, int column)
 void MainWindow::clearGraph()
 {
     clear_alreadyPloted();
+    clearFixedMarkers();
     _ui.customPlot->legend->setVisible(false);
     _ui.customPlot->clearGraphs();
     _ui.customPlot->replot();
@@ -376,6 +380,7 @@ void MainWindow::clearGraph()
 void MainWindow::clearGraphNotTree()
 {
     clear_alreadyPloted();
+    clearFixedMarkers();
     _ui.customPlot->legend->setVisible(false);
     _ui.customPlot->clearGraphs();
     _ui.customPlot->replot();
@@ -767,8 +772,9 @@ void MainWindow::_onMouseMove(QMouseEvent *event)
         // 3. 将秒转换为微秒用于显示
         double x_us = x_coord * 1000000.0;
 
-        // 4. 更新文本标签的内容和可见性
+        // 4. 更新文本标签的内容和位置
         _mTracerText->setText(QString::number(x_us, 'f', 0) + " us");
+        _mTracerText->position->setCoords(x_coord, customPlot->yAxis->range().upper * 0.9); // 文字位置跟随红线
         _mTracerText->setVisible(true);
 
         // 5. 重新绘制图表以显示更新
@@ -786,6 +792,62 @@ void MainWindow::_onMouseMove(QMouseEvent *event)
     }
 }
 
+void MainWindow::_onMousePress(QMouseEvent *event)
+{
+    if (!_mIsTracerEnabled || event->button() != Qt::LeftButton) {
+        return;
+    }
+
+    QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
+
+    if (customPlot->axisRect()->rect().contains(event->pos()))
+    {
+        double x_coord = customPlot->xAxis->pixelToCoord(event->pos().x());
+        double x_us = x_coord * 1000000.0;
+
+        // 创建固定的竖线 - 设置为虚线样式
+        QCPItemStraightLine* fixedLine = new QCPItemStraightLine(customPlot);
+        fixedLine->point1->setCoords(x_coord, customPlot->yAxis->range().lower);
+        fixedLine->point2->setCoords(x_coord, customPlot->yAxis->range().upper);
+
+        // 关键修改：设置为红色虚线，与跟踪线保持一致
+        fixedLine->setPen(QPen(Qt::red, 1, Qt::DashLine));
+
+        // 其余代码保持不变...
+        QCPItemText* fixedText = new QCPItemText(customPlot);
+        fixedText->position->setCoords(x_coord, customPlot->yAxis->range().upper * 0.9);
+        fixedText->setText(QString::number(x_us, 'f', 0) + " us");
+        fixedText->setFont(QFont("Arial", 10));
+        fixedText->setColor(Qt::red);
+        fixedText->setPadding(QMargins(5, 5, 5, 5));
+        fixedText->setBrush(QBrush(QColor(255, 255, 255, 200)));
+
+        _mFixedLines.append(fixedLine);
+        _mFixedTexts.append(fixedText);
+
+        customPlot->replot();
+    }
+}
+
+void MainWindow::clearFixedMarkers()
+{
+    QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
+
+    // 清除所有固定的线条
+    for (QCPItemStraightLine* line : _mFixedLines) {
+        customPlot->removeItem(line);
+    }
+    _mFixedLines.clear();
+
+    // 清除所有固定的文本
+    for (QCPItemText* text : _mFixedTexts) {
+        customPlot->removeItem(text);
+    }
+    _mFixedTexts.clear();
+
+    customPlot->replot();
+}
+
 void MainWindow::_onTracerToggled(bool checked)
 {
     // 1. 更新我们的状态标志
@@ -793,6 +855,7 @@ void MainWindow::_onTracerToggled(bool checked)
 
     // 2. 如果是取消勾选 (checked 为 false)，则立即隐藏跟踪器
     if (!checked) {
+        clearFixedMarkers();
         if (_mTracerLine && _mTracerText) {
             _mTracerLine->setVisible(false);
             _mTracerText->setVisible(false);
