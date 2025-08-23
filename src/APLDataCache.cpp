@@ -45,6 +45,21 @@ void APLDataCache::setTrimTo(quint64 v)
     _trim_to = v;
 }
 
+void APLDataCache::setFilterMode(const qint8& v)
+{
+    _filter_mode = v;
+}
+
+void APLDataCache::setFilterInclude(const QStringList& v)
+{
+    _filter_include = v;
+}
+
+void APLDataCache::setFilterExclude(const QStringList& v)
+{
+    _filter_exclude = v;
+}
+
 void APLDataCache::addFormat(const quint8 &type, const QString &name, const QString &format, const QString &labels, const qint8 &i)
 {
     // --- Start of Instance Splitting Logic ---
@@ -126,6 +141,24 @@ void APLDataCache::addData(const QString &name, const QString &new_name, const u
         return; // Cannot add data without a format definition
     }
 
+    if (_table_split == false) {
+        if (_filter_mode == 0) {
+            if (_filter_include.contains(name) == false) {
+                return;
+            }
+        } else if (_filter_mode == 1) {
+            if (_filter_exclude.contains(name) == true) {
+                return;
+            }
+        }
+    } else {
+        if (_filter_mode == 1) {
+            if (_filter_exclude.contains(name) == true) {
+                return;
+            }
+        }
+    }
+
     // --- Start of Instance Splitting Logic ---
     // 仅当 _table_split 为 true 时，才执行实例拆分逻辑
     if (_table_split && _instantiable_store.contains(name)) {
@@ -140,6 +173,17 @@ void APLDataCache::addData(const QString &name, const QString &new_name, const u
                     i
                     );
         }
+
+        if (_filter_mode == 0) {
+            if (_filter_include.contains(new_name) == false) {
+                return;
+            }
+        } else if (_filter_mode == 1) {
+            if (_filter_exclude.contains(new_name) == true) {
+                return;
+            }
+        }
+
         // Add data to the instance-specific table
         if (_trim_from < _trim_to) {
             if (_cut_data(static_cast<quint8>(*(payload - 1)), _trim_from, _trim_to, *reinterpret_cast<const quint64*>(payload))){

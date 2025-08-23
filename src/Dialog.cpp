@@ -13,6 +13,67 @@
 
 APL_LOGGING_CATEGORY(DIALOG_LOG,        "DialogLog")
 
+QString preprocessJsonData(const QByteArray& jsonData) {
+    QString jsonString = QString::fromUtf8(jsonData);
+    QString result;
+
+    bool inString = false;
+    bool inSingleLineComment = false;
+    bool inMultiLineComment = false;
+    bool escapeNext = false;
+
+    for (int i = 0; i < jsonString.length(); ++i) {
+        QChar current = jsonString[i];
+        QChar next = (i + 1 < jsonString.length()) ? jsonString[i + 1] : QChar();
+
+        if (escapeNext) {
+            if (inString) result += current;
+            escapeNext = false;
+            continue;
+        }
+
+        if (current == '\\' && inString) {
+            result += current;
+            escapeNext = true;
+            continue;
+        }
+
+        if (inSingleLineComment) {
+            if (current == '\n') {
+                inSingleLineComment = false;
+                result += current;
+            }
+            continue;
+        }
+
+        if (inMultiLineComment) {
+            if (current == '*' && next == '/') {
+                inMultiLineComment = false;
+                ++i; // 跳过 '/'
+            }
+            continue;
+        }
+
+        if (current == '"' && !inString) {
+            inString = true;
+            result += current;
+        } else if (current == '"' && inString) {
+            inString = false;
+            result += current;
+        } else if (!inString && current == '/' && next == '/') {
+            inSingleLineComment = true;
+            ++i; // 跳过第二个 '/'
+        } else if (!inString && current == '/' && next == '*') {
+            inMultiLineComment = true;
+            ++i; // 跳过 '*'
+        } else if (!inSingleLineComment && !inMultiLineComment) {
+            result += current;
+        }
+    }
+
+    return result;
+}
+
 SaveAsWorker::SaveAsWorker(QObject *parent)
     : QObject(parent)
 {
@@ -140,8 +201,27 @@ void Dialog::loadSettings()
 {
     QFile settingsFile(QString("settings.json"));
     if (!settingsFile.exists()) {
-        qCDebug(DIALOG_LOG) << "settings.json doesn't exist!";
-        return;
+        qCDebug(DIALOG_LOG) << "settings.json doesn't exist! Creating default settings file.";
+
+        // 创建默认设置内容
+        QString defaultSettingsJson = R"({
+    "opendir": "D:/Log",
+    "table_split": false,
+    "save_csv": false,
+    "trim_from": 0,
+    "trim_to": 0,
+    "filter_file": null
+})";
+
+        // 打开文件进行写入
+        if (settingsFile.open(QIODevice::WriteOnly)) {
+            settingsFile.write(defaultSettingsJson.toUtf8());
+            settingsFile.close();
+            qCDebug(DIALOG_LOG) << "Default settings.json created successfully.";
+        } else {
+            qCDebug(DIALOG_LOG) << "Failed to create settings.json file.";
+            return;
+        }
     }
 
     if (!settingsFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -178,6 +258,78 @@ void Dialog::loadSettings()
             cache->setTrimTo(_trim_to);
         }
     }
+
+    // --- Start of Filter Function Logic ---
+    if (jsonObj.contains("filter_file") && jsonObj["filter_file"].isString()) {
+        _filter_file = jsonObj["filter_file"].toString();
+        qCDebug(DIALOG_LOG) << "filter_file from setting.json:" << _filter_file;
+
+        QFile filterFile(_filter_file);
+        if (!filterFile.exists()) {
+            // 创建默认设置内容
+            QString defaultJson = R"({
+    "filter_mode": 0, // 0-Include, 1-Exclude
+    "include": "ATT, BARO",
+    "exclude": "ATT, BARO"
+})";
+
+            // 打开文件进行写入
+            if (filterFile.open(QIODevice::WriteOnly)) {
+                filterFile.write(defaultJson.toUtf8());
+                filterFile.close();
+                qCDebug(DIALOG_LOG) << "Default settings.json created successfully.";
+            } else {
+                qCDebug(DIALOG_LOG) << "Failed to create settings.json file.";
+                return;
+            }
+        }
+        else if (!filterFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qCDebug(DIALOG_LOG) << _filter_file << " read error!";
+        }
+        else
+        {
+            QByteArray jsonData = filterFile.readAll();
+            filterFile.close();
+
+            QString cleanJsonString = preprocessJsonData(jsonData);
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(cleanJsonString.toUtf8());
+            if (jsonDoc.isNull() || !jsonDoc.isObject()) {
+                qCDebug(DIALOG_LOG) << "Failed to create JSON doc or it's not a JSON object.";
+                return;
+            }
+
+            QJsonObject jsonObj = jsonDoc.object();
+
+            if (jsonObj.contains("filter_mode")) {
+                _filter_mode = jsonObj["filter_mode"].toInt();
+                qCDebug(DIALOG_LOG) << "filter_mode from" << _filter_file << " is: "<< ((_filter_mode==0) ? QString("Include") : QString("Exclude"));
+                _filter_include = jsonObj["include"].toString().split(",");
+                for (QString &str : _filter_include) {
+                    str = str.trimmed();
+                }
+                _filter_exclude = jsonObj["exclude"].toString().split(",");
+                for (QString &str : _filter_exclude) {
+                    str = str.trimmed();
+                }
+                qCDebug(DIALOG_LOG) << "Include:" << _filter_include;
+                qCDebug(DIALOG_LOG) << "Exclude:" << _filter_exclude;
+
+                APLDataCache* cache = APLDataCache::get_singleton();
+                if (cache) {
+                    cache->setFilterMode(_filter_mode);
+                    cache->setFilterInclude(_filter_include);
+                    cache->setFilterExclude(_filter_exclude);
+                }
+            }
+
+            if (_filter_mode==0) {
+
+            }
+        }
+    } else {
+        qCDebug(DIALOG_LOG) << "filter_file is not configured.";
+    }
+    // --- End of Filter Function Logic ---
 
     emit settingsLoaded(jsonObj);
 }

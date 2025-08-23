@@ -62,6 +62,9 @@ public:
     void setSaveCSV(bool enabled);
     void setTrimFrom(quint64 v);
     void setTrimTo(quint64 v);
+    void setFilterMode(const qint8& v);
+    void setFilterInclude(const QStringList& v);
+    void setFilterExclude(const QStringList& v);
 
 private:
     static APLDataCache* _singleton;
@@ -77,6 +80,9 @@ private:
     bool                       _save_csv = false;
     quint64                    _trim_from = 0;
     quint64                    _trim_to = 0;
+    qint8                      _filter_mode = -1;
+    QStringList                _filter_include;
+    QStringList                _filter_exclude;
 
     bool    _cut_data(quint8 id, quint64 start_time, quint64 stop_time, quint64 now);
 };

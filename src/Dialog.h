@@ -61,6 +61,10 @@ private:
     QThread     * _workThread;
     SaveAsWorker* _worker;
     QString       _opendir;
+    QString       _filter_file;
+    qint8         _filter_mode;
+    QStringList   _filter_include;
+    QStringList   _filter_exclude;
     bool          _table_split = false;
     quint64       _trim_from = 0;
     quint64       _trim_to = 0;
