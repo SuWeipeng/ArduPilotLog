@@ -81,7 +81,7 @@
             <widget class="QProgressBar" name="progressBar">
              <property name="minimumSize">
               <size>
-               <width>300</width>
+               <width>280</width>
                <height>0</height>
               </size>
              </property>
@@ -131,6 +131,7 @@
     <addaction name="actionSaveDBFile"/>
     <addaction name="separator"/>
     <addaction name="actionLoad"/>
+    <addaction name="actionTrim"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -160,6 +161,11 @@
   <action name="actionLoad">
    <property name="text">
     <string>Load</string>
+   </property>
+  </action>
+  <action name="actionTrim">
+   <property name="text">
+    <string>Trim</string>
    </property>
   </action>
  </widget>

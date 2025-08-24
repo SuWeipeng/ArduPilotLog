@@ -38,6 +38,7 @@ public:
     void setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs, int column);
     void setParentCheckState(QTreeWidgetItem *item, int column);
     void set_conf(QStringList conf) { _conf = conf; }
+    const QList<quint64>& get_x_us(void) { return _x_us; }
 
     QVector<QCPScatterStyle::ScatterShape> shapes[10];
     QVector<QColor>                        colors[10];
@@ -89,6 +90,7 @@ private:
     bool                _mIsTracerEnabled;
     QList<QCPItemStraightLine*> _mFixedLines;
     QList<QCPItemText*> _mFixedTexts;
+    QList<quint64>      _x_us;
     static bool         _customPlot_hold_on;
     static bool         _X_axis_changed;
     static MainWindow*  _instance;

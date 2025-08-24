@@ -1,10 +1,12 @@
 #include "Dialog.h"
+#include "mainwindow.h"
 #include "APLRead.h"
 #include "APLDB.h"
 #include <QFileDialog>
 #include "APLDataCache.h"
 #include <QFileInfo>
 #include <QDebug>
+#include <QTextStream>
 #include <QStandardPaths> // 包含 QStandardPaths
 
 #include <QJsonDocument> // 为支持JSON添加
@@ -353,9 +355,12 @@ void Dialog::showFile()
                                                   ,nullptr
                                                   ,QFileDialog::DontUseNativeDialog);
     loadSettings();
-    emit _qfiledialog->fileSelected(logdir);
 
-    qCDebug(DIALOG_LOG) << logdir;
+    _logdir = logdir;
+
+    emit _qfiledialog->fileSelected(_logdir);
+
+    qCDebug(DIALOG_LOG) << _logdir;
 }
 
 void Dialog::saveFile()
@@ -385,4 +390,45 @@ void Dialog::saveFile()
 void Dialog::saveAsDone()
 {
     emit saveSuccess();
+}
+
+void Dialog::trim()
+{
+    if (MainWindow::getMainWindow()->get_x_us().length() == 0) {
+        _trim_from =0;
+        _trim_to = 0;
+    }
+
+    QFile file(QString("settings.json"));
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+    QTextStream in(&file);
+    QString out_line("");
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+
+        if (line.indexOf("trim_from") != -1) {
+            QStringList list = line.split(":");
+            line = list[0]+": "+QString("%1").arg(_trim_from)+",";
+        }
+
+        if (line.indexOf("trim_to") != -1) {
+            QStringList list = line.split(":");
+            line = list[0]+": "+QString("%1").arg(_trim_to)+",";
+        }
+        out_line.append(line+"\n");
+    }
+    file.close();
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+    QTextStream out(&file);
+    out << out_line;
+    file.close();
+
+    loadSettings();
+
+    MainWindow::getMainWindow()->ui().treeWidget->clear();
+    MainWindow::getMainWindow()->clearGraph();
+    emit _qfiledialog->fileSelected(_logdir);
 }

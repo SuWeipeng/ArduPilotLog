@@ -42,11 +42,14 @@ public:
 
     APLRead* getAPLRead() const { return _aplRead; }
     bool isDirExist(QString fullPath);
+    void setTrimFrom(const quint64& v) { _trim_from = v; }
+    void setTrimTo(const quint64& v) { _trim_to = v; }
 
 public slots:
     void showFile();
     void saveFile();
     void saveAsDone();
+    void trim();
 
 signals:
     void saveSuccess();
@@ -68,6 +71,7 @@ private:
     bool          _table_split = false;
     quint64       _trim_from = 0;
     quint64       _trim_to = 0;
+    QString       _logdir;
 };
 
 #endif // DIALOG_H

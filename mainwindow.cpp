@@ -73,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
     _mTracerLine->setVisible(false); // 初始时不可见
     _mFixedLines.clear();
     _mFixedTexts.clear();
+    _x_us.clear();
 
     // 2. 创建文本标签 mTracerText
     _mTracerText = new QCPItemText(customPlot);
@@ -133,6 +134,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
     connect(_ui.actionLoad,  &QAction::triggered, _dialog_load, &DialogLoad::showFile);
     connect(_ui.actionSaveDBFile,  &QAction::triggered, _dialog, &Dialog::saveFile);
+    connect(_ui.actionTrim,  &QAction::triggered, _dialog, &Dialog::trim);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
     connect(_dialog_load->getAPLReadConf(),  &APLReadConf::fileOpened, this, &MainWindow::_confOpenedTrigger);
     connect(_dialog,  &Dialog::saveSuccess, this, &MainWindow::_saveSuccessMessage);
@@ -821,6 +823,25 @@ void MainWindow::_onMousePress(QMouseEvent *event)
 
         _mFixedLines.append(fixedLine);
         _mFixedTexts.append(fixedText);
+        _x_us.append(qRound64(x_us));
+
+        if (_mFixedLines.length() > 2) {
+            customPlot->removeItem(_mFixedLines.front());
+            customPlot->removeItem(_mFixedTexts.front());
+            _mFixedLines.pop_front();
+            _mFixedTexts.pop_front();
+            _x_us.pop_front();
+        }
+        if (_mFixedLines.length() == 2) {
+            quint8 minIdx = 0;
+            quint8 maxIdx = 1;
+            if(_x_us.first() > _x_us.last()) {
+                minIdx = 1;
+                maxIdx = 0;
+            }
+            _dialog->setTrimFrom(_x_us.at(minIdx));
+            _dialog->setTrimTo(_x_us.at(maxIdx));
+        }
 
         customPlot->replot();
     }
@@ -841,6 +862,8 @@ void MainWindow::clearFixedMarkers()
         customPlot->removeItem(text);
     }
     _mFixedTexts.clear();
+
+    _x_us.clear();
 
     customPlot->replot();
 }
