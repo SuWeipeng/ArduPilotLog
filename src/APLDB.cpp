@@ -295,7 +295,7 @@ QString APLDB::_sanitizeFieldName(const QString& fieldName) const
 
     // 检查是否为关键字（不区分大小写）
     if (sqliteKeywords.contains(sanitized.toUpper())) {
-        sanitized = sanitized + "_field";  // 添加后缀避免冲突
+        qCDebug(APLDB_LOG) << "sqliteKeywords: " << sanitized;
     }
 
     // 处理特殊字符
@@ -307,7 +307,7 @@ QString APLDB::_sanitizeFieldName(const QString& fieldName) const
 
     // 确保不以数字开头
     if (!sanitized.isEmpty() && sanitized[0].isDigit()) {
-        sanitized = "field_" + sanitized;
+        qCDebug(APLDB_LOG) << "Digit start: " << sanitized;
     }
 
     return sanitized;
