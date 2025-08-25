@@ -53,6 +53,18 @@ public slots:
     void decodeLogFile(const QString &file_dir);
 };
 
+class APLExportWorker : public QObject
+{
+    Q_OBJECT
+public:
+    explicit APLExportWorker(QObject *parent = nullptr);
+    ~APLExportWorker(){}
+public slots:
+    void exportCSV(const QString &file_dir);
+signals:
+    void saveSuccess();
+};
+
 class APLRead : public QObject
 {
     Q_OBJECT
@@ -66,23 +78,29 @@ public:
     QString getFilePath(void) { return _file_path; }
 
     static APLRead* getAPLRead() { return _instance; }
+    APLExportWorker*  export_worker;
 
 signals:
     void fileOpened();
     void startRunning(const QString &file_dir);
+    void startExport(const QString &file_dir);
+    void saveSuccess();
 
 public slots:
     void getFileDir(const QString &file_dir);
     void getFileOpened();
     void calc_process(qint64 pos, qint64 size);
+    void exportCSV();
 
 private:
     void            _resetDataBase();
     void            _resetFMT(int i);
     QString         _file_name;
     QString         _file_path;
+    QString         _file_dir;
     QThread*        _workThread;
     APLReadWorker*  _worker;
+    QThread*        _exportThread;
 
     static APLRead*  _instance;
 };

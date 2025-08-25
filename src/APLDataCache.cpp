@@ -223,7 +223,8 @@ QVector<double> APLDataCache::getColumn(const QString &messageName, const QStrin
 
 void APLDataCache::exportToFile(const QString &outputDir)
 {
-    if (!_save_csv) return;
+    if (!_save_csv && !export_csv) return;
+    export_csv = false;
 
     QString export_dir(outputDir);
 
@@ -411,6 +412,7 @@ bool APLDataCache::getData(QString table, QString field, int len, QVector<double
 
 int APLDataCache::getLen(QString table, QString field)
 {
+    Q_UNUSED(field);
     return _binary_store.value(table).size();
 }
 

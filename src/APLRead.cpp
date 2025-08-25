@@ -61,16 +61,22 @@ APLRead::APLRead()
 {
     _instance = this;
     _resetDataBase();
-    _worker       = new APLReadWorker();
-    _workThread   = new QThread(this);
+    _worker        = new APLReadWorker();
+    export_worker  = new APLExportWorker();
+    _workThread    = new QThread(this);
     _worker->moveToThread(_workThread);
+    _exportThread  = new QThread(this);
+    export_worker->moveToThread(_exportThread);
 
     connect(this, &APLRead::startRunning, _worker, &APLReadWorker::decodeLogFile);
     connect(_workThread, &QThread::finished, _worker, &QObject::deleteLater);
+    connect(_exportThread, &QThread::finished, export_worker, &QObject::deleteLater);
     connect(_worker, &APLReadWorker::send_process, this, &APLRead::calc_process);
     connect(_worker, &APLReadWorker::fileOpened, this, &APLRead::getFileOpened);
+    connect(this, &APLRead::startExport, export_worker, &APLExportWorker::exportCSV);
 
     _workThread->start();
+    _exportThread->start();
 }
 
 APLRead::~APLRead()
@@ -81,6 +87,11 @@ APLRead::~APLRead()
     _workThread->wait();
 
     delete _workThread;
+
+    _exportThread->quit();
+    _exportThread->wait();
+
+    delete _exportThread;
 }
 
 void APLRead::_resetDataBase()
@@ -109,6 +120,7 @@ void APLRead::getFileDir(const QString &file_dir)
     }
     _resetDataBase();
     APLDataCache::get_singleton()->reset();
+    _file_dir.clear();
     getDatastream(file_dir);
 }
 
@@ -122,6 +134,7 @@ void APLRead::getDatastream(const QString &file_dir)
 {
     if(!file_dir.isEmpty()){
         MainWindow::getMainWindow()->ui().progressBar->setVisible(1);
+        _file_dir = file_dir;
         emit startRunning(file_dir);
     }
 }
@@ -130,6 +143,25 @@ void APLRead::calc_process(qint64 pos, qint64 size)
 {
     int process = ((float)pos/size)*10000;
     MainWindow::getMainWindow()->ui().progressBar->setValue(process);
+}
+
+void APLRead::exportCSV()
+{
+    emit startExport(_file_dir);
+}
+
+APLExportWorker::APLExportWorker(QObject *parent)
+    : QObject(parent)
+{}
+
+void APLExportWorker::exportCSV(const QString &file_dir)
+{
+    if (!file_dir.isEmpty()) {
+        QFileInfo fileInfo(file_dir);
+        APLDataCache::get_singleton()->export_csv = true;
+        APLDataCache::get_singleton()->exportToFile(fileInfo.absolutePath() + "/" + fileInfo.baseName() + "_csv");
+        emit saveSuccess();
+    }
 }
 
 void APLReadWorker::_decode(const uchar* p_data, qint64 data_size)

@@ -68,6 +68,7 @@ public:
     void setFilterFile(const QString& v);
 
     bool trim_complete = false;
+    bool export_csv    = false;
 
 private:
     static APLDataCache* _singleton;

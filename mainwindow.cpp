@@ -135,10 +135,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
     connect(_ui.actionLoad,  &QAction::triggered, _dialog_load, &DialogLoad::showFile);
     connect(_ui.actionSaveDBFile,  &QAction::triggered, _dialog, &Dialog::saveFile);
+    connect(_ui.actionExportCSV,  &QAction::triggered, _dialog->getAPLRead(), &APLRead::exportCSV);
     connect(_ui.actionTrim,  &QAction::triggered, _dialog, &Dialog::trim);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
     connect(_dialog_load->getAPLReadConf(),  &APLReadConf::fileOpened, this, &MainWindow::_confOpenedTrigger);
     connect(_dialog,  &Dialog::saveSuccess, this, &MainWindow::_saveSuccessMessage);
+    connect(_dialog->getAPLRead()->export_worker,  &APLExportWorker::saveSuccess, this, &MainWindow::_saveSuccessMessage);
     emit(_ui.actionOpenArduPilotLog->triggered());
 }
 
