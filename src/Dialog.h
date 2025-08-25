@@ -50,6 +50,7 @@ public slots:
     void saveFile();
     void saveAsDone();
     void trim();
+    void split(bool checked);
 
 signals:
     void saveSuccess();

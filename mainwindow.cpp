@@ -111,6 +111,21 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ==================== 创建带复选框的菜单项 - 结束 ====================
 
+    // ==================== 创建带复选框的菜单项 - 开始 ====================
+
+    // 1. 创建一个可勾选的 QAction
+    QAction *splitAction = new QAction("Split Table", this);
+    splitAction->setCheckable(true);
+    splitAction->setChecked(false);
+
+    // 2将这个 action 添加到 "Tools" 菜单
+    _ui.menuTools->addAction(splitAction);
+
+    // 3. 连接 QCheckBox 的 toggled 信号到我们创建的槽
+    connect(splitAction, &QAction::toggled, _dialog, &Dialog::split);
+
+    // ==================== 创建带复选框的菜单项 - 结束 ====================
+
     for(int i=0; i<10; i++){
         shapes[i] << QCPScatterStyle::ssCircle;
         shapes[i] << QCPScatterStyle::ssDisc;
