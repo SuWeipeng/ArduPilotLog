@@ -34,6 +34,8 @@ public:
 
     void buf2DB();
 
+    void insertBatchData(const QString& tableName, const QList<QVector<QVariant>>& rows);
+
     void getFormat(quint8 &id, QString &name, QString &format);
 
     bool isOpen() const { return _apldb.isOpen(); }
@@ -87,7 +89,9 @@ private:
     //true: create sub-table success
     bool _createSubTable(QString &name, QString &format, QString &field) const;
 
-    void _createTableField(QString &format, QString &field, QString &table_field) const; 
+    void _createTableField(QString &format, QString &field, QString &table_field) const;
+
+    QString _sanitizeFieldName(const QString& fieldName) const;
 };
 
 #endif // APLDB_H

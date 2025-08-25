@@ -33,7 +33,22 @@ void APLDB::createAPLDB(const QString &dbPath)
         qCDebug(APLDB_LOG) << _apldb.lastError();
         qCDebug(APLDB_LOG) << _apldb.drivers();
     }else{
-        QSqlQuery query;
+        QSqlQuery query(_apldb);
+
+        // SQLite 性能优化设置
+	    query.exec("PRAGMA journal_mode = WAL");        // 使用WAL模式
+	    query.exec("PRAGMA synchronous = NORMAL");      // 降低同步级别
+        query.exec("PRAGMA cache_size = 50000");        // 增加缓存大小
+	    query.exec("PRAGMA temp_store = MEMORY");       // 临时表存储在内存
+	    query.exec("PRAGMA mmap_size = 268435456");     // 使用内存映射(256MB)
+
+        query.exec("PRAGMA page_size = 65536");           // 增大页面大小
+        query.exec("PRAGMA wal_autocheckpoint = 0");      // 禁用自动检查点
+        query.exec("PRAGMA optimize");                    // 启用查询优化器
+        query.exec("PRAGMA threads = 4");                // 启用多线程（Qt 6.2+）
+        query.exec("PRAGMA locking_mode = EXCLUSIVE");    // 独占锁模式
+
+        // 创建主表
         bool success = query.exec("CREATE TABLE maintable(LineNo INTEGER PRIMARY KEY AUTOINCREMENT, id INT8, len INT8, name VARCHAR UNIQUE, format VARCHAR, labels VARCHAR, units VARCHAR, multipliers VARCHAR)");
         if(success){
           qCDebug(APLDB_LOG) << "create maintable success";
@@ -100,20 +115,20 @@ void APLDB::addToSubTableBuf(QString name, QVector<QVariant> values)
 
 void APLDB::buf2DB()
 {
-    QSqlQuery query_insert;
-    // Process maintable items
-    for(qsizetype i = 0; i<_maintable_item.length(); i++){
-        if(!query_insert.exec(_maintable_item[i])){
-            QSqlError queryErr = query_insert.lastError();
-            qCDebug(APLDB_LOG)<<"buf2DB()"<<queryErr.text();
+    QSqlQuery query_insert(_apldb);
+
+    // 处理主表
+    _apldb.transaction();
+    for(const QString& item : _maintable_item) {
+        if(!query_insert.exec(item)) {
+            qCDebug(APLDB_LOG) << "MainTable insert failed:" << query_insert.lastError().text();
+            _apldb.rollback();
+            return;
         }
     }
-    _maintable_names.clear();
-    _maintable_formats.clear();
-    _maintable_ids.clear();
-    _maintable_item.clear();
+    _apldb.commit();
 
-    // Process subtable data using parameterized queries
+    // 批量处理子表数据
     QMap<QString, QList<QVector<QVariant>>> grouped_data;
     for(qsizetype i = 0; i < _name.length(); ++i) {
         grouped_data[_name[i]].append(_values[i]);
@@ -125,37 +140,79 @@ void APLDB::buf2DB()
 
         if (rows.isEmpty()) continue;
 
-        QString placeholders = "?";
-        for (int j = 0; j < rows.first().size(); ++j) {
-            placeholders += ", ?";
-        }
-
-        QString insert_sql = QString("INSERT INTO \"%1\" VALUES(%2)").arg(tableName, placeholders);
-        query_insert.prepare(insert_sql);
-
-        _apldb.transaction();
-
-        // 关键修改：为每个子表使用独立的行号计数器
-        qint64 lineCounter = 0;
-
-        for (const QVector<QVariant> &row_values : rows) {
-            // 使用局部的、针对当前表的 lineCounter，而不是全局的 _Number
-            query_insert.bindValue(0, ++lineCounter);
-            for (int j = 0; j < row_values.size(); ++j) {
-                query_insert.bindValue(j + 1, row_values[j]);
-            }
-            if(!query_insert.exec()){
-                QSqlError queryErr = query_insert.lastError();
-                qCDebug(APLDB_LOG)<<"buf2DB() - subtable"<<queryErr.text();
-                _apldb.rollback();
-                break;
-            }
-        }
-        _apldb.commit();
+        // 使用批量插入
+        insertBatchData(tableName, rows);
     }
 
+    // 清理
+    _maintable_item.clear();
+    _maintable_names.clear();
+    _maintable_formats.clear();
+    _maintable_ids.clear();
     _name.clear();
     _values.clear();
+
+    // 清理后进行数据库优化
+    QSqlQuery query(_apldb);
+    query.exec("PRAGMA optimize");
+    query.exec("PRAGMA wal_checkpoint(TRUNCATE)"); // 清理WAL文件
+}
+
+void APLDB::insertBatchData(const QString& tableName, const QList<QVector<QVariant>>& rows)
+{
+    if (rows.isEmpty()) return;
+
+    const int batchSize = 5000; // 每批处理5000条记录
+    const int columnCount = rows.first().size();
+
+    // 构建批量插入SQL
+    QString placeholders = "?";
+    for (int j = 0; j < columnCount; ++j) {
+        placeholders += ", ?";
+    }
+
+    QString sql = QString("INSERT INTO \"%1\" VALUES(%2)").arg(tableName, placeholders);
+    QSqlQuery query(_apldb);
+    if (!query.prepare(sql)) {
+        qCDebug(APLDB_LOG) << "Prepare failed:" << query.lastError().text();
+        return;
+    }
+
+    qint64 lineCounter = 0;
+
+    _apldb.transaction();
+
+    for (int i = 0; i < rows.size(); ++i) {
+        const QVector<QVariant>& row = rows[i];
+
+        query.bindValue(0, ++lineCounter);
+        for (int j = 0; j < row.size(); ++j) {
+            query.bindValue(j + 1, row[j]);
+        }
+
+        if (!query.exec()) {
+            qCDebug(APLDB_LOG) << "Insert failed:" << query.lastError().text();
+            _apldb.rollback();
+            return;
+        }
+
+        // 每5000条提交一次
+        if (i % batchSize == 0 && i > 0) {
+            if (!_apldb.commit()) {
+                qCDebug(APLDB_LOG) << "Commit failed:" << _apldb.lastError().text();
+                _apldb.rollback();
+                return;
+            }
+            _apldb.transaction();
+        }
+    }
+
+    // 提交剩余数据
+    if (!_apldb.commit()) {
+        qCDebug(APLDB_LOG) << "Batch commit failed:" << _apldb.lastError().text();
+        _apldb.rollback();
+        return;
+    }
 }
 
 bool APLDB::_createSubTable(QString &name, QString &format, QString &field) const
@@ -181,76 +238,79 @@ void APLDB::_createTableField(QString &format, QString &field, QString &table_fi
     QStringList fieldList = field.split(',');
 
     if(formatArray.count() != fieldList.count()){
-        qCDebug(APLDB_LOG)<<"format and labels don't match";
+        qCDebug(APLDB_LOG) << "Format and labels don't match";
         return;
     }
 
-    for(qint8 i = 0; i< formatArray.count(); i++){
-        QString fieldName = QString("\"%1\"").arg(fieldList[i]);
+    for(qint8 i = 0; i < formatArray.count(); i++){
+        // 使用双引号转义字段名，处理关键字冲突
+        QString fieldName = QString("\"%1\"").arg(_sanitizeFieldName(fieldList[i]));
+
+        QString dataType;
         switch(formatArray[i]){
-        case 'a':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
+        case 'a': case 'b': case 'B': case 'h': case 'H':
+        case 'i': case 'I': case 'L': case 'M': case 'q': case 'Q':
+            dataType = "INTEGER";
             break;
-        case 'b':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
+        case 'f': case 'd': case 'c': case 'C': case 'e': case 'E':
+            dataType = "REAL";  // 使用REAL而不是DOUBLE
             break;
-        case 'B':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
+        case 'n': case 'N': case 'Z':
+            dataType = "TEXT";  // 使用TEXT而不是VARCHAR
             break;
-        case 'h':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
-            break;
-        case 'H':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
-            break;
-        case 'i':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
-            break;
-        case 'I':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
-            break;
-        case 'f':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
-            break;
-        case 'd':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
-            break;
-        case 'n':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "VARCHAR");
-            break;
-        case 'N':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "VARCHAR");
-            break;
-        case 'Z':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "VARCHAR");
-            break;
-        case 'c':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
-            break;
-        case 'C':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
-            break;
-        case 'e':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
-            break;
-        case 'E':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "DOUBLE");
-            break;
-        case 'L':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
-            break;
-        case 'M':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
-            break;
-        case 'q':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
-            break;
-        case 'Q':
-            table_field = QString ("%1 %2 %3,").arg(table_field, fieldName, "INTEGER");
+        default:
+            dataType = "TEXT";
             break;
         }
+
+        table_field += QString("%1 %2").arg(fieldName, dataType);
+        if (i < formatArray.count() - 1) {
+            table_field += ", ";
+        }
     }
-    table_field.chop(1);
+}
+
+QString APLDB::_sanitizeFieldName(const QString& fieldName) const
+{
+    // SQLite关键字列表（部分）
+    static const QStringList sqliteKeywords = {
+        "ABORT", "ACTION", "ADD", "AFTER", "ALL", "ALTER", "ANALYZE", "AND", "AS", "ASC",
+        "ATTACH", "AUTOINCREMENT", "BEFORE", "BEGIN", "BETWEEN", "BY", "CASCADE", "CASE",
+        "CAST", "CHECK", "COLLATE", "COLUMN", "COMMIT", "CONFLICT", "CONSTRAINT", "CREATE",
+        "CROSS", "CURRENT_DATE", "CURRENT_TIME", "CURRENT_TIMESTAMP", "DATABASE", "DEFAULT",
+        "DEFERRABLE", "DEFERRED", "DELETE", "DESC", "DETACH", "DISTINCT", "DROP", "EACH",
+        "ELSE", "END", "ESCAPE", "EXCEPT", "EXCLUSIVE", "EXISTS", "EXPLAIN", "FAIL", "FOR",
+        "FOREIGN", "FROM", "FULL", "GLOB", "GROUP", "HAVING", "IF", "IGNORE", "IMMEDIATE",
+        "IN", "INDEX", "INDEXED", "INITIALLY", "INNER", "INSERT", "INSTEAD", "INTERSECT",
+        "INTO", "IS", "ISNULL", "JOIN", "KEY", "LEFT", "LIKE", "LIMIT", "MATCH", "NATURAL",
+        "NO", "NOT", "NOTNULL", "NULL", "OF", "OFFSET", "ON", "OR", "ORDER", "OUTER", "PLAN",
+        "PRAGMA", "PRIMARY", "QUERY", "RAISE", "RECURSIVE", "REFERENCES", "REGEXP", "REINDEX",
+        "RELEASE", "RENAME", "REPLACE", "RESTRICT", "RIGHT", "ROLLBACK", "ROW", "SAVEPOINT",
+        "SELECT", "SET", "TABLE", "TEMP", "TEMPORARY", "THEN", "TO", "TRANSACTION", "TRIGGER",
+        "UNION", "UNIQUE", "UPDATE", "USING", "VACUUM", "VALUES", "VIEW", "VIRTUAL", "WHEN",
+        "WHERE", "WITH", "WITHOUT"
+    };
+
+    QString sanitized = fieldName.trimmed();
+
+    // 检查是否为关键字（不区分大小写）
+    if (sqliteKeywords.contains(sanitized.toUpper())) {
+        sanitized = sanitized + "_field";  // 添加后缀避免冲突
+    }
+
+    // 处理特殊字符
+    sanitized.replace(' ', '_');
+    sanitized.replace('-', '_');
+    sanitized.replace('.', '_');
+    sanitized.replace('/', '_');
+    sanitized.replace('\\', '_');
+
+    // 确保不以数字开头
+    if (!sanitized.isEmpty() && sanitized[0].isDigit()) {
+        sanitized = "field_" + sanitized;
+    }
+
+    return sanitized;
 }
 
 void APLDB::getFormat(quint8 &id, QString &name, QString &format)

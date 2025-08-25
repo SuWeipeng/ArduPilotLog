@@ -255,6 +255,10 @@ void APLDataCache::exportToFile(const QString &outputDir)
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) continue;
 
         QTextStream stream(&file);
+        QStringList sanitizedHeaders;
+        for (const QString& header : _store[tableName].headers) {
+            sanitizedHeaders << _sanitizeCSVFieldName(header);
+        }
         stream << _store[tableName].headers.join(',') << "\n";
 
         int idx = _maintable_names.indexOf(tableName);
@@ -300,6 +304,19 @@ void APLDataCache::exportToFile(const QString &outputDir)
         jsonFile.write(QJsonDocument(_metadata).toJson());
         jsonFile.close();
     }
+}
+
+QString APLDataCache::_sanitizeCSVFieldName(const QString& fieldName) const
+{
+    QString sanitized = fieldName.trimmed();
+
+    // CSV中如果字段名包含逗号、引号或换行符，需要用引号包围
+    if (sanitized.contains(',') || sanitized.contains('"') || sanitized.contains('\n')) {
+        sanitized.replace('"', "\"\"");  // 转义引号
+        sanitized = "\"" + sanitized + "\"";
+    }
+
+    return sanitized;
 }
 
 int APLDataCache::getTableNum()

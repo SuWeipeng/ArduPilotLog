@@ -54,8 +54,8 @@ static void initFormatCharLengths() {
 
 // 预编译正则表达式 - 但保持原有的检查逻辑不变
 static QRegularExpression NAME_REGEX("^[A-Z0-9]{1,4}$");
-static QRegularExpression FORMAT_REGEX("^[A-Za-z]{1,16}$");  
-static QRegularExpression LABELS_REGEX("^[A-Za-z0-9,]{1,64}$");
+static QRegularExpression FORMAT_REGEX("^[A-Za-z]{1,16}$");
+static QRegularExpression LABELS_REGEX("^[A-Za-z0-9_,]{1,64}$");
 
 APLRead::APLRead()
 {
@@ -471,7 +471,7 @@ bool APLReadWorker::_checkMessage(QString &name, QString &format, QString &label
     res3 = _checkLabels(labels);
     res = res1 && res2 && res3;
     if(!res){
-        qCDebug(APLREAD_LOG) << name << format << labels;
+        qCDebug(APLREAD_LOG) << name << format << labels << res1 << res2 << res3;
     }
     return res;
 }
@@ -484,14 +484,6 @@ bool APLReadWorker::_checkName(QString &name) const
     int pos = 0;
     if(QValidator::Acceptable != validator.validate(name, pos)){
         return false;
-    }
-
-    // 优化4：使用QLatin1String避免字符编码转换
-    if(name == QLatin1String("FROM")) {
-        name = QLatin1String("`FROM`");
-    }
-    else if(name == QLatin1String("TO")) {
-        name = QLatin1String("`TO`");
     }
 
     return true;
@@ -520,54 +512,6 @@ bool APLReadWorker::_checkLabels(QString &labels) const
         return false;
     }
 
-    int index_of_Primary = labels.indexOf(QLatin1String("Primary"), 0, Qt::CaseInsensitive);
-    if( index_of_Primary != -1 ) {
-        labels.insert(index_of_Primary+7, QLatin1Char('`'));
-        labels.insert(index_of_Primary, QLatin1Char('`'));
-        qCDebug(APLREAD_LOG) <<labels;
-    }
-
-    int index_of_Limit = labels.indexOf(QLatin1String("Limit"), 0, Qt::CaseInsensitive);
-    if(index_of_Limit != -1) {
-        labels.insert(index_of_Limit+5, QLatin1Char('`'));
-        labels.insert(index_of_Limit, QLatin1Char('`'));
-        qCDebug(APLREAD_LOG) <<labels;
-    }
-
-    int index_of_Default = labels.indexOf(QLatin1String("Default"), 0, Qt::CaseInsensitive);
-    if(index_of_Default != -1) {
-        labels.insert(index_of_Default+7, QLatin1Char('`'));
-        labels.insert(index_of_Default, QLatin1Char('`'));
-        qCDebug(APLREAD_LOG) <<labels;
-    }
-
-    int index_of_IS = labels.indexOf(QLatin1String(",IS"), 0, Qt::CaseInsensitive);
-    if(index_of_IS != -1) {
-        labels.insert(index_of_IS+3, QLatin1Char('`'));
-        labels.insert(index_of_IS+1, QLatin1Char('`'));
-        qCDebug(APLREAD_LOG) <<labels;
-    }
-
-    int index_of_As = labels.indexOf(QLatin1String("As,"), 0, Qt::CaseInsensitive);
-    if(index_of_As != -1) {
-        labels.insert(index_of_As+2, QLatin1Char('`'));
-        labels.insert(index_of_As, QLatin1Char('`'));
-        qCDebug(APLREAD_LOG) <<labels;
-    }
-
-    int index_of_As1 = labels.indexOf(QLatin1String("AS"), 0, Qt::CaseSensitive);
-    if(index_of_As1 != -1) {
-        labels.insert(index_of_As1+2, QLatin1Char('`'));
-        labels.insert(index_of_As1, QLatin1Char('`'));
-        qCDebug(APLREAD_LOG) <<labels;
-    }
-
-    int index_of_index = labels.indexOf(QLatin1String("index"), 0, Qt::CaseSensitive);
-    if(index_of_index != -1) {
-        labels.insert(index_of_index+5, QLatin1Char('`'));
-        labels.insert(index_of_index, QLatin1Char('`'));
-        qCDebug(APLREAD_LOG) <<labels;
-    }
     return true;
 }
 
