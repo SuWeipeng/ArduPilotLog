@@ -55,7 +55,7 @@ public slots:
                    int     color,
                    bool    visible,
                    bool    from);    // false:DataAnalyzeController,true:Other
-    void clear_alreadyPloted() { _alreadyPloted.clear(); }
+    void clear_alreadyPloted() { _alreadyPloted.clear(); _color_idx = -1; }
     void clearGraph();
     void clearGraphNotTree();
     void clearFixedMarkers();
@@ -106,6 +106,7 @@ private:
     double              _constant_value;
     int                 _action_bold;
     QSqlDatabase        _apldb;
+    qint8               _color_idx;
 
     QMap<QString, APLDockWidget*>   _mapName2DockWidget;
     QMap<QString, QAction*>         _mapName2Action;

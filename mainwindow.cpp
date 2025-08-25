@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     , _replot(false)
     , _plotConf(false)
     , _action_bold(0x1<<0)
+    , _color_idx(-1)
 {
     qmlRegisterType<DataAnalyzeController>("ArduPilotLog.Controllers", 1, 0, "DataAnalyzeController");
 
@@ -564,6 +565,7 @@ MainWindow::plotGraph(QString tables,
         _ui.customPlot->legend->setVisible(false);
         _ui.customPlot->clearGraphs();
         _ui.customPlot->replot();
+        _color_idx = -1;
     }
     from_last = from;
 
@@ -581,6 +583,9 @@ MainWindow::plotGraph(QString tables,
         return;
 
     if(visible || from){
+        if (from) {
+            _color_idx++;
+        }
         qCDebug(MAIN_WINDOW_LOG) << "from: "<<from<<"target: "<<plot_target;
         customPlot->addGraph();
         int length = APLDataCache::get_singleton()->getLen(tables, fields);
@@ -654,10 +659,16 @@ MainWindow::_lineStyle(int index, int i, bool from){
     QPen pen;
 
     if(from && !_conf_plot){
-        int  R = QRandomGenerator::global()->bounded(255);
-        int  G = QRandomGenerator::global()->bounded(255);
-        int  B = QRandomGenerator::global()->bounded(255);
-        pen.setColor(QColor(R, G, B));
+        static QStringList predefinedColors = {"Red","Green","Blue","Magenta","LawnGreen","Pink","DeepSkyBlue","Orange","DarkCyan","Gold"};
+
+        if (_color_idx < 10) {
+            pen.setColor(QColor(predefinedColors[_color_idx]));
+        } else {
+            int  R = QRandomGenerator::global()->bounded(255);
+            int  G = QRandomGenerator::global()->bounded(255);
+            int  B = QRandomGenerator::global()->bounded(255);
+            pen.setColor(QColor(R, G, B));
+        }
         _replot = true;
     } else {
         pen.setColor(colors[0].at(i));

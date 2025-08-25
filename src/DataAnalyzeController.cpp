@@ -1,12 +1,11 @@
 #include "DataAnalyzeController.h"
 #include "mainwindow.h"
-#include "APLDB.h"
 #include "APLRead.h"
 
 APL_LOGGING_CATEGORY(DATA_ANALYZE_LOG,        "DataAnalyzeLog")
 
 #define LINE_LIST_INIT  "Normal"<<"Line1"<<"Line2"<<"Line3"<<"Dot1"<<"Dot2"<<"Dot3"<<"Mark1"<<"Mark2"<<"Mark3"
-#define COLOR_LIST_INIT "Red"<<"Green"<<"Blue"<<"Purple"<<"Brown"<<"Pink"<<"DeepSkyBlue"<<"Orange"<<"DarkCyan"<<"Gold"
+#define COLOR_LIST_INIT "Red"<<"Green"<<"Blue"<<"Magenta"<<"LawnGreen"<<"Pink"<<"DeepSkyBlue"<<"Orange"<<"DarkCyan"<<"Gold"
 
 DataAnalyzeController::DataAnalyzeController()
 {
