@@ -40,6 +40,17 @@ from matplotlib import pyplot as plt
 import sys
 import os
 from utilities.LogDBParser import LogDBParser
+import platform
+import matplotlib
+
+# Check if running on Linux
+if platform.system() == 'Linux':
+    try:
+        matplotlib.use('TkAgg')
+    except ImportError:
+        print("sudo apt-get install python3-tk")
+        # Fallback to default backend
+        pass
 
 # Handle command line arguments
 if len(sys.argv) > 1:
@@ -164,6 +175,17 @@ import os
 from utilities.LogDBParser import LogDBParser
 import numpy as np
 from utilities.MathCommon import rad2deg,constrain_float,MIN,MAX,LowPassFilter
+import platform
+import matplotlib
+
+# Check if running on Linux
+if platform.system() == 'Linux':
+    try:
+        matplotlib.use('TkAgg')
+    except ImportError:
+        print("sudo apt-get install python3-tk")
+        # Fallback to default backend
+        pass
 
 # Handle command line arguments
 if len(sys.argv) > 1:
