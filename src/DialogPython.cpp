@@ -39,6 +39,55 @@ void DialogPython::showFile()
     if (isDirExist(QString("%1/Python").arg(path)))
     {
         path = QString("%1/Python").arg(path);
+    } else {
+        // 创建 Python 文件夹
+        QString pythonDir = QString("%1/Python").arg(path);
+        QDir().mkpath(pythonDir);
+
+        // 创建 utilities 子文件夹
+        QString utilitiesDir = QString("%1/utilities").arg(pythonDir);
+        QDir().mkpath(utilitiesDir);
+
+        // 在 Python 文件夹下创建示例文件
+        QFile file1(QString("%1/QuadPlane_example_01.py").arg(pythonDir));
+        if (file1.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            file1.write(example_01.toUtf8());
+            file1.close();
+        }
+
+        QFile file2(QString("%1/QuadPlane_example_02.py").arg(pythonDir));
+        if (file2.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            file2.write(example_02_1_of_3.toUtf8());
+            file2.write(example_02_2_of_3.toUtf8());
+            file2.write(example_02_3_of_3.toUtf8());
+            file2.close();
+        }
+
+        QFile file3(QString("%1/example_log_download.txt").arg(pythonDir));
+        if (file3.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            file3.write(QString("https://drive.google.com/drive/folders/1YHfcqXl9vxriioPVBlYudXmWCDvZKrsK?usp=sharing").toUtf8());
+            file3.close();
+        }
+
+        // 在 utilities 文件夹下创建工具文件
+        QFile parserFile(QString("%1/LogDBParser.py").arg(utilitiesDir));
+        if (parserFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            parserFile.write(lib_01.toUtf8());
+            parserFile.close();
+        }
+
+        QFile mathFile(QString("%1/MathCommon.py").arg(utilitiesDir));
+        if (mathFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            mathFile.write(lib_02.toUtf8());
+            mathFile.close();
+        }
+
+        QFile utilityFile(QString("%1/utilities.py").arg(utilitiesDir));
+        if (utilityFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            utilityFile.write(lib_03.toUtf8());
+            utilityFile.close();
+        }
+        path = pythonDir;  // 设置路径为新创建的 Python 文件夹
     }
 
     QString scriptFile = _qfileDialogLoad->getOpenFileName(this
@@ -63,13 +112,23 @@ void DialogPython::showFile()
             db_name = QDir(dirPath).filePath(baseName + "." + newExtension);
         }
 
+        QFile dbFile(db_name);
+        if (!dbFile.exists()) {
+            QMessageBox::information(this,tr("Information"),QString("%1 does NOT exist! Please 'Export *.db' first.").arg(db_name));
+            return;
+        }
+
         if (pythonPath.length() > 0) {
             // 实时输出标准输出
             connect(process, &QProcess::readyReadStandardOutput,
-                    this, [process]() {
+                    this, [this, process]() {
                         QByteArray data = process->readAllStandardOutput();
                         if (!data.isEmpty()) {
-                            qCDebug(DIALOGPYTHON_LOG) << "Output:" << QString::fromUtf8(data);
+                            QString message(QString::fromUtf8(data));
+                            if (message.contains("Error:")){
+                                QMessageBox::information(this,tr("Information"),message);
+                            }
+                            qCDebug(DIALOGPYTHON_LOG) << "Output:" << message;
                         }
                     });
 
@@ -108,11 +167,11 @@ void DialogPython::showFile()
                         process->deleteLater();
                     });
 
-            // 启动进程
-            process->start(pythonPath, QStringList() << "-u" << scriptPath << db_name);
-
             // 可选：设置进程通道模式以确保输出不被缓冲
             process->setProcessChannelMode(QProcess::SeparateChannels);
+
+            // 启动进程
+            process->start(pythonPath, QStringList() << "-u" << scriptPath << db_name);
         } else {
             process->deleteLater();
         }

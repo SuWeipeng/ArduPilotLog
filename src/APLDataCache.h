@@ -32,10 +32,10 @@ public:
     explicit APLDataCache(QObject *parent = nullptr);
 
     // 添加一个新的消息格式定义
-    void addFormat(const quint8 &type, const QString &name, const QString &format, const QString &labels, const qint8 &i=-1);
+    void addFormat(const quint8 &type, const QString &name, const QString &format, const QString &labels, const qint16 &i=-1);
 
     // 添加一行解码后的数据（字符串形式）
-    void addData(const QString &name, const QString &new_name, const uchar *payload, const qint8 &i, const int &payload_len);
+    void addData(const QString &name, const QString &new_name, const uchar *payload, const qint16 &i, const int &payload_len);
 
     // 获取绘图所需的数据列
     QVector<double> getColumn(const QString &messageName, const QString &columnName);

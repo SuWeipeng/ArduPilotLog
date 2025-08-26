@@ -89,9 +89,9 @@ private:
     //true: create sub-table success
     bool _createSubTable(QString &name, QString &format, QString &field) const;
 
-    void _createTableField(QString &format, QString &field, QString &table_field) const;
+    void _createTableField(const QString &name, QString &format, QString &field, QString &table_field) const;
 
-    QString _sanitizeFieldName(const QString& fieldName) const;
+    QString _sanitizeFieldName(const QString &name, const QString& fieldName) const;
 };
 
 #endif // APLDB_H

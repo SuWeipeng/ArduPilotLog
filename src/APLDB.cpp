@@ -221,7 +221,7 @@ bool APLDB::_createSubTable(QString &name, QString &format, QString &field) cons
     QString   table_field = "";
     bool      success     = false;
 
-    _createTableField(format, field, table_field);
+    _createTableField(name, format, field, table_field);
     table_field = QString("%1,%2").arg("LineNo INTEGER PRIMARY KEY", table_field);
     success = query_create.exec(QString("CREATE TABLE IF NOT EXISTS \"%1\"(%2)").arg(name, table_field));
 
@@ -232,19 +232,19 @@ bool APLDB::_createSubTable(QString &name, QString &format, QString &field) cons
     return success;
 }
 
-void APLDB::_createTableField(QString &format, QString &field, QString &table_field) const
+void APLDB::_createTableField(const QString &name, QString &format, QString &field, QString &table_field) const
 {
     QByteArray formatArray = format.toLatin1();
     QStringList fieldList = field.split(',');
 
     if(formatArray.count() != fieldList.count()){
-        qCDebug(APLDB_LOG) << "Format and labels don't match";
+        qCDebug(APLDB_LOG) << name << "Format and labels don't match";
         return;
     }
 
     for(qint8 i = 0; i < formatArray.count(); i++){
         // 使用双引号转义字段名，处理关键字冲突
-        QString fieldName = QString("\"%1\"").arg(_sanitizeFieldName(fieldList[i]));
+        QString fieldName = QString("\"%1\"").arg(_sanitizeFieldName(name, fieldList[i]));
 
         QString dataType;
         switch(formatArray[i]){
@@ -270,7 +270,7 @@ void APLDB::_createTableField(QString &format, QString &field, QString &table_fi
     }
 }
 
-QString APLDB::_sanitizeFieldName(const QString& fieldName) const
+QString APLDB::_sanitizeFieldName(const QString &name, const QString& fieldName) const
 {
     // SQLite关键字列表（部分）
     static const QStringList sqliteKeywords = {
@@ -295,7 +295,7 @@ QString APLDB::_sanitizeFieldName(const QString& fieldName) const
 
     // 检查是否为关键字（不区分大小写）
     if (sqliteKeywords.contains(sanitized.toUpper())) {
-        qCDebug(APLDB_LOG) << "sqliteKeywords: " << sanitized;
+        qCDebug(APLDB_LOG) << name <<  "sqliteKeywords: " << sanitized;
     }
 
     // 处理特殊字符
@@ -307,7 +307,7 @@ QString APLDB::_sanitizeFieldName(const QString& fieldName) const
 
     // 确保不以数字开头
     if (!sanitized.isEmpty() && sanitized[0].isDigit()) {
-        qCDebug(APLDB_LOG) << "Digit start: " << sanitized;
+        qCDebug(APLDB_LOG) << name << "Digit start: " << sanitized;
     }
 
     return sanitized;
