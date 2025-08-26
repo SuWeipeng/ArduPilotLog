@@ -67,6 +67,29 @@ MainWindow::MainWindow(QWidget *parent)
 
     QCustomPlot* customPlot = MainWindow::getMainWindow()->ui().customPlot;
 
+    QFile settingsFile(QString("settings.json"));
+    bool  table_split = false;
+    bool  python_ingnore_db = false;
+    if (settingsFile.exists()) {
+        if (settingsFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QByteArray jsonData = settingsFile.readAll();
+            settingsFile.close();
+
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+            if (jsonDoc.isNull() || !jsonDoc.isObject()) {
+                qCDebug(DIALOG_LOG) << "Failed to create JSON doc or it's not a JSON object.";
+            } else {
+                QJsonObject jsonObj = jsonDoc.object();
+
+                if (jsonObj.contains("table_split") && jsonObj["table_split"].isBool()) {
+                    table_split = jsonObj["table_split"].toBool();
+                }
+                if (jsonObj.contains("python_ingnore_db") && jsonObj["python_ingnore_db"].isBool()) {
+                    python_ingnore_db = jsonObj["python_ingnore_db"].toBool();
+                }
+            }
+        }
+    }
     // ==================== 跟踪器初始化 - 开始 ====================
 
     // 1. 创建竖线 mTracerLine
@@ -117,7 +140,7 @@ MainWindow::MainWindow(QWidget *parent)
     // 1. 创建一个可勾选的 QAction
     QAction *splitAction = new QAction("Split Table", this);
     splitAction->setCheckable(true);
-    splitAction->setChecked(false);
+    splitAction->setChecked(table_split);
 
     // 2将这个 action 添加到 "Tools" 菜单
     _ui.menuTools->addAction(splitAction);
@@ -132,6 +155,7 @@ MainWindow::MainWindow(QWidget *parent)
     // 1. 创建一个 QCheckBox
     QCheckBox *ignoreDBCheckBox = new QCheckBox("Python Ignore *.db", this);
     ignoreDBCheckBox->setStyleSheet("QCheckBox { padding-left: 15px; }");
+    ignoreDBCheckBox->setChecked(python_ingnore_db);
 
     // 2. 创建一个 QWidgetAction，它将作为 QCheckBox 的容器
     QWidgetAction *actionPythonIgnoreDB = new QWidgetAction(this);
