@@ -48,6 +48,7 @@ SOURCES += \
     APLDockWidget.cpp \
     src/Dialog.cpp \
     src/DialogLoad.cpp \
+    src/DialogPython.cpp \
     src/APLRead.cpp \
     src/APLReadConf.cpp \
     src/APLDB.cpp \
@@ -62,6 +63,7 @@ HEADERS += \
     APLDockWidget.h \
     src/Dialog.h \
     src/DialogLoad.h \
+    src/DialogPython.h \
     src/APLRead.h \
     src/APLReadConf.h \
     src/LogStructure.h \

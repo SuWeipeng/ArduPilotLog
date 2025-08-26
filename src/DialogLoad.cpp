@@ -45,7 +45,7 @@ void DialogLoad::showFile()
             qCDebug(DialogLoad_LOG) << "confdir.txt doesn't exist!";
         } else {
             if(!confdir.open(QIODevice::ReadOnly | QIODevice::Text)){
-                qCDebug(DialogLoad_LOG) << "opendir.txt read error!";
+                qCDebug(DialogLoad_LOG) << "confdir.txt read error!";
             } else {
                 QTextStream pos(&confdir);
                 pos.setEncoding(QStringConverter::Utf8);

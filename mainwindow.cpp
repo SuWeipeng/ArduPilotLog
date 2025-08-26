@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , _dialog(new Dialog)
     , _dialog_load(new DialogLoad)
+    , _dialog_python(new DialogPython)
     , _mTracerLine(nullptr)
     , _mTracerText(nullptr)
     , _mIsTracerEnabled(false)
@@ -149,6 +150,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, this, &MainWindow::clearGraph);
     connect(_ui.actionOpenArduPilotLog,  &QAction::triggered, _dialog, &Dialog::showFile);
     connect(_ui.actionLoad,  &QAction::triggered, _dialog_load, &DialogLoad::showFile);
+    connect(_ui.actionLoadPy,  &QAction::triggered, _dialog_python, &DialogPython::showFile);
     connect(_ui.actionSaveDBFile,  &QAction::triggered, _dialog, &Dialog::saveFile);
     connect(_ui.actionExportCSV,  &QAction::triggered, _dialog->getAPLRead(), &APLRead::exportCSV);
     connect(_ui.actionTrim,  &QAction::triggered, _dialog, &Dialog::trim);
@@ -163,6 +165,7 @@ MainWindow::~MainWindow()
 {
     delete _dialog;
     delete _dialog_load;
+    delete _dialog_python;
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)

@@ -212,7 +212,8 @@ void Dialog::loadSettings()
     "save_csv": false,
     "trim_from": 0,
     "trim_to": 0,
-    "filter_file": null
+    "filter_file": null,
+    "python_path": null
 })";
 
         // 打开文件进行写入
@@ -324,10 +325,6 @@ void Dialog::loadSettings()
                     cache->setFilterFile(_filter_file);
                 }
             }
-
-            if (_filter_mode==0) {
-
-            }
         }
     } else {
         APLDataCache* cache = APLDataCache::get_singleton();
@@ -337,6 +334,19 @@ void Dialog::loadSettings()
         qCDebug(DIALOG_LOG) << "filter_file is not configured.";
     }
     // --- End of Filter Function Logic ---
+
+    // --- Start of Python Path Logic ---
+    if (jsonObj.contains("python_path") && jsonObj["python_path"].isString()) {
+        _python_path = jsonObj["python_path"].toString();
+        qCDebug(DIALOG_LOG) << "python_path from setting.json:" << _python_path;
+
+        QFile pythonPath(_python_path);
+        if (!pythonPath.exists()) {
+            _python_path = "";
+            qCDebug(DIALOG_LOG) << "Invalid python_path.";
+        }
+    }
+    // --- End of Python Path Logic ---
 
     emit settingsLoaded(jsonObj);
 }
@@ -355,6 +365,8 @@ void Dialog::showFile()
                                                   ,nullptr
                                                   ,QFileDialog::DontUseNativeDialog);
     loadSettings();
+
+    _db_name = "";
 
     _logdir = logdir;
 
@@ -380,7 +392,7 @@ void Dialog::saveFile()
                                                   ,"Save as DB file"
                                                   ,QString("%1/%2").arg(_aplRead->getFilePath(), file_name)
                                                   ,"DB files(*.db)");
-
+    _db_name = dbdir;
     if (!dbdir.isNull())
     {
         emit saveAsStart(dbdir);
@@ -397,6 +409,7 @@ void Dialog::trim()
     if (MainWindow::getMainWindow()->get_x_us().length() == 0) {
         _trim_from =0;
         _trim_to = 0;
+        _db_name = "";
     }
 
     QFile file(QString("settings.json"));

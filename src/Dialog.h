@@ -41,6 +41,9 @@ public:
     ~Dialog();
 
     APLRead* getAPLRead() const { return _aplRead; }
+    QString  get_db_name() const { return _db_name; }
+    QString  get_python_path() const { return _python_path; }
+    QString  get_logdir() const { return _logdir; }
     bool isDirExist(QString fullPath);
     void setTrimFrom(const quint64& v) { _trim_from = v; }
     void setTrimTo(const quint64& v) { _trim_to = v; }
@@ -73,6 +76,8 @@ private:
     quint64       _trim_from = 0;
     quint64       _trim_to = 0;
     QString       _logdir;
+    QString       _db_name;
+    QString       _python_path;
 };
 
 #endif // DIALOG_H

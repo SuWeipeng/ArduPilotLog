@@ -11,6 +11,7 @@
 #include "APLDockWidget.h"
 #include "src/Dialog.h"
 #include "src/DialogLoad.h"
+#include "src/DialogPython.h"
 #include "qcustomplot.h"
 
 Q_DECLARE_LOGGING_CATEGORY(MAIN_WINDOW_LOG)
@@ -30,6 +31,7 @@ public:
     static MainWindow* getMainWindow()            { return _instance; }
     Ui::MainWindow&    ui()                       { return _ui; }
     QSqlDatabase&      db()                       { return _apldb; }
+    Dialog*        dialog()                       { return _dialog; }
     void        requestTableList();
     void        closeEvent(QCloseEvent * event);
 
@@ -85,6 +87,7 @@ private:
     Ui::MainWindow      _ui;
     Dialog*             _dialog;
     DialogLoad*         _dialog_load;
+    DialogPython*       _dialog_python;
     QCPItemStraightLine* _mTracerLine;
     QCPItemText*        _mTracerText;
     bool                _mIsTracerEnabled;

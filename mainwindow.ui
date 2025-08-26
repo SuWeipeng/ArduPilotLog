@@ -120,7 +120,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>26</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -133,6 +133,7 @@
     <addaction name="actionSaveDBFile"/>
     <addaction name="separator"/>
     <addaction name="actionLoad"/>
+    <addaction name="actionLoadPy"/>
     <addaction name="actionTrim"/>
    </widget>
    <widget class="QMenu" name="menuTools">
@@ -148,11 +149,6 @@
     <string>Open ArduPilotLog</string>
    </property>
   </action>
-  <action name="actionExit">
-   <property name="text">
-    <string>Exit</string>
-   </property>
-  </action>
   <action name="actionSaveDBFile">
    <property name="text">
     <string>Export *.db</string>
@@ -160,7 +156,7 @@
   </action>
   <action name="actionLoad">
    <property name="text">
-    <string>Load</string>
+    <string>Load *.conf</string>
    </property>
   </action>
   <action name="actionTrim">
@@ -171,6 +167,11 @@
   <action name="actionExportCSV">
    <property name="text">
     <string>Export *.csv</string>
+   </property>
+  </action>
+  <action name="actionLoadPy">
+   <property name="text">
+    <string>Load *.py</string>
    </property>
   </action>
  </widget>
