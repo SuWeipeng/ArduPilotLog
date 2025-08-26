@@ -67,8 +67,3 @@ void DialogLoad::showFile()
 
     qCDebug(DialogLoad_LOG) << confdir;
 }
-
-void DialogLoad::saveFile()
-{
-
-}

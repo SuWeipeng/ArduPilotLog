@@ -177,8 +177,3 @@ void DialogPython::showFile()
         }
     }
 }
-
-void DialogPython::saveFile()
-{
-
-}
