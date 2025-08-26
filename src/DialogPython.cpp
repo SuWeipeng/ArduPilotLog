@@ -117,7 +117,7 @@ void DialogPython::showFile()
         QString scriptPath = scriptFile;
 
         QString db_name = MainWindow::getMainWindow()->dialog()->get_db_name();
-        if (db_name.length() == 0) {
+        if (db_name.length() == 0 && !MainWindow::getMainWindow()->dialog()->get_python_ingnore_db()) {
             QFileInfo fileInfo(MainWindow::getMainWindow()->dialog()->get_logdir());
             QString baseName = fileInfo.completeBaseName();
             QString dirPath = fileInfo.absolutePath();
@@ -127,8 +127,10 @@ void DialogPython::showFile()
 
         QFile dbFile(db_name);
         QDir dir;
-        if (!dbFile.exists()) {
-            qCDebug(DIALOGPYTHON_LOG) << QString("%1 does NOT exist! Checking CSV folder...").arg(db_name);
+        if (!dbFile.exists() || MainWindow::getMainWindow()->dialog()->get_python_ingnore_db()) {
+            if (!MainWindow::getMainWindow()->dialog()->get_python_ingnore_db()) {
+                qCDebug(DIALOGPYTHON_LOG) << QString("%1 does NOT exist! Checking CSV folder...").arg(db_name);
+            }
             db_name = APLDataCache::get_singleton()->get_export_dir();
             if (db_name.length() == 0) {
                 QFileInfo fileInfo(MainWindow::getMainWindow()->dialog()->get_logdir());

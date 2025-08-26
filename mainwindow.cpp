@@ -127,6 +127,23 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ==================== 创建带复选框的菜单项 - 结束 ====================
 
+    // ==================== 创建带复选框的菜单项 - 开始 ====================
+
+    // 1. 创建一个 QCheckBox
+    QCheckBox *ignoreDBCheckBox = new QCheckBox("Python Ignore *.db", this);
+    ignoreDBCheckBox->setStyleSheet("QCheckBox { padding-left: 15px; }");
+
+    // 2. 创建一个 QWidgetAction，它将作为 QCheckBox 的容器
+    QWidgetAction *actionPythonIgnoreDB = new QWidgetAction(this);
+    actionPythonIgnoreDB->setDefaultWidget(ignoreDBCheckBox);
+
+    // 3. 将这个 action 添加到 "File" 菜单
+    _ui.menuFile->insertAction(_ui.menuFile->actions().at(7), actionPythonIgnoreDB);
+
+    // 4. 连接 QCheckBox 的 toggled 信号到我们创建的槽
+    connect(ignoreDBCheckBox, &QCheckBox::toggled, _dialog, &Dialog::ignore_db);
+
+    // ==================== 创建带复选框的菜单项 - 结束 ====================
     for(int i=0; i<10; i++){
         shapes[i] << QCPScatterStyle::ssCircle;
         shapes[i] << QCPScatterStyle::ssDisc;

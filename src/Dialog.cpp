@@ -213,7 +213,8 @@ void Dialog::loadSettings()
     "trim_from": 0,
     "trim_to": 0,
     "filter_file": null,
-    "python_path": null
+    "python_path": null,
+    "python_ingnore_db": false
 })";
 
         // 打开文件进行写入
@@ -348,6 +349,10 @@ void Dialog::loadSettings()
     }
     // --- End of Python Path Logic ---
 
+    if (jsonObj.contains("python_ingnore_db") && jsonObj["python_ingnore_db"].isBool()) {
+        _python_ingnore_db = jsonObj["python_ingnore_db"].toBool();
+        qCDebug(DIALOG_LOG) << "python_ingnore_db from settings.json:" << _python_ingnore_db;
+    }
     emit settingsLoaded(jsonObj);
 }
 
@@ -476,4 +481,32 @@ void Dialog::split(bool checked)
     MainWindow::getMainWindow()->ui().treeWidget->clear();
     MainWindow::getMainWindow()->clearGraph();
     emit _qfiledialog->fileSelected(_logdir);
+}
+
+void Dialog::ignore_db(bool checked)
+{
+    QFile file(QString("settings.json"));
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+    QTextStream in(&file);
+    QString out_line("");
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+
+        if (line.indexOf("python_ingnore_db") != -1) {
+            QStringList list = line.split(":");
+            line = list[0]+": "+QString("%1").arg(checked ? "true" : "false");
+        }
+
+        out_line.append(line+"\n");
+    }
+    file.close();
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+    QTextStream out(&file);
+    out << out_line;
+    file.close();
+
+    loadSettings();
 }

@@ -44,6 +44,7 @@ public:
     QString  get_db_name() const { return _db_name; }
     QString  get_python_path() const { return _python_path; }
     QString  get_logdir() const { return _logdir; }
+    bool     get_python_ingnore_db() const { return _python_ingnore_db; }
     bool isDirExist(QString fullPath);
     void setTrimFrom(const quint64& v) { _trim_from = v; }
     void setTrimTo(const quint64& v) { _trim_to = v; }
@@ -54,6 +55,7 @@ public slots:
     void saveAsDone();
     void trim();
     void split(bool checked);
+    void ignore_db(bool checked);
 
 signals:
     void saveSuccess();
@@ -78,6 +80,7 @@ private:
     QString       _logdir;
     QString       _db_name;
     QString       _python_path;
+    bool          _python_ingnore_db;
 };
 
 #endif // DIALOG_H
