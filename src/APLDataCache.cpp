@@ -23,6 +23,7 @@ void APLDataCache::reset()
     _maintable_ids.clear();
     _maintable_names.clear();
     _maintable_formats.clear();
+    _export_dir.clear();
 }
 
 void APLDataCache::setTableSplit(bool enabled)
@@ -239,6 +240,8 @@ void APLDataCache::exportToFile(const QString &outputDir)
         export_dir.append("_trim");
     }
     
+    _export_dir = export_dir;
+
     QDir dir;
     if (!dir.exists(export_dir)) {
         dir.mkpath(export_dir);

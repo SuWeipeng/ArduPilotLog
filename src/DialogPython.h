@@ -1293,6 +1293,195 @@ def calt_delta_t(ms1, ms2):
         delta_str = "%d h %d min %.2f s"%(delta_h,delta_m,delta_s)
     return delta_str
 )";
+
+    static inline QString lib_04=R"(#!/usr/bin/python3
+# -*- coding:utf-8 -*-
+import pandas as pd
+import os
+
+class LogCSVParser:
+    """
+    A parser to read ArduPilot log data from a directory of CSV files.
+    """
+    def __init__(self, csv_dir_path):
+        """
+        Initializes the parser with the path to the directory containing the CSV files.
+        :param csv_dir_path: The path to the directory, e.g., '00000013_csv'.
+        """
+        if not os.path.isdir(csv_dir_path):
+            raise ValueError(f"Provided path '{{csv_dir_path}}' is not a valid directory.")
+        self.csv_dir_path = csv_dir_path
+        self._cache = {}  # Cache to store already loaded dataframes
+
+    def get_data(self, table_name):
+        """
+        Reads a specific CSV file from the log directory and returns it as a pandas DataFrame.
+        The data is cached after the first read to improve performance for subsequent calls.
+
+        :param table_name: The name of the data table (e.g., 'ATT', 'IMU0'),
+                           which corresponds to the CSV filename without the extension.
+        :return: A pandas DataFrame containing the data from the CSV file.
+        """
+        if table_name in self._cache:
+            return self._cache[table_name]
+
+        file_path = os.path.join(self.csv_dir_path, f"{table_name}.csv")
+
+        if not os.path.exists(file_path):
+            # To be helpful, list available tables if the requested one is not found.
+            available_files = [f.replace('.csv', '') for f in os.listdir(self.csv_dir_path) if f.endswith('.csv')]
+            raise FileNotFoundError(
+                f"CSV file for table '{table_name}' not found at '{file_path}'.\n"
+                f"Available tables are: {available_files}"
+            )
+
+        try:
+            df = pd.read_csv(file_path)
+            self._cache[table_name] = df
+            return df
+        except Exception as e:
+            raise IOError(f"Error reading or parsing CSV file at '{file_path}': {e}")
+
+    def get_table_list(self):
+        """
+        Returns a list of available table names (CSV files) in the directory.
+        """
+        files = [f.replace('.csv', '') for f in os.listdir(self.csv_dir_path) if f.endswith('.csv')]
+        return sorted(files)
+)";
+
+    static inline QString example_03=R"(#!/usr/bin/python3
+# -*- coding:utf-8 -*-
+import numpy as np
+from matplotlib import pyplot as plt
+import sys
+import os
+from utilities.LogCSVParser import LogCSVParser
+import platform
+import matplotlib
+
+# Check if running on Linux
+if platform.system() == 'Linux':
+    try:
+        matplotlib.use('TkAgg')
+    except ImportError:
+        print("sudo apt-get install python3-tk")
+        # Fallback to default backend
+        pass
+
+# Handle command line arguments
+if len(sys.argv) > 1:
+    log_folder_name = sys.argv[1]
+else:
+    log_folder_name = "00000023_csv"
+
+# Cross-platform path handling
+log_dir_path = os.path.join('..', log_folder_name)
+
+# Check if file exists
+if not os.path.isdir(log_dir_path):
+    print(f"Error: Log directory not found: {log_dir_path}")
+    sys.exit(1)
+
+log = LogCSVParser(log_dir_path)
+
+try:
+    data = log.get_data("TECS")
+    tecs_timeus   = data['TimeUS'].tolist()
+    tecs_th       = data['th'].tolist()
+    tecs_hin      = data['hin'].tolist()
+    tecs_sp       = data['sp'].tolist()
+    tecs_spdem    = data['spdem'].tolist()
+    tecs_h        = data['h'].tolist()
+    tecs_hdem     = data['hdem'].tolist()
+    tecs_dh       = data['dh'].tolist()
+    tecs_dhdem    = data['dhdem'].tolist()
+    tecs_f        = data['f'].tolist()
+
+    data = log.get_data("ARSP0")
+    arsp0_timeus   = data['TimeUS'].tolist()
+    arsp0_airspeed = data['Airspeed'].tolist()
+    arsp0_filt     = data['Filt'].tolist()
+    arsp0_temp     = data['Temp'].tolist()
+
+    data = log.get_data("GPS0")
+    gps0_timeus   = data['TimeUS'].tolist()
+    gps0_lat      = data['Lat'].tolist()
+    gps0_lng      = data['Lng'].tolist()
+    gps0_alt      = data['Alt'].tolist()
+    gps0_spd      = data['Spd'].tolist()
+
+    data = log.get_data("BARO0")
+    baro0_timeus  = data['TimeUS'].tolist()
+    baro0_alt     = data['Alt'].tolist()
+    baro0_press   = data['Press'].tolist()
+    baro0_temp    = data['Temp'].tolist()
+    baro0_crt     = data['CRt'].tolist()
+    baro0_sms     = data['SMS'].tolist()
+    baro0_offset  = data['Offset'].tolist()
+    baro0_gndtemp = data['GndTemp'].tolist()
+    baro0_health  = data['Health'].tolist()
+except (FileNotFoundError, KeyError, Exception) as e:
+    print(f"Error: Problem reading data - {e}")
+    sys.exit(1)
+
+# matplotlib plotting
+# Function plot_frequency() for plotting log recording frequency on the right side
+def plot_frequency(label_dict, ax):
+    calc_f = []
+    for i in range(len(label_dict)):
+        calc_f.append(eval(label_dict[i].lower()+"_timeus"))
+    for idx in range(len(calc_f)):
+        f = []
+        for i in range(len(calc_f[idx])-1):
+            delta_t = calc_f[idx][i+1]-calc_f[idx][i]
+            if delta_t > 0:
+                f.append(1e6/delta_t)
+        cnt = list(range(len(f)))
+
+        ax.plot(cnt,f,
+                 label=label_dict[idx],
+                 marker = '.',
+                 markersize = 2,
+                 linestyle=":",
+                 linewidth=0.6)
+        ax.legend()
+
+# Plot layout
+fig  = plt.figure(figsize=(16, 8), dpi=120)  # Modified dpi to a more reasonable value
+axc = plt.subplot2grid((1,6),(0,0),colspan=5)
+axc.ticklabel_format(style='sci', scilimits=(-1,3), axis='both')
+axc.grid(ls="--")
+ax2 = plt.subplot2grid((1,6),(0,5))
+ax2.ticklabel_format(style='sci', scilimits=(-1,3), axis='y')
+ax2.grid(ls="--")
+ax2.set_ylabel("Hz")
+plt.tight_layout()
+
+# Custom plotting on the left side
+axc.plot(tecs_timeus,
+         tecs_sp,
+         label="TECS.sp",
+         markersize = 2,
+         linestyle="-",
+         linewidth=0.6,
+         color='r')
+axc.plot(gps0_timeus,
+         gps0_spd,
+         label="GPS0.Spd",
+         marker = '',
+         markersize = 2,
+         linestyle="-",
+         linewidth=0.6,
+         color='b')
+axc.legend()
+
+# Recording frequency plotting on the right side
+label_f = ["TECS","GPS0","ARSP0"]
+plot_frequency(label_f, ax2)
+
+plt.show()
+)";
 };
 
 #endif // DIALOGPYTHON_H

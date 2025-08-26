@@ -1,5 +1,6 @@
 #include "DialogPython.h"
 #include "APLReadConf.h"
+#include "APLDataCache.h"
 #include "mainwindow.h"
 #include "APLRead.h"
 #include <QFileDialog>
@@ -49,13 +50,13 @@ void DialogPython::showFile()
         QDir().mkpath(utilitiesDir);
 
         // 在 Python 文件夹下创建示例文件
-        QFile file1(QString("%1/QuadPlane_example_01.py").arg(pythonDir));
+        QFile file1(QString("%1/QuadPlane_example_01_DB.py").arg(pythonDir));
         if (file1.open(QIODevice::WriteOnly | QIODevice::Text)) {
             file1.write(example_01.toUtf8());
             file1.close();
         }
 
-        QFile file2(QString("%1/QuadPlane_example_02.py").arg(pythonDir));
+        QFile file2(QString("%1/QuadPlane_example_02_DB.py").arg(pythonDir));
         if (file2.open(QIODevice::WriteOnly | QIODevice::Text)) {
             file2.write(example_02_1_of_3.toUtf8());
             file2.write(example_02_2_of_3.toUtf8());
@@ -87,6 +88,18 @@ void DialogPython::showFile()
             utilityFile.write(lib_03.toUtf8());
             utilityFile.close();
         }
+
+        QFile parserCSV(QString("%1/LogCSVParser.py").arg(utilitiesDir));
+        if (parserCSV.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            parserCSV.write(lib_04.toUtf8());
+            parserCSV.close();
+        }
+
+        QFile example_1csv(QString("%1/QuadPlane_example_01_CSV.py").arg(pythonDir));
+        if (example_1csv.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            example_1csv.write(example_03.toUtf8());
+            example_1csv.close();
+        }
         path = pythonDir;  // 设置路径为新创建的 Python 文件夹
     }
 
@@ -113,10 +126,22 @@ void DialogPython::showFile()
         }
 
         QFile dbFile(db_name);
+        QDir dir;
         if (!dbFile.exists()) {
-            QMessageBox::information(this,tr("Information"),QString("%1 does NOT exist! Please 'Export *.db' first.").arg(db_name));
-            return;
+            qCDebug(DIALOGPYTHON_LOG) << QString("%1 does NOT exist! Checking CSV folder...").arg(db_name);
+            db_name = APLDataCache::get_singleton()->get_export_dir();
+            if (db_name.length() == 0) {
+                QFileInfo fileInfo(MainWindow::getMainWindow()->dialog()->get_logdir());
+                QString baseName = fileInfo.completeBaseName();
+                QString dirPath = fileInfo.absolutePath();
+                db_name = QDir(dirPath).filePath(baseName + "_csv");
+            }
+            if (!dir.exists(db_name)) {
+                QMessageBox::information(this,tr("Information"),QString("%1 does NOT exist! Please 'Export *.db' or 'Export *.csv' first.").arg(db_name));
+                return;
+            }
         }
+
 
         if (pythonPath.length() > 0) {
             // 实时输出标准输出

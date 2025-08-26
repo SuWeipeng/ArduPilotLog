@@ -67,6 +67,8 @@ public:
     void setFilterExclude(const QStringList& v);
     void setFilterFile(const QString& v);
 
+    QString get_export_dir() const { return _export_dir; }
+
     bool trim_complete = false;
     bool export_csv    = false;
 
@@ -88,6 +90,7 @@ private:
     QStringList                _filter_include;
     QStringList                _filter_exclude;
     QString                    _filter_file;
+    QString                    _export_dir;
 
     bool    _cut_data(quint8 id, quint64 start_time, quint64 stop_time, quint64 now);
     QString _sanitizeCSVFieldName(const QString& fieldName) const;
