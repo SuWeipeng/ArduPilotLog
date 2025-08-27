@@ -57,8 +57,9 @@ MainWindow::MainWindow(QWidget *parent)
     _ui.setupUi(this);
     this->resize(screenWidth/2, screenHeight/2);
     _buildCommonWidgets();
-    _ui.splitter->setStretchFactor(0, 2);
-    _ui.splitter->setStretchFactor(1, 8);
+    _ui.splitter->setStretchFactor(0, 1);
+    _ui.splitter->setStretchFactor(1, 4);
+    _ui.splitter->setSizes({100,400});
     _ui.progressBar->setVisible(0);
     _ui.progressBar->setValue(0);
     _ui.progressBar->setRange(0,9999);
@@ -284,28 +285,6 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
         }
     }
     return widget != NULL;
-}
-
-void MainWindow::resizeEvent(QResizeEvent* event)
-{
-   QMainWindow::resizeEvent(event);
-
-   QWidget * mainWidget=_ui.mainWidget;
-   QRect resizeRect=mainWidget->rect();
-   static float baseWidth=400;
-   static float baseHeight=300;
-   static float widgetWidth=resizeRect.width();
-   static float widgetHeight=resizeRect.height();
-
-   float horRatio=this->rect().width()/baseWidth;
-   float verRatio=this->rect().height()/baseHeight;
-
-   //resize the verticalLayoutWidget
-   resizeRect.setWidth(widgetWidth*horRatio);
-   resizeRect.setHeight(widgetHeight*verRatio - 10);
-
-   //set Geometry
-   mainWidget->setGeometry(resizeRect);
 }
 
 void MainWindow::_fileOpenedTrigger()

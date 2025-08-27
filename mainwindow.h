@@ -46,7 +46,6 @@ public:
     QVector<QColor>                        colors[10];
 
 public slots:
-    void resizeEvent(QResizeEvent* event);
     void itemChangedSlot(QTreeWidgetItem* item, int column);
     void plotGraph(QString tables,
                    QString fields,
