@@ -137,6 +137,9 @@ void DialogPython::showFile()
                 QString baseName = fileInfo.completeBaseName();
                 QString dirPath = fileInfo.absolutePath();
                 db_name = QDir(dirPath).filePath(baseName + "_csv");
+                if (MainWindow::getMainWindow()->dialog()->get_csv_mode()){
+                    db_name = dirPath;
+                }
             }
             if (!dir.exists(db_name)) {
                 QMessageBox::information(this,tr("Information"),QString("%1 does NOT exist! Please 'Export *.db' or 'Export *.csv' first.").arg(db_name));
