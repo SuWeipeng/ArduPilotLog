@@ -33,10 +33,19 @@ bool DialogLoad::isDirExist(QString fullPath)
 
 void DialogLoad::showFile()
 {
-    QString path =APLRead::getAPLRead()->getFilePath();
+    QString path = APLRead::getAPLRead()->getFilePath();
 
-    if (isDirExist(QString("%1/conf").arg(path)))
-    {
+    if (MainWindow::getMainWindow()->dialog()->get_csv_mode()) {
+        path = MainWindow::getMainWindow()->dialog()->get_logdir();
+        QDir currentDir(path);
+        if (currentDir.cdUp() && currentDir.cdUp()) { // 切换到上 2 级目录
+            QString parentPath = currentDir.absolutePath();
+            QString confPath = QString("%1/conf").arg(parentPath);
+            if (isDirExist(confPath)) {
+                path = confPath;
+            }
+        }
+    } else if (isDirExist(QString("%1/conf").arg(path))) {
         path = QString("%1/conf").arg(path);
     } else {
         QString confdir_loc = "";

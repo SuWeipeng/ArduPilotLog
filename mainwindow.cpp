@@ -1105,8 +1105,8 @@ MainWindow::plotConf(QStringList conf)
             }
         }
 
-        if(_findTable(table)){
-            if(_findField(table, field)){
+        if(_findTable(table) || _dialog->get_csv_mode()){
+            if(_findField(table, field) || _dialog->get_csv_mode()){
                 plotGraph(table,
                           field,
                           offsetX.toInt(),
