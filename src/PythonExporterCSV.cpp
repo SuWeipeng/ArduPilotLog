@@ -117,7 +117,7 @@ QString PythonExporterCSV::generateDataReading(const CSVDataField& field)
     // 生成变量赋值
     for (const QString& fieldName : field.fields) {
         QString varName = generateVariableNames(field.logType, fieldName);
-        stream << "    " << varName << " = data['" << fieldName << "'].tolist()\n";
+        stream << "    " <<cleanPythonVariableName(varName) << " = data['" << fieldName << "'].tolist()\n";
     }
 
     return code;
@@ -132,4 +132,33 @@ QString PythonExporterCSV::generateVariableNames(const QString& logType, const Q
     QString suffix = field.toLower();
 
     return prefix + "_" + suffix;
+}
+
+// 简化的Python变量名清理函数（针对文件名场景）
+QString PythonExporterCSV::cleanPythonVariableName(const QString& original) {
+    QString cleaned = original;
+
+    // 只处理最常见的不符合Python变量命名的字符
+    cleaned.replace('[', '_');
+    cleaned.replace(']', ' ');  // 直接删除右括号，避免多余下划线
+    cleaned.replace('-', '_');
+    cleaned.replace('.', '_');
+    cleaned.replace(' ', '_');
+
+    // 移除连续的下划线
+    while (cleaned.contains(QLatin1String("__"))) {
+        cleaned.replace(QLatin1String("__"), QLatin1String("_"));
+    }
+
+    // 移除末尾的下划线
+    while (cleaned.endsWith('_')) {
+        cleaned.chop(1);
+    }
+
+    // 如果以数字开头，添加前缀
+    if (!cleaned.isEmpty() && cleaned[0].isDigit()) {
+        cleaned = "var_" + cleaned;
+    }
+
+    return cleaned;
 }

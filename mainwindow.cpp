@@ -594,9 +594,11 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
             fields.append(child->text(0));
         }
 
-        if (!APLDataCache::get_singleton()->isEmpty(item->text(column))) {
-            if (!_ui.actiongenPyDB->isVisible()) {
+        if (!APLDataCache::get_singleton()->isEmpty(item->text(column)) || _dialog->get_csv_mode()) {
+            if (!_ui.actiongenPyDB->isVisible() && !_dialog->get_csv_mode()) {
                 _ui.actiongenPyDB->setVisible(true);
+            }
+            if (!_ui.actiongenPyCSV->isVisible()) {
                 _ui.actiongenPyCSV->setVisible(true);
             }
             _genPyDB->addDataField(item->text(column), fields);
@@ -1011,6 +1013,7 @@ void MainWindow::_onTracerToggled(bool checked)
 
 void MainWindow::_generatePyDB(bool checked)
 {
+    Q_UNUSED(checked);
     QString db_name = _dialog->get_db_name();
     if (db_name.length() == 0) {
         QFileInfo fileInfo(_dialog->get_logdir());
@@ -1043,10 +1046,12 @@ void MainWindow::_generatePyDB(bool checked)
     }
     _genPyDB->exportToPython(path+"/generated_for_db.py");
     _genPyDB->clear();
+    clearGraph();
 }
 
 void MainWindow::_generatePyCSV(bool checked)
 {
+    Q_UNUSED(checked);
     QString db_name = APLDataCache::get_singleton()->get_export_dir();
     if (db_name.length() == 0 || _dialog->get_csv_mode()) {
         QFileInfo fileInfo(_dialog->get_logdir());
@@ -1078,6 +1083,7 @@ void MainWindow::_generatePyCSV(bool checked)
     }
     _genPyCSV->exportToPython(path+"/generated_for_csv.py");
     _genPyCSV->clear();
+    clearGraph();
 }
 
 void

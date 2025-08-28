@@ -33,6 +33,8 @@ public:
     // 清空所有数据字段
     void clear();
 
+    QString cleanPythonVariableName(const QString& original);
+
 private:
     static PythonExporter* _singleton;
 
