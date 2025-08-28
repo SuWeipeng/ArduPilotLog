@@ -685,6 +685,8 @@ void Dialog::showFile()
     QString suffix = fileInfo.suffix().toLower();
     _csv_mode = false;
     _csvFilesMap.clear();
+    MainWindow::getMainWindow()->ui().actiongenPyDB->setVisible(false);
+    MainWindow::getMainWindow()->ui().actiongenPyCSV->setVisible(false);
     MainWindow::getMainWindow()->ui().actionExportCSV->setVisible(true);
     MainWindow::getMainWindow()->ui().actionSaveDBFile->setVisible(true);
     MainWindow::getMainWindow()->ui().actionTrim->setVisible(true);

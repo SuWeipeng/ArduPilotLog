@@ -131,7 +131,7 @@
      <x>0</x>
      <y>0</y>
      <width>400</width>
-     <height>16</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -147,6 +147,9 @@
     <addaction name="actionLoadPy"/>
     <addaction name="separator"/>
     <addaction name="actionTrim"/>
+    <addaction name="separator"/>
+    <addaction name="actiongenPyDB"/>
+    <addaction name="actiongenPyCSV"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -184,6 +187,16 @@
   <action name="actionLoadPy">
    <property name="text">
     <string>Load *.py</string>
+   </property>
+  </action>
+  <action name="actiongenPyDB">
+   <property name="text">
+    <string>Generate .py for DB</string>
+   </property>
+  </action>
+  <action name="actiongenPyCSV">
+   <property name="text">
+    <string>Generate .py for CSV</string>
    </property>
   </action>
  </widget>

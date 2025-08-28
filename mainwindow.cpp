@@ -39,6 +39,8 @@ MainWindow::MainWindow(QWidget *parent)
     , _dialog_python(new DialogPython)
     , _mTracerLine(nullptr)
     , _mTracerText(nullptr)
+    , _genPyDB(new PythonExporter)
+    , _genPyCSV(new PythonExporterCSV)
     , _mIsTracerEnabled(false)
     , _table("")
     , _field("")
@@ -196,6 +198,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_ui.actionSaveDBFile,  &QAction::triggered, _dialog, &Dialog::saveFile);
     connect(_ui.actionExportCSV,  &QAction::triggered, _dialog->getAPLRead(), &APLRead::exportCSV);
     connect(_ui.actionTrim,  &QAction::triggered, _dialog, &Dialog::trim);
+    connect(_ui.actiongenPyDB,  &QAction::triggered, this, &MainWindow::_generatePyDB);
+    connect(_ui.actiongenPyCSV,  &QAction::triggered, this, &MainWindow::_generatePyCSV);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
     connect(_dialog,  &Dialog::gotCSVDir, this, &MainWindow::_fileOpenedTrigger);
     connect(_dialog_load->getAPLReadConf(),  &APLReadConf::fileOpened, this, &MainWindow::_confOpenedTrigger);
@@ -209,6 +213,8 @@ MainWindow::~MainWindow()
     delete _dialog;
     delete _dialog_load;
     delete _dialog_python;
+    delete _genPyDB;
+    delete _genPyCSV;
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)
@@ -581,6 +587,21 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
         item->setCheckState(column,Qt::Checked);
     } else {
         item->setCheckState(column,Qt::PartiallyChecked);
+        QStringList fields;
+        for (int i=0;i<item->childCount();i++)
+        {
+            QTreeWidgetItem* child=item->child(i);
+            fields.append(child->text(0));
+        }
+
+        if (!APLDataCache::get_singleton()->isEmpty(item->text(column))) {
+            if (!_ui.actiongenPyDB->isVisible()) {
+                _ui.actiongenPyDB->setVisible(true);
+                _ui.actiongenPyCSV->setVisible(true);
+            }
+            _genPyDB->addDataField(item->text(column), fields);
+            _genPyCSV->addDataField(item->text(column), fields);
+        }
     }
 }
 
@@ -986,6 +1007,77 @@ void MainWindow::_onTracerToggled(bool checked)
             _ui.customPlot->replot();
         }
     }
+}
+
+void MainWindow::_generatePyDB(bool checked)
+{
+    QString db_name = _dialog->get_db_name();
+    if (db_name.length() == 0) {
+        QFileInfo fileInfo(_dialog->get_logdir());
+        QString baseName = fileInfo.completeBaseName();
+        QString dirPath = fileInfo.absolutePath();
+        QString newExtension = "db";
+        db_name = QDir(dirPath).filePath(baseName + "." + newExtension);
+    }
+
+    _genPyDB->setDatabaseName(db_name);
+
+    QString path = APLRead::getAPLRead()->getFilePath();
+
+    if (MainWindow::getMainWindow()->dialog()->get_csv_mode()) {
+        path = MainWindow::getMainWindow()->dialog()->get_logdir();
+        QDir currentDir(path);
+        if (currentDir.cdUp() && currentDir.cdUp()) { // 切换到上 2 级目录
+            QString parentPath = currentDir.absolutePath();
+            QString confPath = QString("%1/Python").arg(parentPath);
+            if (isDirExist(confPath)) {
+                path = confPath;
+            }
+        }
+    } else if (isDirExist(QString("%1/Python").arg(path))) {
+        path = QString("%1/Python").arg(path);
+    } else {
+        // 创建 Python 文件夹
+        QString pythonDir = QString("%1/Python").arg(path);
+        QDir().mkpath(pythonDir);
+    }
+    _genPyDB->exportToPython(path+"/generated_for_db.py");
+    _genPyDB->clear();
+}
+
+void MainWindow::_generatePyCSV(bool checked)
+{
+    QString db_name = APLDataCache::get_singleton()->get_export_dir();
+    if (db_name.length() == 0 || _dialog->get_csv_mode()) {
+        QFileInfo fileInfo(_dialog->get_logdir());
+        QString baseName = fileInfo.completeBaseName();
+        QString dirPath = fileInfo.absolutePath();
+        db_name = dirPath;
+    }
+
+    _genPyCSV->setLogFolderName(db_name);
+
+    QString path = APLRead::getAPLRead()->getFilePath();
+
+    if (MainWindow::getMainWindow()->dialog()->get_csv_mode()) {
+        path = MainWindow::getMainWindow()->dialog()->get_logdir();
+        QDir currentDir(path);
+        if (currentDir.cdUp() && currentDir.cdUp()) { // 切换到上 2 级目录
+            QString parentPath = currentDir.absolutePath();
+            QString confPath = QString("%1/Python").arg(parentPath);
+            if (isDirExist(confPath)) {
+                path = confPath;
+            }
+        }
+    } else if (isDirExist(QString("%1/Python").arg(path))) {
+        path = QString("%1/Python").arg(path);
+    } else {
+        // 创建 Python 文件夹
+        QString pythonDir = QString("%1/Python").arg(path);
+        QDir().mkpath(pythonDir);
+    }
+    _genPyCSV->exportToPython(path+"/generated_for_csv.py");
+    _genPyCSV->clear();
 }
 
 void

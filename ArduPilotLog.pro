@@ -56,6 +56,8 @@ SOURCES += \
     src/DataAnalyzeController.cpp \
     src/APLQmlWidgetHolder.cpp \
     src/APLDataCache.cpp \
+    src/PythonExporter.cpp \
+    src/PythonExporterCSV.cpp \
 
 HEADERS += \
         mainwindow.h \
@@ -73,6 +75,8 @@ HEADERS += \
     src/DataAnalyze.h \
     src/APLQmlWidgetHolder.h \
     src/APLDataCache.h \
+    src/PythonExporter.h \
+    src/PythonExporterCSV.h \
 
 FORMS += \
         mainwindow.ui \

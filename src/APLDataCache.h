@@ -57,6 +57,7 @@ public:
     const QMap<QString, QList<QByteArray>>& getBinaryStore() const { return _binary_store; }
     QVector<QVariant> parseBinaryData(const QByteArray& data, const QString& format) const;
     void reset();
+    bool isEmpty(const QString& tableName) const { return !_binary_store.contains(tableName); }
 
     void setTableSplit(bool enabled);
     void setSaveCSV(bool enabled);

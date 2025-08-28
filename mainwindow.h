@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QMap>
+#include <QDir>
 #include <QStringList>
 #include <QSqlDatabase>
 #include "ui_mainwindow.h"
@@ -12,6 +13,8 @@
 #include "src/Dialog.h"
 #include "src/DialogLoad.h"
 #include "src/DialogPython.h"
+#include "src/PythonExporter.h"
+#include "src/PythonExporterCSV.h"
 #include "qcustomplot.h"
 
 Q_DECLARE_LOGGING_CATEGORY(MAIN_WINDOW_LOG)
@@ -44,6 +47,16 @@ public:
 
     QVector<QCPScatterStyle::ScatterShape> shapes[10];
     QVector<QColor>                        colors[10];
+    bool isDirExist(QString fullPath)
+    {
+        QDir dir(fullPath);
+
+        if(dir.exists())
+        {
+            return true;
+        }
+        return false;
+    }
 
 public slots:
     void itemChangedSlot(QTreeWidgetItem* item, int column);
@@ -76,6 +89,8 @@ private slots:
     void _onMouseMove(QMouseEvent *event);
     void _onMousePress(QMouseEvent *event);
     void _onTracerToggled(bool checked);
+    void _generatePyDB(bool checked);
+    void _generatePyCSV(bool checked);
 
 signals:
     void treeWidgetAddItem(QString name);
@@ -89,6 +104,8 @@ private:
     DialogPython*       _dialog_python;
     QCPItemStraightLine* _mTracerLine;
     QCPItemText*        _mTracerText;
+    PythonExporter*     _genPyDB;
+    PythonExporterCSV*  _genPyCSV;
     bool                _mIsTracerEnabled;
     QList<QCPItemStraightLine*> _mFixedLines;
     QList<QCPItemText*> _mFixedTexts;
