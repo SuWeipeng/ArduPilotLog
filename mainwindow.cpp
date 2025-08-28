@@ -197,6 +197,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_ui.actionExportCSV,  &QAction::triggered, _dialog->getAPLRead(), &APLRead::exportCSV);
     connect(_ui.actionTrim,  &QAction::triggered, _dialog, &Dialog::trim);
     connect(_dialog->getAPLRead(),  &APLRead::fileOpened, this, &MainWindow::_fileOpenedTrigger);
+    connect(_dialog,  &Dialog::gotCSVDir, this, &MainWindow::_fileOpenedTrigger);
     connect(_dialog_load->getAPLReadConf(),  &APLReadConf::fileOpened, this, &MainWindow::_confOpenedTrigger);
     connect(_dialog,  &Dialog::saveSuccess, this, &MainWindow::_saveSuccessMessage);
     connect(_dialog->getAPLRead()->export_worker,  &APLExportWorker::saveSuccess, this, &MainWindow::_saveSuccessMessage);
@@ -289,6 +290,31 @@ bool MainWindow::_createInnerDockWidget(const QString& widgetName)
 
 void MainWindow::_fileOpenedTrigger()
 {
+    if (_dialog->get_csv_mode()) {
+        QStringList csvNames = _dialog->got_csvFileNames();
+        QTreeWidgetItem* groupItem;
+
+        _groupName.clear();
+
+        for(const auto& fileName: csvNames){
+            QFileInfo fileInfo(fileName);
+            QString table_name = fileInfo.baseName();
+            _groupName << QString("%1").arg(table_name);
+            groupItem = new QTreeWidgetItem(_ui.treeWidget, QStringList(table_name));
+
+            // 获取CSV字段名列表
+            QStringList fieldNames = _dialog->got_csvFieldNames(fileName);
+
+            // 为每个字段名创建一个子节点
+            for(const QString& fieldName : fieldNames) {
+                QTreeWidgetItem *item = new QTreeWidgetItem(groupItem, QStringList(fieldName));
+                item->setCheckState(0, Qt::Unchecked);
+                groupItem->addChild(item);
+            }
+        }
+
+        return;
+    }
     QTreeWidgetItem* groupItem;
     int GroupCount     = APLDataCache::get_singleton()->getTableNum();
     int ItemCount      = 0;
@@ -629,10 +655,37 @@ MainWindow::plotGraph(QString tables,
         qCDebug(MAIN_WINDOW_LOG) << "from: "<<from<<"target: "<<plot_target;
         customPlot->addGraph();
         int length = APLDataCache::get_singleton()->getLen(tables, fields);
+        QString csvFileName;
+        if(_dialog->get_csv_mode()) {
+            csvFileName = _dialog->got_csvFileNames()[_groupName.indexOf(tables)];
+            length = _dialog->got_csvFieldData(csvFileName, _dialog->got_csvFieldNames(csvFileName)[0]).length();
+        }
         QVector<double> x_us(length), y(length);
 
-        getXSuccess = APLDataCache::get_singleton()->getData(tables, QString("TimeUS"), length, x_us, offsetX);
-        getYSuccess = APLDataCache::get_singleton()->getData(tables, fields, length, y, offsetY, scale);
+        if(_dialog->get_csv_mode()) {
+            QStringList stringList = _dialog->got_csvFieldData(csvFileName, _dialog->got_csvFieldNames(csvFileName)[0]);
+            double data;
+
+            getXSuccess = true;
+            x_us.clear();
+            for (const auto& str : stringList) {
+                data = str.toDouble();
+                _processData(data, offsetX);
+                x_us << data;
+            }
+
+            stringList = _dialog->got_csvFieldData(csvFileName, fields);
+            getYSuccess = true;
+            y.clear();
+            for (const auto& str : stringList) {
+                data = str.toDouble();
+                _processData(data, offsetY, scale);
+                y << data;
+            }
+        } else {
+            getXSuccess = APLDataCache::get_singleton()->getData(tables, QString("TimeUS"), length, x_us, offsetX);
+            getYSuccess = APLDataCache::get_singleton()->getData(tables, fields, length, y, offsetY, scale);
+        }
 
         if(_is_constant){
             QVector<double> constant(length, _constant_value);

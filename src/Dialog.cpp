@@ -5,6 +5,9 @@
 #include <QFileDialog>
 #include "APLDataCache.h"
 #include <QFileInfo>
+#include <QStringList>
+#include <QMap>
+#include <QFile>
 #include <QDebug>
 #include <QTextStream>
 #include <QStandardPaths> // 包含 QStandardPaths
@@ -75,6 +78,312 @@ QString preprocessJsonData(const QByteArray& jsonData) {
 
     return result;
 }
+
+class CSVProcessor
+{
+public:
+    CSVProcessor(QString& dir): _dir(dir) {}
+
+    // 获取CSV文件的表头
+    QStringList getCSVHeaders(const QString &filePath)
+    {
+        QStringList headers;
+        QFile file(filePath);
+
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning() << "无法打开文件:" << filePath;
+            return headers;
+        }
+
+        QTextStream in(&file);
+        in.setEncoding(QStringConverter::Utf8); // 设置编码为UTF-8
+
+        if (!in.atEnd()) {
+            QString firstLine = in.readLine();
+            // 按逗号分割，处理可能的引号包围的字段
+            headers = parseCSVLine(firstLine);
+        }
+
+        file.close();
+        return headers;
+    }
+
+    // 解析CSV行，处理引号包围的字段
+    QStringList parseCSVLine(const QString &line)
+    {
+        QStringList result;
+        QString current;
+        bool inQuotes = false;
+
+        for (int i = 0; i < line.length(); ++i) {
+            QChar c = line[i];
+
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (c == ',' && !inQuotes) {
+                result.append(current.trimmed());
+                current.clear();
+            } else {
+                current.append(c);
+            }
+        }
+
+        // 添加最后一个字段
+        result.append(current.trimmed());
+
+        // 移除字段两端的引号
+        for (QString &field : result) {
+            if (field.startsWith('"') && field.endsWith('"')) {
+                field = field.mid(1, field.length() - 2);
+            }
+        }
+
+        return result;
+    }
+
+    // 获取当前目录下所有CSV文件及其表头
+    QMap<QString, QStringList> getAllCSVFilesWithHeaders()
+    {
+        QMap<QString, QStringList> csvFilesMap;
+
+        // 获取当前目录
+        QDir currentDir = _dir;
+
+        // 设置文件过滤器，只获取CSV文件
+        QStringList filters;
+        filters << "*.csv" << "*.CSV";
+        currentDir.setNameFilters(filters);
+
+        // 获取所有CSV文件
+        QFileInfoList fileList = currentDir.entryInfoList(QDir::Files);
+
+        qDebug() << "找到" << fileList.size() << "个CSV文件";
+
+        // 遍历每个CSV文件
+        for (const QFileInfo &fileInfo : fileList) {
+            QString fileName = fileInfo.fileName();
+            QString filePath = fileInfo.absoluteFilePath();
+
+            // 获取文件表头
+            QStringList headers = getCSVHeaders(filePath);
+
+            // 将文件名和表头添加到映射中
+            csvFilesMap[fileName] = headers;
+        }
+
+        _csvFiles = csvFilesMap;
+
+        return csvFilesMap;
+    }
+
+    // 打印所有CSV文件信息
+    void printAllCSVInfo()
+    {
+        qDebug() << "\n========== CSV文件汇总 ==========";
+
+        if (_csvFiles.isEmpty()) {
+            qDebug() << "当前目录下没有找到CSV文件";
+            return;
+        }
+
+        for (auto it = _csvFiles.begin(); it != _csvFiles.end(); ++it) {
+            qDebug() << "\n文件名:" << it.key();
+            qDebug() << "表头:";
+
+            const QStringList &headers = it.value();
+            for (int i = 0; i < headers.size(); ++i) {
+                qDebug() << QString("  [%1] %2").arg(i + 1).arg(headers[i]);
+            }
+        }
+    }
+
+    // 获取指定文件名、指定列名的数据
+    QStringList getColumnData(const QString &fileName, const QString &columnName)
+    {
+        QStringList columnData;
+
+        // 构建完整文件路径
+        QDir currentDir(_dir);
+        QString filePath = currentDir.absoluteFilePath(fileName);
+
+        QFile file(filePath);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning() << "无法打开文件:" << filePath;
+            return columnData;
+        }
+
+        QTextStream in(&file);
+        in.setEncoding(QStringConverter::Utf8);
+
+        // 读取表头行
+        if (in.atEnd()) {
+            qWarning() << "文件为空:" << fileName;
+            file.close();
+            return columnData;
+        }
+
+        QString headerLine = in.readLine();
+        QStringList headers = parseCSVLine(headerLine);
+
+        // 查找目标列的索引
+        int columnIndex = headers.indexOf(columnName);
+        if (columnIndex == -1) {
+            qWarning() << "在文件" << fileName << "中未找到列:" << columnName;
+            file.close();
+            return columnData;
+        }
+
+        // 读取数据行
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (line.trimmed().isEmpty()) {
+                continue; // 跳过空行
+            }
+
+            QStringList fields = parseCSVLine(line);
+
+            // 确保该行有足够的字段
+            if (columnIndex < fields.size()) {
+                columnData.append(fields[columnIndex]);
+            } else {
+                columnData.append(""); // 如果字段不足，添加空字符串
+            }
+        }
+
+        file.close();
+        return columnData;
+    }
+
+    // 获取指定文件名、多个列名的数据
+    QMap<QString, QStringList> getMultipleColumnsData(const QString &fileName, const QStringList &columnNames)
+    {
+        QMap<QString, QStringList> result;
+
+        // 初始化结果映射
+        for (const QString &columnName : columnNames) {
+            result[columnName] = QStringList();
+        }
+
+        // 构建完整文件路径
+        QDir currentDir(_dir);
+        QString filePath = currentDir.absoluteFilePath(fileName);
+
+        QFile file(filePath);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning() << "无法打开文件:" << filePath;
+            return result;
+        }
+
+        QTextStream in(&file);
+        in.setEncoding(QStringConverter::Utf8);
+
+        // 读取表头行
+        if (in.atEnd()) {
+            qWarning() << "文件为空:" << fileName;
+            file.close();
+            return result;
+        }
+
+        QString headerLine = in.readLine();
+        QStringList headers = parseCSVLine(headerLine);
+
+        // 查找目标列的索引
+        QMap<QString, int> columnIndexes;
+        for (const QString &columnName : columnNames) {
+            int index = headers.indexOf(columnName);
+            if (index != -1) {
+                columnIndexes[columnName] = index;
+            } else {
+                qWarning() << "在文件" << fileName << "中未找到列:" << columnName;
+            }
+        }
+
+        // 读取数据行
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (line.trimmed().isEmpty()) {
+                continue; // 跳过空行
+            }
+
+            QStringList fields = parseCSVLine(line);
+
+            // 为每个请求的列提取数据
+            for (auto it = columnIndexes.begin(); it != columnIndexes.end(); ++it) {
+                const QString &columnName = it.key();
+                int columnIndex = it.value();
+
+                if (columnIndex < fields.size()) {
+                    result[columnName].append(fields[columnIndex]);
+                } else {
+                    result[columnName].append(""); // 如果字段不足，添加空字符串
+                }
+            }
+        }
+
+        file.close();
+        return result;
+    }
+
+    // 获取指定文件的所有数据（以二维列表形式返回）
+    QList<QStringList> getAllData(const QString &fileName, bool includeHeaders = false)
+    {
+        QList<QStringList> allData;
+
+        // 构建完整文件路径
+        QDir currentDir(_dir);
+        QString filePath = currentDir.absoluteFilePath(fileName);
+
+        QFile file(filePath);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning() << "无法打开文件:" << filePath;
+            return allData;
+        }
+
+        QTextStream in(&file);
+        in.setEncoding(QStringConverter::Utf8);
+
+        bool isFirstLine = true;
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (line.trimmed().isEmpty()) {
+                continue; // 跳过空行
+            }
+
+            QStringList fields = parseCSVLine(line);
+
+            // 根据参数决定是否包含表头
+            if (isFirstLine && !includeHeaders) {
+                isFirstLine = false;
+                continue;
+            }
+
+            allData.append(fields);
+            isFirstLine = false;
+        }
+
+        file.close();
+        return allData;
+    }
+
+    // 打印指定列的数据
+    void printColumnData(const QString &fileName, const QString &columnName)
+    {
+        QStringList data = getColumnData(fileName, columnName);
+
+        qDebug() << "\n========== 列数据 ==========";
+        qDebug() << "文件名:" << fileName;
+        qDebug() << "列名:" << columnName;
+        qDebug() << "数据行数:" << data.size();
+        qDebug() << "数据内容:";
+
+        for (int i = 0; i < data.size(); ++i) {
+            qDebug() << QString("  [%1] %2").arg(i + 1).arg(data[i]);
+        }
+    }
+private:
+    QString _dir;
+    QMap<QString, QStringList> _csvFiles;
+};
 
 SaveAsWorker::SaveAsWorker(QObject *parent)
     : QObject(parent)
@@ -366,18 +675,43 @@ void Dialog::showFile()
     QString logdir = _qfiledialog->getOpenFileName(this
                                                   ,"open ArduPilot binary log file"
                                                   ,log_dir
-                                                  ,"Binary files(*.bin *.BIN)"
+                                                  ,"Binary files(*.bin *.BIN *.csv *.CSV)"
                                                   ,nullptr
                                                   ,QFileDialog::DontUseNativeDialog);
+    _logdir = logdir;
     loadSettings();
 
-    _db_name = "";
+    QFileInfo fileInfo(_logdir);
+    QString suffix = fileInfo.suffix().toLower();
+    _csv_mode = false;
+    _csvFilesMap.clear();
+    if (suffix.compare("csv", Qt::CaseInsensitive) == 0) {
+        _csv_mode = true;
+        QString baseName = fileInfo.completeBaseName();
+        QString dirPath = fileInfo.absolutePath();
 
-    _logdir = logdir;
+        qCDebug(DIALOG_LOG) << baseName << dirPath << fileInfo.dir().dirName();;
 
-    emit _qfiledialog->fileSelected(_logdir);
+        CSVProcessor processor(dirPath);
 
-    qCDebug(DIALOG_LOG) << _logdir;
+        // 获取所有CSV文件和表头的映射
+        _csvFilesMap = processor.getAllCSVFilesWithHeaders();
+
+        emit gotCSVDir();
+
+    } else if (suffix.compare("bin", Qt::CaseInsensitive) == 0) {
+        _db_name = "";
+        emit _qfiledialog->fileSelected(_logdir);
+        qCDebug(DIALOG_LOG) << _logdir;
+    }
+}
+
+QStringList Dialog::got_csvFieldData(const QString& fileName, const QString& fieldName) const
+{
+    QFileInfo fileInfo(_logdir);
+    QString dirPath = fileInfo.absolutePath();
+    CSVProcessor processor(dirPath);
+    return processor.getColumnData(fileName, fieldName);
 }
 
 void Dialog::saveFile()

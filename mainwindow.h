@@ -121,6 +121,7 @@ private:
     void _lineStyle(int index, int i, bool from);
     bool _findTable(QString table);
     bool _findField(QString table, QString field);
+    void _processData(double& data, double offset = 0, double scale = 1) { data = (data + offset) * scale; }
 };
 
 #endif // MAINWINDOW_H
