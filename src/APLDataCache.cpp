@@ -1,4 +1,5 @@
 #include "APLDataCache.h"
+#include "mainwindow.h"
 #include <QJsonDocument>
 #include <QFile>
 #include <QDir>
@@ -245,6 +246,20 @@ void APLDataCache::exportToFile(const QString &outputDir)
     QDir dir;
     if (!dir.exists(export_dir)) {
         dir.mkpath(export_dir);
+    }
+    MainWindow::getMainWindow()->dialog()->ignore_db(true);
+    MainWindow::getMainWindow()->dialog()->loadSettings();
+
+    // 获取 QWidgetAction
+    QWidgetAction *actionPythonIgnoreDB = qobject_cast<QWidgetAction*>(
+        MainWindow::getMainWindow()->ui().menuFile->actions().at(7));
+
+    if (actionPythonIgnoreDB) {
+        // 获取内部的 QCheckBox
+        QCheckBox *checkBox = qobject_cast<QCheckBox*>(actionPythonIgnoreDB->defaultWidget());
+        if (checkBox) {
+            checkBox->setChecked(MainWindow::getMainWindow()->dialog()->get_python_ingnore_db());
+        }
     }
 
     // Export data to CSV files

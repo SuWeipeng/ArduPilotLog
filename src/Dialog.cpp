@@ -679,6 +679,7 @@ void Dialog::showFile()
                                                   ,nullptr
                                                   ,QFileDialog::DontUseNativeDialog);
     _logdir = logdir;
+    APLDataCache::get_singleton()->reset();
     loadSettings();
 
     QFileInfo fileInfo(_logdir);
@@ -694,6 +695,20 @@ void Dialog::showFile()
     actions.at(2)->setVisible(true);
     if (suffix.compare("csv", Qt::CaseInsensitive) == 0) {
         _csv_mode = true;
+        ignore_db(true);
+        loadSettings();
+
+        // 获取 QWidgetAction
+        QWidgetAction *actionPythonIgnoreDB = qobject_cast<QWidgetAction*>(
+            MainWindow::getMainWindow()->ui().menuFile->actions().at(7));
+
+        if (actionPythonIgnoreDB) {
+            // 获取内部的 QCheckBox
+            QCheckBox *checkBox = qobject_cast<QCheckBox*>(actionPythonIgnoreDB->defaultWidget());
+            if (checkBox) {
+                checkBox->setChecked(_python_ingnore_db);
+            }
+        }
         MainWindow::getMainWindow()->ui().actionExportCSV->setVisible(false);
         MainWindow::getMainWindow()->ui().actionSaveDBFile->setVisible(false);
         MainWindow::getMainWindow()->ui().actionTrim->setVisible(false);
@@ -745,6 +760,21 @@ void Dialog::saveFile()
     _db_name = dbdir;
     if (!dbdir.isNull())
     {
+        ignore_db(false);
+        loadSettings();
+
+        // 获取 QWidgetAction
+        QWidgetAction *actionPythonIgnoreDB = qobject_cast<QWidgetAction*>(
+            MainWindow::getMainWindow()->ui().menuFile->actions().at(7));
+
+        if (actionPythonIgnoreDB) {
+            // 获取内部的 QCheckBox
+            QCheckBox *checkBox = qobject_cast<QCheckBox*>(actionPythonIgnoreDB->defaultWidget());
+            if (checkBox) {
+                checkBox->setChecked(_python_ingnore_db);
+            }
+        }
+
         emit saveAsStart(dbdir);
     }
 }
