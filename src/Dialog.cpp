@@ -685,8 +685,17 @@ void Dialog::showFile()
     QString suffix = fileInfo.suffix().toLower();
     _csv_mode = false;
     _csvFilesMap.clear();
+    MainWindow::getMainWindow()->ui().actionExportCSV->setVisible(true);
+    MainWindow::getMainWindow()->ui().actionSaveDBFile->setVisible(true);
+    MainWindow::getMainWindow()->ui().actionTrim->setVisible(true);
+    QList<QAction*> actions = MainWindow::getMainWindow()->ui().menuTools->actions();
+    actions.at(2)->setVisible(true);
     if (suffix.compare("csv", Qt::CaseInsensitive) == 0) {
         _csv_mode = true;
+        MainWindow::getMainWindow()->ui().actionExportCSV->setVisible(false);
+        MainWindow::getMainWindow()->ui().actionSaveDBFile->setVisible(false);
+        MainWindow::getMainWindow()->ui().actionTrim->setVisible(false);
+        actions.at(2)->setVisible(false);
         QString baseName = fileInfo.completeBaseName();
         QString dirPath = fileInfo.absolutePath();
 
