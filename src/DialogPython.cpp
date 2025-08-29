@@ -183,6 +183,7 @@ void DialogPython::showFile()
             // 进程结束时的清理
             connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                     this, [process](int exitCode, QProcess::ExitStatus exitStatus) {
+                        Q_UNUSED(exitStatus);
                         qCDebug(DIALOGPYTHON_LOG) << "Process finished with exit code:" << exitCode;
 
                         // 读取可能剩余的输出

@@ -329,7 +329,7 @@ void APLReadWorker::_decodeData(QString &format, const uchar *ptr, QString &valu
     QTextStream st(&value);
     QByteArray formatArray = format.toLatin1();
 
-    for(qint8 i = 0; i< formatArray.count(); i++){
+    for(qint8 i = 0; i< formatArray.size(); i++){
         switch(formatArray[i]){
         case 'a': { 
             qint16 v16_32[32];

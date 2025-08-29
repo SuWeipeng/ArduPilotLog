@@ -237,12 +237,12 @@ void APLDB::_createTableField(const QString &name, QString &format, QString &fie
     QByteArray formatArray = format.toLatin1();
     QStringList fieldList = field.split(',');
 
-    if(formatArray.count() != fieldList.count()){
+    if(formatArray.size() != fieldList.count()){
         qCDebug(APLDB_LOG) << name << "Format and labels don't match";
         return;
     }
 
-    for(qint8 i = 0; i < formatArray.count(); i++){
+    for(qint8 i = 0; i < formatArray.size(); i++){
         // 使用双引号转义字段名，处理关键字冲突
         QString fieldName = QString("\"%1\"").arg(_sanitizeFieldName(name, fieldList[i]));
 
@@ -264,7 +264,7 @@ void APLDB::_createTableField(const QString &name, QString &format, QString &fie
         }
 
         table_field += QString("%1 %2").arg(fieldName, dataType);
-        if (i < formatArray.count() - 1) {
+        if (i < formatArray.size() - 1) {
             table_field += ", ";
         }
     }
