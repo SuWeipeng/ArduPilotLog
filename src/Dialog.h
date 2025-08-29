@@ -37,6 +37,7 @@ class Dialog : public QDialog
     Q_OBJECT
 
     friend class APLDataCache;
+    friend class MainWindow;
 public:
     Dialog(QWidget *parent = 0);
     ~Dialog();

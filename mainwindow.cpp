@@ -1047,6 +1047,21 @@ void MainWindow::_generatePyDB(bool checked)
     _genPyDB->exportToPython(path+"/generated_for_db.py");
     _genPyDB->clear();
     clearGraph();
+
+    _dialog->ignore_db(false);
+    _dialog->loadSettings();
+
+    // 获取 QWidgetAction
+    QWidgetAction *actionPythonIgnoreDB = qobject_cast<QWidgetAction*>(
+        _ui.menuFile->actions().at(7));
+
+    if (actionPythonIgnoreDB) {
+        // 获取内部的 QCheckBox
+        QCheckBox *checkBox = qobject_cast<QCheckBox*>(actionPythonIgnoreDB->defaultWidget());
+        if (checkBox) {
+            checkBox->setChecked(_dialog->get_python_ingnore_db());
+        }
+    }
 }
 
 void MainWindow::_generatePyCSV(bool checked)
@@ -1084,6 +1099,21 @@ void MainWindow::_generatePyCSV(bool checked)
     _genPyCSV->exportToPython(path+"/generated_for_csv.py");
     _genPyCSV->clear();
     clearGraph();
+
+    _dialog->ignore_db(true);
+    _dialog->loadSettings();
+
+    // 获取 QWidgetAction
+    QWidgetAction *actionPythonIgnoreDB = qobject_cast<QWidgetAction*>(
+        _ui.menuFile->actions().at(7));
+
+    if (actionPythonIgnoreDB) {
+        // 获取内部的 QCheckBox
+        QCheckBox *checkBox = qobject_cast<QCheckBox*>(actionPythonIgnoreDB->defaultWidget());
+        if (checkBox) {
+            checkBox->setChecked(_dialog->get_python_ingnore_db());
+        }
+    }
 }
 
 void
