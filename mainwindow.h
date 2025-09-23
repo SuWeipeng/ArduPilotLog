@@ -58,6 +58,8 @@ public:
         return false;
     }
 
+    uint8_t x_unit; // 0-us, 1-ms
+
 public slots:
     void itemChangedSlot(QTreeWidgetItem* item, int column);
     void plotGraph(QString tables,
