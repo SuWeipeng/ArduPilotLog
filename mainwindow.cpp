@@ -24,6 +24,8 @@ bool        MainWindow::_customPlot_hold_on;
 bool        MainWindow::_X_axis_changed;
 MainWindow* MainWindow::_instance;
 
+static uint8_t x_uint = 0; // 0-us, 1-ms
+
 static const char *rgDockWidgetNames[] = {
     "Data Analyze"
 };
@@ -325,6 +327,7 @@ void MainWindow::_fileOpenedTrigger()
     int GroupCount     = APLDataCache::get_singleton()->getTableNum();
     int ItemCount      = 0;
     int treeGroupCount = 0;
+    bool time_catched  = false;
 
     _groupName.clear();
 
@@ -342,6 +345,12 @@ void MainWindow::_fileOpenedTrigger()
             QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDataCache::get_singleton()->getItemName(table_name, j)));
             item->setCheckState(0, Qt::Unchecked);
             groupItem->addChild(item);
+            if (!time_catched) {
+                time_catched = true;
+                if(APLDataCache::get_singleton()->getItemName(table_name, 0).compare("TimeMS", Qt::CaseInsensitive) == 0) {
+                    x_uint = 1;
+                }
+            }
         }
     }
 
@@ -706,7 +715,7 @@ MainWindow::plotGraph(QString tables,
                 y << data;
             }
         } else {
-            getXSuccess = APLDataCache::get_singleton()->getData(tables, QString("TimeUS"), length, x_us, offsetX);
+            getXSuccess = APLDataCache::get_singleton()->getData(tables, x_uint == 1 ? QString("TimeMS") : QString("TimeUS"), length, x_us, offsetX);
             getYSuccess = APLDataCache::get_singleton()->getData(tables, fields, length, y, offsetY, scale);
         }
 
@@ -719,7 +728,11 @@ MainWindow::plotGraph(QString tables,
         if(getXSuccess && getYSuccess){
             QVector<double> x_seconds(length);
             for (int i = 0; i < length; ++i) {
-                x_seconds[i] = x_us[i] / 1000000.0;
+                if (x_uint == 1) {
+                    x_seconds[i] = x_us[i] / 1000.0;
+                } else {
+                    x_seconds[i] = x_us[i] / 1000000.0;
+                }
             }
             customPlot->graph()->setData(x_seconds, y);
         } else {
@@ -1215,7 +1228,7 @@ MainWindow::plotConf(QStringList conf)
                 if(command.compare("const")==0 || command.compare("")==0){
                     QStringList list = command_str.split(QRegularExpression("[:\\s]"));
                     table = list[1];
-                    field = QString("TimeUS");
+                    field = x_uint == 1 ? QString("TimeMS") : QString("TimeUS");
                     QString constant_value  = list[2];
                     QString style_color = list[3];
                     QStringList style_color_list = style_color.split(".");
