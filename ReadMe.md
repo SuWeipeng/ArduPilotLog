@@ -3,6 +3,8 @@
 ---
 ArduPilotLog 是 ardupilot 日志数据绘图软件。为快速展示 Log 日志数据，以便通过分析数据排查程序 bug 或累积经验而设计。
 
+> 设置文件（settings.json / settings_filter.json）与界面功能的详细说明见 **[README_设置与功能说明.md](README_设置与功能说明.md)**。
+
 打开"_\*.bin_"类型日志
 ---
 打开方法如下图所示：
