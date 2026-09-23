@@ -92,6 +92,9 @@ QString PythonExporter::generatePythonCode()
 
     // 数据读取部分
     stream << "try:\n";
+    if (m_dataFields.isEmpty()) {
+        stream << "    pass\n";
+    }
 
     int dataIndex = 0;
     for (const auto& field : m_dataFields) {

@@ -595,22 +595,14 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
         item->setCheckState(column,Qt::Checked);
     } else {
         item->setCheckState(column,Qt::PartiallyChecked);
-        QStringList fields;
-        for (int i=0;i<item->childCount();i++)
-        {
-            QTreeWidgetItem* child=item->child(i);
-            fields.append(child->text(0));
-        }
+    }
 
-        if (!APLDataCache::get_singleton()->isEmpty(item->text(column)) || _dialog->get_csv_mode()) {
-            if (!_ui.actiongenPyDB->isVisible() && !_dialog->get_csv_mode()) {
-                _ui.actiongenPyDB->setVisible(true);
-            }
-            if (!_ui.actiongenPyCSV->isVisible()) {
-                _ui.actiongenPyCSV->setVisible(true);
-            }
-            _genPyDB->addDataField(item->text(column), fields);
-            _genPyCSV->addDataField(item->text(column), fields);
+    if(selectedCount > 0) {
+        if (!_ui.actiongenPyDB->isVisible() && !_dialog->get_csv_mode()) {
+            _ui.actiongenPyDB->setVisible(true);
+        }
+        if (!_ui.actiongenPyCSV->isVisible()) {
+            _ui.actiongenPyCSV->setVisible(true);
         }
     }
 }
@@ -1023,6 +1015,33 @@ void MainWindow::_onTracerToggled(bool checked)
     }
 }
 
+/* 生成 Python 前从消息树收集数据：每个勾选了字段的消息表只收集一条，
+ * 导出脚本中每个表只生成一次 getData/get_data 读取 */
+QList<QPair<QString, QStringList>> MainWindow::_genPyDataFields(void)
+{
+    QList<QPair<QString, QStringList>> dataFields;
+
+    for (int i=0; i<_ui.treeWidget->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* tableItem = _ui.treeWidget->topLevelItem(i);
+
+        int selectedCount = 0;
+        QStringList fields;
+        for (int j=0; j<tableItem->childCount(); ++j) {
+            fields.append(tableItem->child(j)->text(0));
+            if (tableItem->child(j)->checkState(0) == Qt::Checked) {
+                selectedCount++;
+            }
+        }
+
+        if (selectedCount == 0) continue;
+        if (!APLDataCache::get_singleton()->isEmpty(tableItem->text(0)) || _dialog->get_csv_mode()) {
+            dataFields.append(qMakePair(tableItem->text(0), fields));
+        }
+    }
+
+    return dataFields;
+}
+
 void MainWindow::_generatePyDB(bool checked)
 {
     Q_UNUSED(checked);
@@ -1056,8 +1075,12 @@ void MainWindow::_generatePyDB(bool checked)
         QString pythonDir = QString("%1/Python").arg(path);
         QDir().mkpath(pythonDir);
     }
-    _genPyDB->exportToPython(path+"/generated_for_db.py");
     _genPyDB->clear();
+    const QList<QPair<QString, QStringList>> dataFields = _genPyDataFields();
+    for (const auto& dataField : dataFields) {
+        _genPyDB->addDataField(dataField.first, dataField.second);
+    }
+    _genPyDB->exportToPython(path+"/generated_for_db.py");
     clearGraph();
 
     _dialog->ignore_db(false);
@@ -1108,8 +1131,12 @@ void MainWindow::_generatePyCSV(bool checked)
         QString pythonDir = QString("%1/Python").arg(path);
         QDir().mkpath(pythonDir);
     }
-    _genPyCSV->exportToPython(path+"/generated_for_csv.py");
     _genPyCSV->clear();
+    const QList<QPair<QString, QStringList>> dataFields = _genPyDataFields();
+    for (const auto& dataField : dataFields) {
+        _genPyCSV->addDataField(dataField.first, dataField.second);
+    }
+    _genPyCSV->exportToPython(path+"/generated_for_csv.py");
     clearGraph();
 
     _dialog->ignore_db(true);

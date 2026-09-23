@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QMap>
+#include <QPair>
 #include <QDir>
 #include <QStringList>
 #include <QSqlDatabase>
@@ -137,6 +138,7 @@ private:
     bool _createInnerDockWidget(const QString& widgetName);
     void _fileOpenedTrigger();
     void _clearTreeWidget(QTreeWidget *treeWidget);
+    QList<QPair<QString, QStringList>> _genPyDataFields(void);
     void _lineStyle(int index, int i, bool from);
     bool _findTable(QString table);
     bool _findField(QString table, QString field);

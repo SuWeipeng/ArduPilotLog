@@ -92,6 +92,9 @@ QString PythonExporterCSV::generatePythonCode()
 
     // 数据读取部分
     stream << "try:\n";
+    if (m_dataFields.isEmpty()) {
+        stream << "    pass\n";
+    }
 
     for (const auto& field : m_dataFields) {
         stream << generateDataReading(field);
