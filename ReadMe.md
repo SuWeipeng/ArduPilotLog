@@ -44,6 +44,13 @@ ArduPilotLog 是 ardupilot 日志数据绘图软件。为快速展示 Log 日志
 ## 编译方法
 ArduPilotLog 软件架构源于[qgroundcontrol](https://github.com/mavlink/qgroundcontrol)，因此[编译方法](https://dev.qgroundcontrol.com/en/getting_started/)与QGC相同。
 
+## 发布方法
+Release 编译完成后**不需要手动运行 windeployqt**：`APLSetup.pri` 里配置了 `QMAKE_POST_LINK`，每次链接完成后自动调用 windeployqt（带 `--qmldir=src`，会扫描 `src/*.qml` 的 import，把 Qt6 相关 DLL 和 qml 插件目录一并拷入），所以 `build/.../release` 目录编译完就是绿色免安装目录，**直接整个文件夹复制给别人即可用**。
+
+两个注意点：
+1. **MSVC 运行库不在自动部署范围内**（windeployqt 用了 `--no-compiler-runtime` 参数）。目标电脑若没有装过 VC++ 2015-2022 Redistributable (x64)，运行会提示找不到 `VCRUNTIME140.dll`。解决办法二选一：让对方安装 VC++ 运行库，或从本机 `C:\Windows\System32` 手动复制 `vcruntime140.dll`、`vcruntime140_1.dll`、`msvcp140.dll` 三个文件到 exe 同目录。
+2. 程序运行时以相对路径读写 exe 同目录下的 `settings.json`、`confdir.txt`，以及日志目录下的 `Python/` 脚本文件夹，换电脑时如需保留配置请一并复制（不带也能用，首次运行会自动生成默认 settings.json）。
+
 ## 软件的由来
 <br/>起初只是为了学习QGC，QGC功能多、代码构架复杂不是一下就能看懂的。</br>
 <br/>后来在研究ardupilot的过程中经常要分析Log。使用过MissionPlanner、APM Planner等软件看Log日志，有几个体验一直觉得不爽：</br>
