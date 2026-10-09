@@ -80,7 +80,7 @@ ArduPilotLog 是一个 ArduPilot 飞行日志（`*.bin` / `*.csv`）绘图分析
 | Load *.conf | 加载**绘图脚本**（`Config files(*.conf)`），一键复现整套绘图。语法见 3.7；目录记忆在程序目录 `confdir.txt`。 |
 | Load *.py | 用 `python_path` 指定的解释器运行 Python 脚本，`DialogPython` 窗口实时显示脚本的 `Output:` / `Error:` 和退出码。 |
 | Trim | 应用裁剪：把当前内存中的 `trim_from`/`trim_to` 写回 settings.json，清空树和图，**重新解析日志**（只保留时间窗内数据）。 |
-| Generate .py for DB | 生成 Python 分析脚本 `<日志目录>/Python/generated_for_db.py`，基于 ArduPilot 官方 matplotlib 工具 `utilities.LogDBParser` 从 `.db` 读数据。仅当树中勾选过字段后显示。 |
+| Generate .py for DB | 生成 Python 分析脚本 `<日志目录>/PyTool/generated_for_db.py`，基于 ArduPilot 官方 matplotlib 工具 `utilities.LogDBParser` 从 `.db` 读数据。仅当树中勾选过字段后显示。 |
 | Generate .py for CSV | 同上，生成 `generated_for_csv.py`，基于 `utilities.LogCSVParser`。 |
 | ☑ Python Ignore *.db | 复选框菜单项，即 `python_ingnore_db`；导出 CSV 后会被自动勾选（因为此时数据以 CSV 形式存在）。 |
 

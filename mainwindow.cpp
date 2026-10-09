@@ -1170,16 +1170,16 @@ void MainWindow::_generatePyDB(bool checked)
         QDir currentDir(path);
         if (currentDir.cdUp() && currentDir.cdUp()) { // 切换到上 2 级目录
             QString parentPath = currentDir.absolutePath();
-            QString confPath = QString("%1/Python").arg(parentPath);
+            QString confPath = QString("%1/PyTool").arg(parentPath);
             if (isDirExist(confPath)) {
                 path = confPath;
             }
         }
-    } else if (isDirExist(QString("%1/Python").arg(path))) {
-        path = QString("%1/Python").arg(path);
+    } else if (isDirExist(QString("%1/PyTool").arg(path))) {
+        path = QString("%1/PyTool").arg(path);
     } else {
-        // 创建 Python 文件夹
-        QString pythonDir = QString("%1/Python").arg(path);
+        // 创建 PyTool 文件夹
+        QString pythonDir = QString("%1/PyTool").arg(path);
         QDir().mkpath(pythonDir);
     }
     _genPyDB->clear();
@@ -1227,16 +1227,16 @@ void MainWindow::_generatePyCSV(bool checked)
         QDir currentDir(path);
         if (currentDir.cdUp() && currentDir.cdUp()) { // 切换到上 2 级目录
             QString parentPath = currentDir.absolutePath();
-            QString confPath = QString("%1/Python").arg(parentPath);
+            QString confPath = QString("%1/PyTool").arg(parentPath);
             if (isDirExist(confPath)) {
                 path = confPath;
             }
         }
-    } else if (isDirExist(QString("%1/Python").arg(path))) {
-        path = QString("%1/Python").arg(path);
+    } else if (isDirExist(QString("%1/PyTool").arg(path))) {
+        path = QString("%1/PyTool").arg(path);
     } else {
-        // 创建 Python 文件夹
-        QString pythonDir = QString("%1/Python").arg(path);
+        // 创建 PyTool 文件夹
+        QString pythonDir = QString("%1/PyTool").arg(path);
         QDir().mkpath(pythonDir);
     }
     _genPyCSV->clear();

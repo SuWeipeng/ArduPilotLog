@@ -49,7 +49,7 @@ Release 编译完成后**不需要手动运行 windeployqt**：`APLSetup.pri` �
 
 两个注意点：
 1. **MSVC 运行库不在自动部署范围内**（windeployqt 用了 `--no-compiler-runtime` 参数）。目标电脑若没有装过 VC++ 2015-2022 Redistributable (x64)，运行会提示找不到 `VCRUNTIME140.dll`。解决办法二选一：让对方安装 VC++ 运行库，或从本机 `C:\Windows\System32` 手动复制 `vcruntime140.dll`、`vcruntime140_1.dll`、`msvcp140.dll` 三个文件到 exe 同目录。
-2. 程序运行时以相对路径读写 exe 同目录下的 `settings.json`、`confdir.txt`，以及日志目录下的 `Python/` 脚本文件夹，换电脑时如需保留配置请一并复制（不带也能用，首次运行会自动生成默认 settings.json）。
+2. 程序运行时以相对路径读写 exe 同目录下的 `settings.json`、`confdir.txt`，以及日志目录下的 `PyTool/` 脚本文件夹，换电脑时如需保留配置请一并复制（不带也能用，首次运行会自动生成默认 settings.json）。
 
 ## 软件的由来
 <br/>起初只是为了学习QGC，QGC功能多、代码构架复杂不是一下就能看懂的。</br>

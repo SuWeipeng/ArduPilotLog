@@ -42,23 +42,23 @@ void DialogPython::showFile()
         QDir currentDir(path);
         if (currentDir.cdUp() && currentDir.cdUp()) { // 切换到上 2 级目录
             QString parentPath = currentDir.absolutePath();
-            QString confPath = QString("%1/Python").arg(parentPath);
+            QString confPath = QString("%1/PyTool").arg(parentPath);
             if (isDirExist(confPath)) {
                 path = confPath;
             }
         }
-    } else if (isDirExist(QString("%1/Python").arg(path))) {
-        path = QString("%1/Python").arg(path);
+    } else if (isDirExist(QString("%1/PyTool").arg(path))) {
+        path = QString("%1/PyTool").arg(path);
     } else {
-        // 创建 Python 文件夹
-        QString pythonDir = QString("%1/Python").arg(path);
+        // 创建 PyTool 文件夹
+        QString pythonDir = QString("%1/PyTool").arg(path);
         QDir().mkpath(pythonDir);
 
         // 创建 utilities 子文件夹
         QString utilitiesDir = QString("%1/utilities").arg(pythonDir);
         QDir().mkpath(utilitiesDir);
 
-        // 在 Python 文件夹下创建示例文件
+        // 在 PyTool 文件夹下创建示例文件
         QFile file1(QString("%1/QuadPlane_example_01_DB.py").arg(pythonDir));
         if (file1.open(QIODevice::WriteOnly | QIODevice::Text)) {
             file1.write(example_01.toUtf8());
