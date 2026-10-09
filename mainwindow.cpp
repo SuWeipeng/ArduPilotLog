@@ -1163,8 +1163,6 @@ void MainWindow::_generatePyDB(bool checked)
         db_name = QDir(dirPath).filePath(baseName + "." + newExtension);
     }
 
-    _genPyDB->setDatabaseName(db_name);
-
     QString path = APLRead::getAPLRead()->getFilePath();
 
     if (MainWindow::getMainWindow()->dialog()->get_csv_mode()) {
@@ -1185,6 +1183,9 @@ void MainWindow::_generatePyDB(bool checked)
         QDir().mkpath(pythonDir);
     }
     _genPyDB->clear();
+    /* clear() 会把 m_databaseName 一并清空（f2a58c1 把 clear 挪到了生成之前），
+     * db 名必须在 clear 之后再设置，否则脚本里嵌入的默认 db_name 是空串 */
+    _genPyDB->setDatabaseName(db_name);
     const QList<QPair<QString, QStringList>> dataFields = _genPyDataFields();
     for (const auto& dataField : dataFields) {
         _genPyDB->addDataField(dataField.first, dataField.second);
@@ -1219,8 +1220,6 @@ void MainWindow::_generatePyCSV(bool checked)
         db_name = dirPath;
     }
 
-    _genPyCSV->setLogFolderName(db_name);
-
     QString path = APLRead::getAPLRead()->getFilePath();
 
     if (MainWindow::getMainWindow()->dialog()->get_csv_mode()) {
@@ -1241,6 +1240,8 @@ void MainWindow::_generatePyCSV(bool checked)
         QDir().mkpath(pythonDir);
     }
     _genPyCSV->clear();
+    /* 与 _generatePyDB 同理：clear() 会清掉文件夹名，必须在 clear 之后再设置 */
+    _genPyCSV->setLogFolderName(db_name);
     const QList<QPair<QString, QStringList>> dataFields = _genPyDataFields();
     for (const auto& dataField : dataFields) {
         _genPyCSV->addDataField(dataField.first, dataField.second);
