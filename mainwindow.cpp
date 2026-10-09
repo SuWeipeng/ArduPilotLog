@@ -337,54 +337,107 @@ void MainWindow::_fileOpenedTrigger()
 
     for(int i = 0; i < treeGroupCount; i++){
         QString table_name = _groupName.at(i);
-        groupItem = new QTreeWidgetItem(_ui.treeWidget,QStringList(table_name));
+        QString base_name  = APLDataCache::get_singleton()->splitBaseName(table_name);
         ItemCount = APLDataCache::get_singleton()->getItemCount(table_name);
-        for (int j = 0; j < ItemCount; j++)
-        {
-            QTreeWidgetItem *item=new QTreeWidgetItem(groupItem,QStringList(APLDataCache::get_singleton()->getItemName(table_name, j)));
-            item->setCheckState(0, Qt::Unchecked);
-            groupItem->addChild(item);
-            if (!time_catched) {
-                time_catched = true;
-                if(APLDataCache::get_singleton()->getItemName(table_name, 0).compare("TimeMS", Qt::CaseInsensitive) == 0) {
-                    x_unit = 1;
+
+        if (!time_catched && ItemCount > 0) {
+            time_catched = true;
+            if(APLDataCache::get_singleton()->getItemName(table_name, 0).compare("TimeMS", Qt::CaseInsensitive) == 0) {
+                x_unit = 1;
+            }
+        }
+
+        QTreeWidgetItem* fieldParent;
+
+        if (!base_name.isEmpty()) {
+            /* Split Table 分组：树上按“原始消息名 → 实例号 → 字段”显示，
+             * 内部表名仍为 基名+实例号（如 BARO0），绘图/导出不受影响 */
+            QString instance_name = table_name.mid(base_name.length());
+
+            groupItem = _ui.treeWidget->findItems(base_name, Qt::MatchCaseSensitive).value(0);
+            if (!groupItem) {
+                groupItem = new QTreeWidgetItem(_ui.treeWidget, QStringList(base_name));
+            }
+
+            QTreeWidgetItem* instanceItem = NULL;
+            for (int k = 0; k < groupItem->childCount(); k++) {
+                if (groupItem->child(k)->text(0) == instance_name) {
+                    instanceItem = groupItem->child(k);
+                    break;
                 }
             }
+            if (!instanceItem) {
+                instanceItem = new QTreeWidgetItem(groupItem, QStringList(instance_name));
+                groupItem->addChild(instanceItem);
+            }
+
+            fieldParent = instanceItem;
+        } else {
+            groupItem = new QTreeWidgetItem(_ui.treeWidget,QStringList(table_name));
+            fieldParent = groupItem;
+        }
+
+        for (int j = 0; j < ItemCount; j++)
+        {
+            QTreeWidgetItem *item=new QTreeWidgetItem(fieldParent,QStringList(APLDataCache::get_singleton()->getItemName(table_name, j)));
+            item->setCheckState(0, Qt::Unchecked);
+            fieldParent->addChild(item);
         }
     }
 
     requestTableList();
 
     QMap<QString, QStringList> data;
-    for(int i = 0; i < _ui.treeWidget->topLevelItemCount(); ++i) {
-        QTreeWidgetItem* tableItem = _ui.treeWidget->topLevelItem(i);
-        QString tableName = tableItem->text(0);
-        QStringList fields;
-        for (int j = 0; j < tableItem->childCount(); ++j) {
-            fields << tableItem->child(j)->text(0);
-        }
-        data.insert(tableName, fields);
+    for(int i = 0; i < _groupName.size(); ++i) {
+        data.insert(_groupName.at(i), getFieldList(_groupName.at(i)));
     }
     emit dataReady(data);
 }
 
 void MainWindow::requestTableList()
 {
-    for(int i=0; i<_ui.treeWidget->topLevelItemCount(); i++){
-        emit treeWidgetAddItem(_ui.treeWidget->topLevelItem(i)->text(0));
+    /* 发送真实表名（Split Table 开启时为 BARO0/BARO1 这类拆分名），不读树顶层的分组显示名 */
+    for(int i=0; i<_groupName.size(); i++){
+        emit treeWidgetAddItem(_groupName.at(i));
     }
+}
+
+/* 按真实表名取字段列表：bin 模式来自缓存，CSV 模式来自文件表头。
+ * 树按“基名→实例号→字段”分组显示后，不能再按树顶层文本查字段，
+ * Data Analyze 面板等需要真实表名到字段的映射时统一走这里 */
+QStringList MainWindow::getFieldList(const QString& table)
+{
+    if (_dialog->get_csv_mode()) {
+        int index = _groupName.indexOf(table);
+        if (index < 0) {
+            return QStringList();
+        }
+        QString csvFileName = _dialog->got_csvFileNames()[index];
+        return _dialog->got_csvFieldNames(csvFileName);
+    }
+
+    QStringList fields;
+    int ItemCount = APLDataCache::get_singleton()->getItemCount(table);
+    for (int j = 0; j < ItemCount; j++) {
+        fields << APLDataCache::get_singleton()->getItemName(table, j);
+    }
+    return fields;
 }
 
 void MainWindow::_plotGraph(QTreeWidgetItem *item, int column)
 {
     QTreeWidgetItem*   parent = item->parent();
     QCustomPlot*       customPlot = MainWindow::getMainWindow()->ui().customPlot;
-    int                index;    
+    int                index;
 
     if(NULL==parent) return;
 
+    /* Split Table 分组时字段项挂在实例号节点下（顶层为基名），真实表名 = 基名 + 实例号 */
+    QTreeWidgetItem* grandparent = parent->parent();
+    _table = grandparent ? (grandparent->text(column) + parent->text(column))
+                         : parent->text(column);
+
     index = parent->indexOfChild(item);
-    _table = parent->text(column);
     _field = parent->child(index)->text(column);
 
     plotGraph(_table,
@@ -408,8 +461,12 @@ void MainWindow::_removeGraph(QTreeWidgetItem *item, int column)
 
     if(NULL==parent) return;
 
+    /* 与 _plotGraph 一致：分组时真实表名 = 基名 + 实例号 */
+    QTreeWidgetItem* grandparent = parent->parent();
+    _table = grandparent ? (grandparent->text(column) + parent->text(column))
+                         : parent->text(column);
+
     index = parent->indexOfChild(item);
-    _table = parent->text(column);
     _field = parent->child(index)->text(column);
 
     QString remove_target = QString("%1.%2").arg(_table, _field);
@@ -538,6 +595,8 @@ void MainWindow::initTreeWidget(){
     _ui.treeWidget->setColumnCount(1);
     _ui.treeWidget->setHeaderLabel(tr("ArduPilot Log"));
     _ui.treeWidget->setHeaderHidden(true);
+    /* 默认缩进较大，Split Table 分组（基名→实例号→字段）到第三层会缩得太远，调小 */
+    _ui.treeWidget->setIndentation(10);
 
     connect(_ui.treeWidget, &QTreeWidget::itemChanged, this, &MainWindow::itemChangedSlot);
 }
@@ -555,7 +614,11 @@ void MainWindow::setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs, in
     for (int i=0;i<item->childCount();i++)
     {
         QTreeWidgetItem* child=item->child(i);
-        if(child->checkState(0)!=cs)
+        if(child->childCount()>0) {
+            /* 分组节点（如实例号层）：递归向下设置叶子字段 */
+            setChildCheckState(child, cs, column);
+        }
+        else if(child->checkState(0)!=cs)
         {
             child->setCheckState(0, cs);
         }
@@ -580,7 +643,15 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
     for (int i=0;i<childCount;i++)
     {
         QTreeWidgetItem* child= item->child(i);
-        if(child->checkState(column)==Qt::Checked)
+        if(child->childCount()>0) {
+            /* 分组节点（如实例号层）：递归汇总其下叶子状态，节点本身不参与绘图 */
+            setParentCheckState(child, column);
+            if(child->checkState(column)==Qt::Checked)
+            {
+                selectedCount++;
+            }
+        }
+        else if(child->checkState(column)==Qt::Checked)
         {
             selectedCount++;
             _plotGraph(item->child(i), column);
@@ -589,12 +660,18 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
         }
     }
 
+    Qt::CheckState newState;
     if(selectedCount == 0) {
-        item->setCheckState(column,Qt::Unchecked);
+        newState = Qt::Unchecked;
     } else if (selectedCount == childCount) {
-        item->setCheckState(column,Qt::Checked);
+        newState = Qt::Checked;
     } else {
-        item->setCheckState(column,Qt::PartiallyChecked);
+        newState = Qt::PartiallyChecked;
+    }
+    /* 状态未变化时不重复设置，避免 itemChanged 重入 */
+    if(item->checkState(column)!=newState)
+    {
+        item->setCheckState(column,newState);
     }
 
     if(selectedCount > 0) {
@@ -609,15 +686,13 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
 
 void MainWindow::itemChangedSlot(QTreeWidgetItem *item, int column)
 {
+    /* 顶层表/基名节点与实例号节点同样级联：勾选即设置其下全部叶子字段 */
     if(Qt::PartiallyChecked!=item->checkState(column)){
-        if(isTopItem(item) == false)
-            setChildCheckState(item,item->checkState(column), column);
-        else
-            setParentCheckState(item, column);
+        setChildCheckState(item,item->checkState(column), column);
     }
 
     if(Qt::PartiallyChecked==item->checkState(column)){
-        if(!isTopItem(item)){
+        if(item->parent()){
             item->parent()->setCheckState(column,Qt::PartiallyChecked);
         }
     }
@@ -626,10 +701,19 @@ void MainWindow::itemChangedSlot(QTreeWidgetItem *item, int column)
 void MainWindow::_clearTreeWidget(QTreeWidget *treeWidget)
 {
     for(int i=0; i<treeWidget->topLevelItemCount(); i++){
-        for (int j=0; j < treeWidget->topLevelItem(i)->childCount(); j++)
+        QTreeWidgetItem* group = treeWidget->topLevelItem(i);
+        for (int j=0; j < group->childCount(); j++)
         {
-            QTreeWidgetItem* child=treeWidget->topLevelItem(i)->child(j);
-            child->setCheckState(0, Qt::Unchecked);
+            QTreeWidgetItem* child=group->child(j);
+            if(child->childCount()>0) {
+                /* Split Table 分组：实例号节点下还有一层字段 */
+                for (int k=0; k < child->childCount(); k++)
+                {
+                    child->child(k)->setCheckState(0, Qt::Unchecked);
+                }
+            } else {
+                child->setCheckState(0, Qt::Unchecked);
+            }
         }
     }
 }
@@ -1016,13 +1100,38 @@ void MainWindow::_onTracerToggled(bool checked)
 }
 
 /* 生成 Python 前从消息树收集数据：每个勾选了字段的消息表只收集一条，
- * 导出脚本中每个表只生成一次 getData/get_data 读取 */
+ * 导出脚本中每个表只生成一次 getData/get_data 读取。
+ * Split Table 分组时顶层是基名、实例号子节点下才是字段，
+ * 真实表名 = 基名 + 实例号（如 BARO0），与导出的 DB 表/CSV 文件名保持一致 */
 QList<QPair<QString, QStringList>> MainWindow::_genPyDataFields(void)
 {
     QList<QPair<QString, QStringList>> dataFields;
 
     for (int i=0; i<_ui.treeWidget->topLevelItemCount(); ++i) {
         QTreeWidgetItem* tableItem = _ui.treeWidget->topLevelItem(i);
+
+        if (tableItem->childCount() > 0 && tableItem->child(0)->childCount() > 0) {
+            /* 分组结构：遍历实例号节点 */
+            for (int j=0; j<tableItem->childCount(); ++j) {
+                QTreeWidgetItem* instanceItem = tableItem->child(j);
+                QString tableName = tableItem->text(0) + instanceItem->text(0);
+
+                int selectedCount = 0;
+                QStringList fields;
+                for (int k=0; k<instanceItem->childCount(); ++k) {
+                    fields.append(instanceItem->child(k)->text(0));
+                    if (instanceItem->child(k)->checkState(0) == Qt::Checked) {
+                        selectedCount++;
+                    }
+                }
+
+                if (selectedCount == 0) continue;
+                if (!APLDataCache::get_singleton()->isEmpty(tableName) || _dialog->get_csv_mode()) {
+                    dataFields.append(qMakePair(tableName, fields));
+                }
+            }
+            continue;
+        }
 
         int selectedCount = 0;
         QStringList fields;

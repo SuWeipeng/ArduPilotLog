@@ -20,6 +20,7 @@ void APLDataCache::reset()
     _store.clear();
     _instantiable_store.clear();
     _binary_store.clear();
+    _split_base_of.clear();
     _metadata = QJsonObject();
     _maintable_ids.clear();
     _maintable_names.clear();
@@ -30,6 +31,13 @@ void APLDataCache::reset()
 void APLDataCache::setTableSplit(bool enabled)
 {
     _table_split = enabled;
+}
+
+QString APLDataCache::splitBaseName(const QString& tableName) const
+{
+    /* 不做名字推测：只查拆分时记录的精确映射。
+     * 原名恰好带数字的独立消息（如 "ES1"）不在映射里，不会被误当作 "ES" 的实例 */
+    return _split_base_of.value(tableName);
 }
 
 void APLDataCache::setSaveCSV(bool enabled)
@@ -171,6 +179,7 @@ void APLDataCache::addData(const QString &name, const QString &new_name, const u
                     js_obj.value("labels").toString(),
                     i
                     );
+            _split_base_of[new_table_name] = name;  // 记录拆分表名 → 基名，供界面分组显示用
         }
 
         if (_filter_mode == 0) {

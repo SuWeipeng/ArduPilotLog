@@ -58,6 +58,9 @@ public:
     QVector<QVariant> parseBinaryData(const QByteArray& data, const QString& format) const;
     void reset();
     bool isEmpty(const QString& tableName) const { return !_binary_store.contains(tableName); }
+    // 返回拆分表（如 "BARO0"）的基名（"BARO"）；只信任拆分时的精确记录，
+    // 非拆分产生的表名（含原名恰好带数字的，如 "ES1"）一律返回空串
+    QString splitBaseName(const QString& tableName) const;
 
     void setTableSplit(bool enabled);
     void setSaveCSV(bool enabled);
@@ -79,6 +82,7 @@ private:
     QMap<QString, MessageData> _store;     // 内存存储核心
     QMap<QString, MessageData> _instantiable_store;
     QMap<QString, QList<QByteArray>> _binary_store; // 新增的二进制数据仓库
+    QMap<QString, QString>     _split_base_of;   // 拆分产生的表名 → 基名（如 "BARO0" → "BARO"）
     QJsonObject                _metadata;  // 用于生成 metadata.json
     QStringList                _maintable_ids;
     QStringList                _maintable_names;

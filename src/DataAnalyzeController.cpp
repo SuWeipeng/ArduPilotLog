@@ -265,15 +265,9 @@ DataAnalyzeController::setFieldList1(QString table)
 {
     tables[0] = table;
 
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[0].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[0]<<item->child(j)->text(0);
-        }
-        emit fieldList1Changed();
-    }
+    /* 树按“基名→实例号→字段”分组显示后，字段列表按真实表名统一获取 */
+    _fieldList[0] = MainWindow::getMainWindow()->getFieldList(table);
+    emit fieldList1Changed();
 
     _update_hide_tables(table, 0);
 }
@@ -351,15 +345,9 @@ DataAnalyzeController::setFieldList2(QString table)
 {
     tables[1] = table;
 
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[1].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[1]<<item->child(j)->text(0);
-        }
-        emit fieldList2Changed();
-    }
+    _fieldList[1] = MainWindow::getMainWindow()->getFieldList(table);
+    emit fieldList2Changed();
+
     _update_hide_tables(table, 1);
 }
 
@@ -436,15 +424,9 @@ DataAnalyzeController::setFieldList3(QString table)
 {
     tables[2] = table;
 
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[2].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[2]<<item->child(j)->text(0);
-        }
-        emit fieldList3Changed();
-    }
+    _fieldList[2] = MainWindow::getMainWindow()->getFieldList(table);
+    emit fieldList3Changed();
+
     _update_hide_tables(table, 2);
 }
 
@@ -519,15 +501,9 @@ DataAnalyzeController::setFieldList4(QString table)
 {
     tables[3] = table;
 
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[3].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[3]<<item->child(j)->text(0);
-        }
-        emit fieldList4Changed();
-    }
+    _fieldList[3] = MainWindow::getMainWindow()->getFieldList(table);
+    emit fieldList4Changed();
+
     _update_hide_tables(table, 3);
 }
 
@@ -604,15 +580,9 @@ DataAnalyzeController::setFieldList5(QString table)
 {
     tables[4] = table;
 
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[4].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[4]<<item->child(j)->text(0);
-        }
-        emit fieldList5Changed();
-    }
+    _fieldList[4] = MainWindow::getMainWindow()->getFieldList(table);
+    emit fieldList5Changed();
+
     _update_hide_tables(table, 4);
 }
 
@@ -689,15 +659,9 @@ DataAnalyzeController::setFieldList6(QString table)
 {
     tables[5] = table;
 
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[5].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[5]<<item->child(j)->text(0);
-        }
-        emit fieldList6Changed();
-    }
+    _fieldList[5] = MainWindow::getMainWindow()->getFieldList(table);
+    emit fieldList6Changed();
+
     _update_hide_tables(table, 5);
 }
 
@@ -774,15 +738,9 @@ DataAnalyzeController::setFieldList7(QString table)
 {
     tables[6] = table;
 
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[6].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[6]<<item->child(j)->text(0);
-        }
-        emit fieldList7Changed();
-    }
+    _fieldList[6] = MainWindow::getMainWindow()->getFieldList(table);
+    emit fieldList7Changed();
+
     _update_hide_tables(table, 6);
 }
 
@@ -859,15 +817,9 @@ DataAnalyzeController::setFieldList8(QString table)
 {
     tables[7] = table;
 
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[7].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[7]<<item->child(j)->text(0);
-        }
-        emit fieldList8Changed();
-    }
+    _fieldList[7] = MainWindow::getMainWindow()->getFieldList(table);
+    emit fieldList8Changed();
+
     _update_hide_tables(table, 7);
 }
 
@@ -944,15 +896,9 @@ DataAnalyzeController::setFieldList9(QString table)
 {
     tables[8] = table;
 
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[8].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[8]<<item->child(j)->text(0);
-        }
-        emit fieldList9Changed();
-    }
+    _fieldList[8] = MainWindow::getMainWindow()->getFieldList(table);
+    emit fieldList9Changed();
+
     _update_hide_tables(table, 8);
 }
 
@@ -1029,15 +975,9 @@ DataAnalyzeController::setFieldList10(QString table)
 {
     tables[9] = table;
 
-    QList<QTreeWidgetItem*> itemList = MainWindow::getMainWindow()->ui().treeWidget->findItems(table, Qt::MatchCaseSensitive);
-    for(int i=0; i<itemList.length(); i++){
-        QTreeWidgetItem* item = itemList.at(i);
-        _fieldList[9].clear();
-        for(int j=0; j<item->childCount(); j++){
-            _fieldList[9]<<item->child(j)->text(0);
-        }
-        emit fieldList10Changed();
-    }
+    _fieldList[9] = MainWindow::getMainWindow()->getFieldList(table);
+    emit fieldList10Changed();
+
     _update_hide_tables(table, 9);
 }
 

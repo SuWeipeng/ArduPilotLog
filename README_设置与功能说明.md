@@ -32,7 +32,7 @@ ArduPilotLog 是一个 ArduPilot 飞行日志（`*.bin` / `*.csv`）绘图分析
 | 键 | 类型 | 默认 | 作用（对应源码） |
 |---|---|---|---|
 | `opendir` | string | `"D:/Log"` | 打开日志对话框的**初始目录**（不存在时回退到桌面）。 |
-| `table_split` | bool | `false` | **按实例拆分消息表**。为 `true` 时，凡第二个字段是实例字段（`I`/`Instance`/`C`/`IMU`/`Type`/`Id`，`EV`/`MULT`/`UNIT` 除外）的消息，不再合并进一张表，而是按实例值拆成独立子表（表名 = 消息名+实例号，如 `IMU` → `IMU0`、`IMU1`）。对应 Tools 菜单 "Split Table"，切换后会清空树和图并**重新解析日志**。 |
+| `table_split` | bool | `false` | **按实例拆分消息表**。为 `true` 时，凡第二个字段是实例字段（`I`/`Instance`/`C`/`IMU`/`Type`/`Id`，`EV`/`MULT`/`UNIT` 除外）的消息，不再合并进一张表，而是按实例值拆成独立子表（内部表名 = 消息名+实例号，如 `IMU` → `IMU0`、`IMU1`）。左侧消息树按**原始消息名 → 实例号 → 字段**分组显示（如 `BARO` 下挂 `0`、`1`），原名保持不变；图例与导出仍使用 `表名+实例号`（图例 `BARO0.Alt`、DB/CSV 表名 `BARO0`、Python 脚本 `getData("BARO0",...)`）。对应 Tools 菜单 "Split Table"，切换后会清空树和图并**重新解析日志**。 |
 | `save_csv` | bool | `false` | 解析完 `.bin` 后**自动导出 CSV**：在日志同目录生成 `<日志名>_csv/` 文件夹，内含每个消息一个 `<消息名>.csv` 和一份 `metadata.json`（消息格式定义）。 |
 | `trim_from` | int | `0` | **裁剪起点（TimeUS，微秒）**。与 `trim_to` 一起生效：仅当 `trim_from < trim_to` 时启用裁剪，解码时丢弃第一条字段（时间戳）不在 `[trim_from, trim_to]` 内的数据行；`PARM`、`FMTU` 两类消息豁免（始终保留）；时间超过 `trim_to` 后置 `trim_complete` 提前结束解码。 |
 | `trim_to` | int | `0` | **裁剪终点（TimeUS，微秒）**，见上。 |
@@ -105,8 +105,9 @@ ArduPilotLog 是一个 ArduPilot 飞行日志（`*.bin` / `*.csv`）绘图分析
 ### 3.4 左侧消息树
 
 - 解析完成后按消息类型建父节点、字段建子节点（带复选框）。
-- **勾选字段即绘图**；父子联动：父节点三态（全选/半选/全不选）。
-- 每次勾选会把 消息→字段列表 同步给 Data Analyze 面板的 Table 下拉框。
+- 开启 Split Table 时按**原始消息名 → 实例号 → 字段**三层分组显示（如 `BARO` 下挂 `0`、`1`，字段在实例号下）；未开启时为两层（消息名 → 字段）。内部表名始终是 `消息名+实例号`（如 `BARO0`），图例、DB/CSV 导出、Python 脚本均使用该名字。
+- **勾选字段即绘图**；父子联动：父节点三态（全选/半选/全不选）；勾选分组节点或实例号节点会级联勾选其下全部字段并绘图。
+- Data Analyze 面板的 Table 下拉框列出真实表名（Split Table 开启时为 `BARO0`、`BARO1` 等）。
 
 ### 3.5 绘图区（QCustomPlot）
 

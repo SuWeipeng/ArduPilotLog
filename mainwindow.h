@@ -41,6 +41,7 @@ public:
 
     void initTreeWidget();
     bool isTopItem(QTreeWidgetItem* item);
+    QStringList getFieldList(const QString& table);
     void setChildCheckState(QTreeWidgetItem *item, Qt::CheckState cs, int column);
     void setParentCheckState(QTreeWidgetItem *item, int column);
     void set_conf(QStringList conf) { _conf = conf; }
