@@ -668,8 +668,9 @@ void MainWindow::setParentCheckState(QTreeWidgetItem *item, int column)
     } else {
         newState = Qt::PartiallyChecked;
     }
-    /* 状态未变化时不重复设置，避免 itemChanged 重入 */
-    if(item->checkState(column)!=newState)
+    /* 状态未变化时不重复设置，避免 itemChanged 重入；
+     * 顶层根表名节点不设复选框，只作为纯分组显示 */
+    if(!isTopItem(item) && item->checkState(column)!=newState)
     {
         item->setCheckState(column,newState);
     }
@@ -692,7 +693,7 @@ void MainWindow::itemChangedSlot(QTreeWidgetItem *item, int column)
     }
 
     if(Qt::PartiallyChecked==item->checkState(column)){
-        if(item->parent()){
+        if(item->parent() && !isTopItem(item->parent())){
             item->parent()->setCheckState(column,Qt::PartiallyChecked);
         }
     }
