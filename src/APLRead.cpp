@@ -195,12 +195,12 @@ void APLReadWorker::_decode(const uchar* p_data, qint64 data_size)
 
         if (msg_type == LOG_FORMAT_MSG)
         {
-            if (payload_ptr + 2 > end) { 
-                ptr++;
-                continue;
-            }
-            quint8 msg_len = *(payload_ptr + 1);
-            if (payload_ptr + msg_len > end) { 
+            // FMT 消息自身总长恒为 3字节头 + type(1) + len(1) + name(4) + format(16) + labels(64),
+            // 即载荷 86 字节; 载荷里的 len 字段是"被描述消息"的长度, 与 FMT 消息本身的
+            // 边界无关 —— 之前用 msg_len 推进指针, len<89 会回跳、len>89 会冲过,
+            // 吞掉后续消息头, 导致部分消息的 FMT 永远解析不到(表丢失)
+            const int FMT_PAYLOAD_LEN = 2 + NAME_LEN + FORMAT_LEN + LABELS_LEN;
+            if (payload_ptr + FMT_PAYLOAD_LEN > end) {
                 ptr++;
                 continue;
             }
@@ -213,7 +213,7 @@ void APLReadWorker::_decode(const uchar* p_data, qint64 data_size)
             const uchar* p = payload_ptr;
             quint8 type = *p++;
             p++; // skip len
-            
+
             // 保持原有的内存拷贝方式
             memcpy(name,       p, NAME_LEN);      p += NAME_LEN;
             memcpy(format,     p, FORMAT_LEN);    p += FORMAT_LEN;
@@ -231,7 +231,7 @@ void APLReadWorker::_decode(const uchar* p_data, qint64 data_size)
                                       log_format,
                                       log_labels);
             }
-            ptr = payload_ptr + msg_len; 
+            ptr = payload_ptr + FMT_PAYLOAD_LEN;
         }
         else 
         {

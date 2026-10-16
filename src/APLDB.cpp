@@ -242,32 +242,37 @@ void APLDB::_createTableField(const QString &name, QString &format, QString &fie
         return;
     }
 
+    // 'a'(int16[32]) 展开成 32 个整型列 <label>0..<label>31,
+    // 与 APLDataCache::parseBinaryData 的取值个数保持一致
+    QStringList cols;
     for(qint8 i = 0; i < formatArray.size(); i++){
-        // 使用双引号转义字段名，处理关键字冲突
-        QString fieldName = QString("\"%1\"").arg(_sanitizeFieldName(name, fieldList[i]));
-
-        QString dataType;
         switch(formatArray[i]){
-        case 'a': case 'b': case 'B': case 'h': case 'H':
+        case 'a':
+            for(int k = 0; k < 32; ++k){
+                cols.append(QString("\"%1\" INTEGER")
+                                .arg(_sanitizeFieldName(name, fieldList[i] + QString::number(k))));
+            }
+            break;
+        case 'b': case 'B': case 'h': case 'H':
         case 'i': case 'I': case 'L': case 'M': case 'q': case 'Q':
-            dataType = "INTEGER";
+            cols.append(QString("\"%1\" INTEGER")
+                            .arg(_sanitizeFieldName(name, fieldList[i])));
             break;
         case 'f': case 'd': case 'c': case 'C': case 'e': case 'E':
-            dataType = "REAL";  // 使用REAL而不是DOUBLE
+            cols.append(QString("\"%1\" REAL")   // 使用REAL而不是DOUBLE
+                            .arg(_sanitizeFieldName(name, fieldList[i])));
             break;
         case 'n': case 'N': case 'Z':
-            dataType = "TEXT";  // 使用TEXT而不是VARCHAR
+            cols.append(QString("\"%1\" TEXT")   // 使用TEXT而不是VARCHAR
+                            .arg(_sanitizeFieldName(name, fieldList[i])));
             break;
         default:
-            dataType = "TEXT";
+            cols.append(QString("\"%1\" TEXT")
+                            .arg(_sanitizeFieldName(name, fieldList[i])));
             break;
         }
-
-        table_field += QString("%1 %2").arg(fieldName, dataType);
-        if (i < formatArray.size() - 1) {
-            table_field += ", ";
-        }
     }
+    table_field = cols.join(", ");
 }
 
 QString APLDB::_sanitizeFieldName(const QString &name, const QString& fieldName) const

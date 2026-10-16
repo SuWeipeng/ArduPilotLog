@@ -232,6 +232,27 @@ QVector<double> APLDataCache::getColumn(const QString &messageName, const QStrin
     return messageData.columns[columnIndex];
 }
 
+// 数组字段('a')按 32 样本展开成 <label>0..<label>31, 与 db 建表(_createTableField)、
+// parseBinaryData 的展开规则一致; 非 CSV 专用, 供导出头行使用
+static QStringList expandLabelsForArray(const QString &format, const QStringList &labels)
+{
+    QByteArray fa = format.toLatin1();
+    if (fa.size() != labels.size()) {
+        return labels;
+    }
+    QStringList out;
+    for (int i = 0; i < fa.size(); ++i) {
+        if (fa[i] == 'a') {
+            for (int k = 0; k < 32; ++k) {
+                out << labels[i] + QString::number(k);
+            }
+        } else {
+            out << labels[i];
+        }
+    }
+    return out;
+}
+
 void APLDataCache::exportToFile(const QString &outputDir)
 {
     if (!_save_csv && !export_csv) return;
@@ -282,11 +303,13 @@ void APLDataCache::exportToFile(const QString &outputDir)
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) continue;
 
         QTextStream stream(&file);
+        QStringList outHeaders = expandLabelsForArray(_store[tableName].format,
+                                                      _store[tableName].headers);
         QStringList sanitizedHeaders;
-        for (const QString& header : _store[tableName].headers) {
+        for (const QString& header : outHeaders) {
             sanitizedHeaders << _sanitizeCSVFieldName(header);
         }
-        stream << _store[tableName].headers.join(',') << "\n";
+        stream << sanitizedHeaders.join(',') << "\n";
 
         int idx = _maintable_names.indexOf(tableName);
         if (idx == -1) continue;
@@ -317,7 +340,14 @@ void APLDataCache::exportToFile(const QString &outputDir)
                     case 'n': { char v[5] = {0}; memcpy(v, ptr, 4); ptr += 4; rowValues << v; break; }
                     case 'N': { char v[17] = {0}; memcpy(v, ptr, 16); ptr += 16; rowValues << v; break; }
                     case 'Z': { char v[65] = {0}; memcpy(v, ptr, 64); ptr += 64; rowValues << v; break; }
-                    case 'a': { ptr += 64; rowValues << "(array)"; break; } // Placeholder for array
+                    case 'a': {
+                        for (int k = 0; k < 32; ++k) {
+                            qint16 v;
+                            memcpy(&v, ptr, sizeof(v)); ptr += sizeof(v);
+                            rowValues << QString::number(v);
+                        }
+                        break;
+                    }
                 }
             }
             stream << rowValues.join(',') << "\n";
@@ -504,7 +534,17 @@ QVector<QVariant> APLDataCache::parseBinaryData(const QByteArray& data, const QS
             case 'n': { char str[5] = {0}; memcpy(str, ptr + current_offset, 4); result.append(QString(str)); current_offset += 4; break; }
             case 'N': { char str[17] = {0}; memcpy(str, ptr + current_offset, 16); result.append(QString(str)); current_offset += 16; break; }
             case 'Z': { char str[65] = {0}; memcpy(str, ptr + current_offset, 64); result.append(QString(str)); current_offset += 64; break; }
-            case 'a': { current_offset += 64; result.append(QVariant()); break; } // Placeholder for array, append empty QVariant
+            case 'a': {
+                // int16[32] 展开: 逐样本 append, 列名由 APLDB::_createTableField
+                // 按 <label>0..<label>31 生成, 两侧个数必须一致
+                for (int k = 0; k < 32; ++k) {
+                    qint16 v;
+                    memcpy(&v, ptr + current_offset + k * sizeof(v), sizeof(v));
+                    result.append(v);
+                }
+                current_offset += 64;
+                break;
+            }
             default: result.append(QVariant()); break; // Unknown format char, append empty QVariant
         }
     }
