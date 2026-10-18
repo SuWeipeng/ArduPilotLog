@@ -30,11 +30,9 @@ public:
 
     void addToSubTable(QString name, QString values);
 
-    void addToSubTableBuf(QString name, QVector<QVariant> values);
-
     void buf2DB();
 
-    void insertBatchData(const QString& tableName, const QList<QVector<QVariant>>& rows);
+    qint64 insertBatchData(const QString& tableName, const QList<QVector<QVariant>>& rows, qint64 firstLineNo = 1);
 
     void getFormat(quint8 &id, QString &name, QString &format);
 
@@ -79,8 +77,6 @@ public:
 private:
     QSqlDatabase  _apldb;
     quint32       _Number;
-    QStringList   _name;
-    QList<QVector<QVariant>>   _values;
     QStringList   _maintable_item;
     QStringList   _maintable_ids;
     QStringList   _maintable_names;

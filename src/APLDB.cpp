@@ -8,8 +8,6 @@ APL_LOGGING_CATEGORY(APLDB_LOG,        "APLDBLog")
 APLDB::APLDB()
     : _Number(0)
 {
-    _name.clear();
-    _values.clear();
     _maintable_names.clear();
     _maintable_formats.clear();
     _maintable_ids.clear();
@@ -36,14 +34,15 @@ void APLDB::createAPLDB(const QString &dbPath)
         QSqlQuery query(_apldb);
 
         // SQLite 性能优化设置
-	    query.exec("PRAGMA journal_mode = WAL");        // 使用WAL模式
-	    query.exec("PRAGMA synchronous = NORMAL");      // 降低同步级别
+        // 一次性批量导出: 关闭回滚日志与同步, 每个字节只落盘一次(WAL+禁用checkpoint会把
+        // 全库先写WAL再checkpoint回主文件, 等于写两遍磁盘); 中途崩溃放弃本文件即可
+        query.exec("PRAGMA journal_mode = OFF");          // 关闭回滚日志, 消除双写
+        query.exec("PRAGMA synchronous = OFF");           // 导出场景不做逐步同步
         query.exec("PRAGMA cache_size = 50000");        // 增加缓存大小
-	    query.exec("PRAGMA temp_store = MEMORY");       // 临时表存储在内存
-	    query.exec("PRAGMA mmap_size = 268435456");     // 使用内存映射(256MB)
+        query.exec("PRAGMA temp_store = MEMORY");       // 临时表存储在内存
+        query.exec("PRAGMA mmap_size = 268435456");     // 使用内存映射(256MB)
 
         query.exec("PRAGMA page_size = 65536");           // 增大页面大小
-        query.exec("PRAGMA wal_autocheckpoint = 0");      // 禁用自动检查点
         query.exec("PRAGMA optimize");                    // 启用查询优化器
         query.exec("PRAGMA threads = 4");                // 启用多线程（Qt 6.2+）
         query.exec("PRAGMA locking_mode = EXCLUSIVE");    // 独占锁模式
@@ -107,12 +106,6 @@ void APLDB::addToSubTable(QString name, QString values)
     }
 }
 
-void APLDB::addToSubTableBuf(QString name, QVector<QVariant> values)
-{
-    _name.append(name);
-    _values.append(values);
-}
-
 void APLDB::buf2DB()
 {
     QSqlQuery query_insert(_apldb);
@@ -128,41 +121,23 @@ void APLDB::buf2DB()
     }
     _apldb.commit();
 
-    // 批量处理子表数据
-    QMap<QString, QList<QVector<QVariant>>> grouped_data;
-    for(qsizetype i = 0; i < _name.length(); ++i) {
-        grouped_data[_name[i]].append(_values[i]);
-    }
-
-    for (auto it = grouped_data.constBegin(); it != grouped_data.constEnd(); ++it) {
-        const QString &tableName = it.key();
-        const QList<QVector<QVariant>> &rows = it.value();
-
-        if (rows.isEmpty()) continue;
-
-        // 使用批量插入
-        insertBatchData(tableName, rows);
-    }
-
     // 清理
     _maintable_item.clear();
     _maintable_names.clear();
     _maintable_formats.clear();
     _maintable_ids.clear();
-    _name.clear();
-    _values.clear();
 
     // 清理后进行数据库优化
     QSqlQuery query(_apldb);
     query.exec("PRAGMA optimize");
-    query.exec("PRAGMA wal_checkpoint(TRUNCATE)"); // 清理WAL文件
 }
 
-void APLDB::insertBatchData(const QString& tableName, const QList<QVector<QVariant>>& rows)
+// 把 rows 写入子表; firstLineNo 为本批起始 LineNo, 返回下一批应使用的起始 LineNo,
+// 供调用方分块流式插入时保持 LineNo 连续
+qint64 APLDB::insertBatchData(const QString& tableName, const QList<QVector<QVariant>>& rows, qint64 firstLineNo)
 {
-    if (rows.isEmpty()) return;
+    if (rows.isEmpty()) return firstLineNo;
 
-    const int batchSize = 5000; // 每批处理5000条记录
     const int columnCount = rows.first().size();
 
     // 构建批量插入SQL
@@ -175,17 +150,18 @@ void APLDB::insertBatchData(const QString& tableName, const QList<QVector<QVaria
     QSqlQuery query(_apldb);
     if (!query.prepare(sql)) {
         qCDebug(APLDB_LOG) << "Prepare failed:" << query.lastError().text();
-        return;
+        return firstLineNo;
     }
 
-    qint64 lineCounter = 0;
+    qint64 lineNo = firstLineNo;
 
+    // journal 已关闭, 单事务整批提交即可, 无需分批 commit
     _apldb.transaction();
 
     for (int i = 0; i < rows.size(); ++i) {
         const QVector<QVariant>& row = rows[i];
 
-        query.bindValue(0, ++lineCounter);
+        query.bindValue(0, lineNo++);
         for (int j = 0; j < row.size(); ++j) {
             query.bindValue(j + 1, row[j]);
         }
@@ -193,26 +169,18 @@ void APLDB::insertBatchData(const QString& tableName, const QList<QVector<QVaria
         if (!query.exec()) {
             qCDebug(APLDB_LOG) << "Insert failed:" << query.lastError().text();
             _apldb.rollback();
-            return;
-        }
-
-        // 每5000条提交一次
-        if (i % batchSize == 0 && i > 0) {
-            if (!_apldb.commit()) {
-                qCDebug(APLDB_LOG) << "Commit failed:" << _apldb.lastError().text();
-                _apldb.rollback();
-                return;
-            }
-            _apldb.transaction();
+            return firstLineNo;
         }
     }
 
-    // 提交剩余数据
+    // 提交本批数据
     if (!_apldb.commit()) {
         qCDebug(APLDB_LOG) << "Batch commit failed:" << _apldb.lastError().text();
         _apldb.rollback();
-        return;
+        return firstLineNo;
     }
+
+    return lineNo;
 }
 
 bool APLDB::_createSubTable(QString &name, QString &format, QString &field) const
@@ -508,8 +476,6 @@ void APLDB::deleteDataBase(const QString &dbdir)
 void APLDB::reset()
 {
     _Number = 0;
-    _name.clear();
-    _values.clear();
     _maintable_names.clear();
     _maintable_formats.clear();
     _maintable_ids.clear();

@@ -55,7 +55,7 @@ public:
     bool checkMainTable(quint8 id); //true: id already exist
     const QMap<QString, MessageData>& getStore() const { return _store; }
     const QMap<QString, QList<QByteArray>>& getBinaryStore() const { return _binary_store; }
-    QVector<QVariant> parseBinaryData(const QByteArray& data, const QString& format) const;
+    QVector<QVariant> parseBinaryData(const QByteArray& data, const QByteArray& format) const;
     void reset();
     bool isEmpty(const QString& tableName) const { return !_binary_store.contains(tableName); }
     // 返回拆分表（如 "BARO0"）的基名（"BARO"）；只信任拆分时的精确记录，

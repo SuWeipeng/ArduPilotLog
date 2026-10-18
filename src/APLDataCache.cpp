@@ -507,14 +507,21 @@ bool APLDataCache::checkMainTable(quint8 id)
     return ret;
 }
 
-QVector<QVariant> APLDataCache::parseBinaryData(const QByteArray& data, const QString& format) const
+QVector<QVariant> APLDataCache::parseBinaryData(const QByteArray& data, const QByteArray& format) const
 {
+    // 'a'(int16[32]) 会展开成 32 列, 预留容量按展开后的列数计
+    int column_count = format.size();
+    for (char c : format) {
+        if (c == 'a') column_count += 31;
+    }
+
     QVector<QVariant> result;
+    result.reserve(column_count);
     const uchar *ptr = reinterpret_cast<const uchar*>(data.constData());
     int current_offset = 0;
 
-    for (QChar formatChar : format) {
-        switch(formatChar.toLatin1()) {
+    for (char formatChar : format) {
+        switch(formatChar) {
             case 'b': { qint8 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
             case 'B': { quint8 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }
             case 'h': { qint16 v; memcpy(&v, ptr + current_offset, sizeof(v)); result.append(v); current_offset += sizeof(v); break; }

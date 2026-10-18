@@ -435,14 +435,10 @@ void SaveAsWorker::run(const QString &dbdir)
                             messageData.labels);
     }
 
-    // Now add the actual data
-    // This part needs to be carefully implemented to convert binary data to QVariant
-    // and then call apldb.addToSubTableBuf
-    // For now, we'll just call buf2DB to process maintable and clear buffers.
-    // The actual data conversion and insertion will be a separate step.
     apldb.buf2DB(); // Process maintable items and clear buffers
 
-    // Now, insert the actual binary data
+    // 逐表流式转换插入: 解析一块就写入一块, 避免整个数据集以 QVariant 形式驻留内存
+    const int kParseChunkSize = 10000;
     for (auto it = dataCache->getBinaryStore().constBegin(); it != dataCache->getBinaryStore().constEnd(); ++it) {
         const QString &messageName = it.key();
         const QList<QByteArray> &binaryRows = it.value();
@@ -456,13 +452,23 @@ void SaveAsWorker::run(const QString &dbdir)
         }
         const MessageData &messageData = dataCache->getStore()[messageName];
         const QString &format = messageData.format;
+        const QByteArray formatArray = format.toLatin1(); // 每表转换一次, 供 parseBinaryData 反复使用
+
+        QList<QVector<QVariant>> batch;
+        batch.reserve(kParseChunkSize);
+        qint64 lineNo = 1;
 
         for (const QByteArray &row : binaryRows) {
-            QVector<QVariant> parsedData = dataCache->parseBinaryData(row, format);
-            apldb.addToSubTableBuf(messageName, parsedData);
+            batch.append(dataCache->parseBinaryData(row, formatArray));
+            if (batch.size() >= kParseChunkSize) {
+                lineNo = apldb.insertBatchData(messageName, batch, lineNo);
+                batch.clear();
+            }
+        }
+        if (!batch.isEmpty()) {
+            apldb.insertBatchData(messageName, batch, lineNo);
         }
     }
-    apldb.buf2DB(); // Call again to process the buffered binary data
 
     apldb.close(); // Close the database connection
 
